@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 
 import { db, DbUser } from "@resource/db";
@@ -11,7 +11,6 @@ import { useAsyncMemo } from "@libs/uses";
 import { DasyBadge, DasyBadgeType } from "@components/dasyui/Badge";
 import { ICONS } from "@components/icons";
 import { ChatTable } from "./Chats";
-import { createContext } from "vm";
 import { useModalContext } from "@components/dasyui/Modal";
 
 interface BadgeProps {
@@ -29,14 +28,6 @@ const Badge = (props: BadgeProps) => {
   );
 };
 
-const UserContext = createContext();
-export const User = (props: { userId: DbUser['id']}) => {
-  const user = useUserGetById(props.userId);
-  return (
-    <UserContext.Provider>
-    </UserContext.Provider>
-  )
-}
 export const useUserInfoModal = (userId?: DbUser['id']) => {
   const modal = useModalContext();
   const openModal = useCallback(() => {
