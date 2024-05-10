@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 
 import { db, DbUser } from "@resource/db";
@@ -10,7 +10,9 @@ import { useAsyncMemo } from "@libs/uses";
 
 import { DasyBadge, DasyBadgeType } from "@components/dasyui/Badge";
 import { ICONS } from "@components/icons";
-import { TwitchChat } from "./Chats";
+import { ChatTable } from "./Chats";
+import { createContext } from "vm";
+import { useModalContext } from "@components/dasyui/Modal";
 
 interface BadgeProps {
   name: string;
@@ -27,6 +29,22 @@ const Badge = (props: BadgeProps) => {
   );
 };
 
+const UserContext = createContext();
+export const User = (props: { userId: DbUser['id']}) => {
+  const user = useUserGetById(props.userId);
+  return (
+    <UserContext.Provider>
+    </UserContext.Provider>
+  )
+}
+export const useUserInfoModal = (userId?: DbUser['id']) => {
+  const modal = useModalContext();
+  const openModal = useCallback(() => {
+    if (userId == null) return;
+    modal.open(<UserInformation userId={userId} />);
+  }, [userId]);
+  return openModal;
+}
 export const UserInformation = (props: { userId: DbUser["id"] }) => {
   const ctx = useEventSubContext();
   const user = useUserGetById(props.userId, {
@@ -133,7 +151,7 @@ export const UserInformation = (props: { userId: DbUser["id"] }) => {
       <div className="flex flex-col gap-2">
         <p className="font-black">コメント一覧</p>
         <div className="h-56 border rounded-md">
-          <TwitchChat userId={user.id} />
+          <ChatTable userId={user.id} />
         </div>
       </div>
     </div>

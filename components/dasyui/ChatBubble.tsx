@@ -36,7 +36,7 @@ export const ChatBubble = ({
   const _image =
     image == null ? null : (
       <div className="chat-image avatar cursor-pointer" onClick={onClickAvater}>
-        <div className="w-10 rounded-full">
+        <div className="w-10 rounded-full border-2">
           <img {...image} />
         </div>
       </div>

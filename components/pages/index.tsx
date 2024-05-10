@@ -14,6 +14,7 @@ import { FollowerInfo } from "@components/followers";
 import { ICONS } from "@components/icons";
 import { LiveWatchUsers } from "@components/liveWatchUsers";
 import { Me } from "@components/twitch/Me";
+import { ChatList } from "@components/twitch/Chats";
 
 const FOOTER_CONTENT = [
   { icon: ICONS.BROADCAST, text: "ライブ", path: "/" },
@@ -56,6 +57,7 @@ export const BroadcastContent = () => {
             <p className="whitespace-nowrap px-4 py-2 font-black text-xs bg-base-300 text-base-content dasy-rounded">
               コメント一覧
             </p>
+            <ChatList />
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useMemo, useState } from "react";
 import { Table as DexieTable } from "dexie";
 
 import { db, useDbPagination } from "@resource/db";
@@ -13,6 +13,12 @@ function Viewer(props: { data: DexieTable<any, any> }) {
     pageSize: 10,
   });
 
+  const keys = useMemo(() => {
+    if (targets.value == null) return [];
+    const result = new Set(targets.value.target.map(val => Object.keys(val)).flat().flat());
+    return new Array(...result.values()).map((val) => ({ keyName: val }))
+  }, [targets]);
+
   return (
     <div className="w-full flex flex-col gap-10 h-full">
       {targets.value == null ? null : targets.value.target[0] == null ? (
@@ -22,11 +28,7 @@ function Viewer(props: { data: DexieTable<any, any> }) {
           <div className="flex flex-col gap-10 h-96 grow">
             <Table
               type="object"
-              keyMap={
-                Object.keys(targets.value.target[0])
-                  .filter((val) => val !== "rowdata" && val !== "rowData")
-                  .map((val) => ({ keyName: val })) as any
-              }
+              keyMap={keys as any}
               target={targets.value.target}
               bordered
             />

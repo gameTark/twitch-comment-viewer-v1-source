@@ -30,7 +30,7 @@ export const AddCard = (props: { onClick?: () => void }) => {
     "
       tabIndex={0}
       onClick={handleClick}>
-      <div className="h-12 w-12 round-full rounded-full bg-base-100 text-base-content flex items-center justify-center">
+      <div className="h-12 w-12 rounded-full bg-base-100 text-base-content flex items-center justify-center">
         <div className="text-4xl select-none">+</div>
       </div>
     </div>
