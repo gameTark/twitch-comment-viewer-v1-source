@@ -2,7 +2,7 @@ import { ReactNode, useMemo } from "react";
 import clsx from "clsx";
 import dayjs from "dayjs";
 
-import { urlValidation, urlValidationOnly } from "@libs/regex";
+import { isJsonString, urlValidation, urlValidationOnly } from "@libs/regex";
 
 import { CodeJavascript } from "@components/commons/SyntaxHightlight";
 import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
@@ -92,11 +92,21 @@ export const Table = <T extends object>(props: TableProps<T>) => {
           );
         }
       case "string":
-        if (urlValidation.test(cel.trim())) return <ClipboardCopy text="URL Data" target={cel} />;
-        if (cel.length >= 50) {
-          return <ClipboardCopy text="長文テキスト" target={cel} />;
+        if (cel.length <= 50) {
+          return cel;
         }
-        return cel;
+        if (isJsonString(cel.trim()))
+          return (
+            <button
+              className="btn"
+              onClick={() => {
+                modal.open(<CodeJavascript code={JSON.stringify(JSON.parse(cel), null, 2)} />);
+              }}>
+              JSON
+            </button>
+          );
+        if (urlValidation.test(cel.trim())) return <ClipboardCopy text="URL Data" target={cel} />;
+        return <ClipboardCopy text="長文テキスト" target={cel} />;
       case "undefined":
         return "undefined";
       case "function":

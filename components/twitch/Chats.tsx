@@ -11,10 +11,9 @@ import { getEmoteImage, twitchLinks } from "@libs/twitch";
 import { filter } from "@libs/types";
 
 import { ChatBubble, ChatSkeleton } from "@components/dasyui/ChatBubble";
-import { useModalContext } from "@components/dasyui/Modal";
 import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 import { useGetComments, useGetCommentsByUserId } from "../../watcher/useCommentWatcher";
-import { UserInformation, useUserInfoModal } from "./User";
+import { useUserInfoModal } from "./User";
 
 interface Comment {
   id: string;
@@ -35,7 +34,7 @@ const commentParser = (action: DbAction): Comment | undefined => {
           id: action.id,
           type: action.messageType,
           userId: action.userId,
-          fragment: <p>{action.message}</p>,
+          fragment: <span>{action.message}</span>,
           timestamp: action.timestamp,
         };
       }
@@ -54,7 +53,7 @@ const commentParser = (action: DbAction): Comment | undefined => {
         id: action.id,
         type: action.messageType,
         userId: action.userId,
-        fragment: <p>{action.userTitle}</p>,
+        fragment: <span>{action.userTitle}</span>,
         timestamp: action.timestamp,
       };
     default:
@@ -118,7 +117,7 @@ const Reward = (props: Comment) => {
           tabIndex={0}
           onClick={openModal}
         />
-        <div className="flex">
+        <div className="flex font-bold">
           {userName}が{props.fragment}と交換しました。
         </div>
       </div>
@@ -149,7 +148,7 @@ const Bubble = (props: Comment) => {
   );
 };
 const Flat = (props: Comment) => {
-  return <li>{props.fragment}</li>;
+  return <li className="border-b pb-1">{props.fragment}</li>;
 };
 
 const TypeViewer = (props: Comment) => {
@@ -164,7 +163,15 @@ const TypeViewer = (props: Comment) => {
 };
 
 const TypeFlat = (props: Comment) => {
-  return <Flat {...props} />;
+  switch (props.type) {
+    case "chat":
+      return <Flat {...props} fragment={<>{props.fragment}</>} />;
+  case "reward":
+      return <Flat {...props} fragment={<span className="font-bold flex justify-between"><span>{props.fragment}</span> <span className="text-xs">ポイント交換</span></span>} />;
+  case "atutomatic-reward":
+      return null;
+  }
+  
 };
 
 export const ChatList = () => {
@@ -194,36 +201,29 @@ export const ChatList = () => {
 };
 
 export const ChatTable = (props: { userId?: DbUser["id"] }) => {
-  const ctx = useEventSubContext();
-  const comments = useGetCommentsByUserId(props.userId || ctx?.me.id || null);
+  const comments = useGetComments();
+  const type: string = "flat";
+
+  const message = useMemo(() => {
+    return comments
+      .map(commentParser)
+      .filter(filter.notNull)
+      .map((action) => {
+        switch (type) {
+          case "viewer":
+            return <TypeViewer key={action.id} {...action} />;
+          case "flat":
+            return <TypeFlat key={action.id} {...action} />;
+        }
+      });
+  }, [comments]);
+
   const scroll = usePerfectScrollbar([comments]);
   return (
     <div className="h-full flex flex-col">
       <div ref={scroll.ref} className="perfect-scrollbar">
-        <ul className="flex flex-col">
-          {comments.length === 0 ? <p>まだコメントが収集できてないです。</p> : null}
-          {comments
-            .map((val) => {
-              if (val.messageType === "chat") {
-                const target =
-                  val.fragments != null && val.fragments.length !== 0 ? (
-                    <ParseFragment fragments={val.fragments} />
-                  ) : (
-                    val.message
-                  );
-                return (
-                  <li
-                    key={val.id}
-                    className="break-words flex items-center px-2 justify-stretch border-b  border-base-300">
-                    <time className="opacity-70 text-xs pr-1 whitespace-nowrap">
-                      {dayjs(val.timestamp).format("YYYY/MM/DD hh:mm:ss")}
-                    </time>
-                    <p className="px-2 py-1 border-l border-base-300">{target}</p>
-                  </li>
-                );
-              }
-            })
-            .filter(filter.notNull)}
+        <ul className="flex flex-col gap-2 py-6 px-2">
+          {message}
         </ul>
       </div>
       <div className="px-2 py-1 border-t-2 text-right">総コメント数:{comments.length}</div>

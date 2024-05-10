@@ -17,3 +17,13 @@ export const urlLinkTagReplacement = (
     end: "</a>",
   },
 ) => text.replace(urlValidation, `${tag.start}$&${tag.end}`);
+
+
+export const isJsonString = (target: string) => {
+  try {
+    JSON.parse(target)
+    return true;
+  } catch {
+    return false;
+  }
+};
