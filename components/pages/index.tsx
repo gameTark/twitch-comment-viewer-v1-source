@@ -8,7 +8,6 @@ import clsx from "clsx";
 import { useEventSubContext } from "@contexts/twitch/eventSubContext";
 
 import { ChatUsers } from "@components/chatUsers";
-import { CommentList } from "@components/comments";
 import { Clock, MiniClock } from "@components/commons/clock";
 import { DrawerOpener } from "@components/dasyui/Drawer";
 import { FollowerInfo } from "@components/followers";
@@ -26,7 +25,6 @@ const FOOTER_CONTENT = [
   { icon: ICONS.GEAR, text: "設定", path: "/setting" },
 ];
 
-// TODO: ポップアウトさせる動作を作る
 export const BroadcastContent = () => {
   const ctx = useEventSubContext();
 
@@ -38,7 +36,6 @@ export const BroadcastContent = () => {
           <ChatUsers type="stat" />
           <LiveWatchUsers />
           <FollowerInfo type="stat" />
-          <CommentList type="stat" />
         </div>
       </div>
       <div className="h-96 grow px-2">
@@ -59,7 +56,6 @@ export const BroadcastContent = () => {
             <p className="whitespace-nowrap px-4 py-2 font-black text-xs bg-base-300 text-base-content dasy-rounded">
               コメント一覧
             </p>
-            <CommentList type="list" />
           </div>
         </div>
       </div>

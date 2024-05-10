@@ -9,7 +9,6 @@ import { useShowUserInfoModal } from "./dasyui/Modal";
 import { Stat } from "./dasyui/Stat";
 import { Table, TableValueType } from "./dasyui/Table";
 import { ICONS } from "./icons";
-import { UserInfo } from "./userInfo";
 
 const TypeTable = () => {
   const ctx = useEventSubContext();
@@ -103,7 +102,6 @@ export const FollowerInfo = (props: { type: "list" | "stat" | "table" }) => {
             {ctx.followers.map((val) => {
               return (
                 <li key={val.userId}>
-                  <UserInfo userId={val.userId} />
                   <p>{dayjs(val.followedAt).format("YYYY/MM/DD HH:mm:ss")}</p>
                 </li>
               );

@@ -1,10 +1,53 @@
 import { DbUser } from "@resource/db";
 import { dayjs } from "@libs/dayjs";
 import { filter } from "@libs/types";
+import * as escaper from "html-escaper";
 
-import { Chat } from "@components/chat";
 import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 import { useGetCommentsByUserId } from "../../watcher/useCommentWatcher";
+import { ChatFragment } from "@libs/notification/channelChatMessage";
+import { urlLinkTagReplacement } from "@libs/regex";
+import { getEmoteImage, twitchLinks } from "@libs/twitch";
+
+const ParseFragment = (props: { fragments: ChatFragment[] }) => {
+  return (
+    <>
+      {props.fragments.map((fragment, index) => {
+        switch (fragment.type) {
+          case "emote":
+            return (
+              <img
+                key={index}
+                src={getEmoteImage(fragment.emote.id)}
+                alt={fragment.text}
+                className="inline mx-1"
+              />
+            );
+          case "text":
+            return (
+              <span
+                key={index}
+                className="break-all"
+                dangerouslySetInnerHTML={{
+                  __html: urlLinkTagReplacement(escaper.escape(fragment.text)),
+                }}
+              />
+            );
+          case "mention":
+            return (
+              <a
+                className="link link-info"
+                target="__blank"
+                key={index}
+                href={twitchLinks(fragment.mention.user_login).CHANNEL}>
+                {fragment.text}
+              </a>
+            );
+        }
+      })}
+    </>
+  );
+};
 
 export const TwitchChat = (props: { userId?: DbUser["id"] }) => {
   const comments = useGetCommentsByUserId(props.userId || null);
@@ -19,7 +62,7 @@ export const TwitchChat = (props: { userId?: DbUser["id"] }) => {
               if (val.messageType !== "chat") return;
               const target =
                 val.fragments != null && val.fragments.length !== 0 ? (
-                  <Chat fragments={val.fragments} />
+                  <ParseFragment fragments={val.fragments} />
                 ) : (
                   val.message
                 );
