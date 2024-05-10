@@ -1,0 +1,213 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Noto+Serif+JP&display=swap");
+
+html:has(.drawer-toggle:checked) {
+  scrollbar-gutter: auto !important;
+}
+
+html {
+  @apply font-noto-serif font-noto-sans;
+}
+
+.drawer-toggle:checked ~ .drawer-side > .drawer-overlay {
+  background-color: transparent;
+  cursor: auto !important;
+}
+@layer base {
+  *,
+  ::before,
+  ::after {
+    @apply border-base-content/20;
+  }
+}
+@layer components {
+  .perfect-scrollbar {
+    overflow: hidden;
+    position: relative;
+    height: 100%;
+    max-height: 100vh;
+    padding-right: 10px !important;
+  }
+  .perfect-scrollbar-nopadding {
+    overflow: hidden;
+    position: relative;
+    height: 100%;
+  }
+  .dasy-rounded {
+    border-radius: var(--rounded-btn);
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    margin-bottom: 0.3em;
+    @apply font-noto-serif tracking-widest leading-loose;
+  }
+  p {
+    @apply tracking-wide leading-relaxed;
+  }
+
+  h1 {
+    @apply text-5xl;
+  }
+
+  h1.center {
+    @apply text-center;
+  }
+  h2 {
+    @apply text-3xl font-bold;
+  }
+  h2.center {
+    @apply text-center;
+  }
+  h3 {
+    @apply text-3xl;
+  }
+  h3.center {
+    @apply text-center;
+  }
+  h4 {
+    @apply text-2xl font-bold;
+  }
+  h4.center {
+    @apply text-center;
+  }
+  h5 {
+    @apply text-2xl;
+  }
+  h5.center {
+    @apply text-center;
+  }
+  p {
+    @apply text-base;
+  }
+  p.center {
+    @apply text-center;
+  }
+
+  .text-large {
+    @apply text-2xl;
+  }
+
+  .text-base {
+    @apply text-sm;
+  }
+  .text-caption {
+    @apply text-xs;
+  }
+  .ios-toggle {
+    @apply toggle [--tglbg:#D9DADC] checked:[--tglbg:#4ed164] bg-base-100 hover:bg-base-100 border-neutral-content;
+  }
+
+  .children-borader {
+    @apply border-b-2 border-r-2 border-base-content/20;
+  }
+  .children-borader > * {
+    @apply border-l-2 border-t-2 border-base-content/20;
+  }
+}
+
+/* perfect scrollbar styles */
+.ps__thumb-x,
+.ps__thumb-y,
+.ps__rail-x,
+.ps__rail-y {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  border-radius: var(--rounded-btn);
+  /* z-index: 999; */
+  @apply bg-primary;
+}
+
+.ps__thumb-x {
+  height: 7px;
+}
+.ps__thumb-x,
+.ps__rail-x {
+  bottom: 0;
+}
+/* .ps__rail-y {
+  margin: 5px 0;
+}
+
+.ps__rail-x {
+  margin: 0 5px;
+} */
+
+.ps__thumb-y {
+  width: 7px;
+}
+.ps__rail-y {
+  margin: 0.3em 0;
+}
+.ps__thumb-y,
+.ps__rail-y {
+  right: 0;
+}
+.ps__rail-y:hover > .ps__thumb-y,
+.ps__rail-y:focus > .ps__thumb-y,
+.ps__rail-y.ps--clicking .ps__thumb-y {
+  @apply bg-primary;
+  width: 7px;
+}
+
+.ps__rail-x:hover > .ps__thumb-x,
+.ps__rail-x:focus > .ps__thumb-x,
+.ps__rail-x.ps--clicking .ps__thumb-x {
+  @apply bg-primary;
+  height: 7px;
+}
+
+.ps__rail-x,
+.ps__rail-y {
+  @apply bg-base-300;
+}
+.ps__rail-x {
+  height: 7px;
+}
+.ps__rail-y {
+  width: 7px;
+}
+
+.ps--active-x > .ps__rail-x,
+.ps--active-y > .ps__rail-y {
+  @apply bg-base-300;
+}
+
+.ps .ps__rail-x:hover,
+.ps .ps__rail-y:hover,
+.ps .ps__rail-x:focus,
+.ps .ps__rail-y:focus,
+.ps .ps__rail-x.ps--clicking,
+.ps .ps__rail-y.ps--clicking {
+  @apply bg-base-300;
+}
+
+.ps__rail-x,
+.ps__rail-y {
+  opacity: 1; /* default 0 */
+}
+
+.ps:hover > .ps__rail-x,
+.ps:hover > .ps__rail-y,
+.ps--focus > .ps__rail-x,
+.ps--focus > .ps__rail-y,
+.ps--scrolling-x > .ps__rail-x,
+.ps--scrolling-y > .ps__rail-y {
+  opacity: 1; /* default 0.6 */
+}
+
+.ps .ps__rail-x:hover,
+.ps .ps__rail-y:hover,
+.ps .ps__rail-x:focus,
+.ps .ps__rail-y:focus,
+.ps .ps__rail-x.ps--clicking,
+.ps .ps__rail-y.ps--clicking {
+  opacity: 1; /* default 0.9 */
+}

@@ -1,0 +1,10 @@
+{
+  "name": "twitch analiytics",
+  "short_name": "ta",
+  "start_url": "",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fff",
+  "theme_color": "#0aa574",
+  "icons": []
+}
