@@ -4,7 +4,6 @@ import { useLiveQuery } from "dexie-react-hooks";
 
 import { db, DbUser } from "@resource/db";
 import { useTwitchFollowersGetById } from "@resource/twitchWithDb";
-import { useEventSubContext } from "@contexts/twitch/eventSubContext";
 import { useUserContext } from "@contexts/twitch/userContext";
 import { dayjs } from "@libs/dayjs";
 import { fetchChannelFollowers } from "@libs/twitch";

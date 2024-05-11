@@ -41,12 +41,6 @@ export const EventSubContext = (props: EventSubContextProps) => {
   }, []);
   const loginPage = useLogin();
 
-  const { Provider } = context;
-  const [userData, setUserData] = useState<{
-    id: string;
-    channelName: string;
-  } | null>(null);
-
   const main = useCallback(async () => {
     const isLogin = await Twitch.isLoginned();
     if (!isLogin) {
@@ -59,16 +53,13 @@ export const EventSubContext = (props: EventSubContextProps) => {
       loginPage();
       return () => {};
     }
-    setUserData({
-      id: userData.id,
-      channelName: userData.login,
-    });
     const worker = createSharedWorker();
     worker.port.start();
     return () => {
       worker.port.close();
     };
   }, []);
+
   useEffect(() => {
     const destract = main();
     return () => {
@@ -78,28 +69,10 @@ export const EventSubContext = (props: EventSubContextProps) => {
     };
   }, []);
 
-  const stream = useFetchStream();
-  const chatterList = useFetchTwitcChatUsersList();
-  useInterval(
-    () => {
-      if (userData?.id == null) return;
-      chatterList.update({
-        userId: userData.id,
-        broadcasterId: userData.id,
-      });
-      stream.update(userData.id);
-    },
-    {
-      interval: 10000,
-      deps: [userData],
-    },
-  );
-  const followers = useTwitchFollowersGetById(userData?.id);
   const isLogin = useAsyncMemo(async () => {
     return await Twitch.isLoginned();
   }, []);
-  // ローディングページの設計を考える
-  if (Twitch.hasLoginToken() || !isLogin || userData == null || followers == null)
-    return <>{props.children}</>; // loading
-  return <Provider value={{}}>{props.children}</Provider>;
+
+  if (Twitch.hasLoginToken() || !isLogin) return <>{props.children}</>; // loading
+  return <context.Provider value={{}}>{props.children}</context.Provider>;
 };

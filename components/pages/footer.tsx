@@ -7,6 +7,7 @@ import clsx from "clsx";
 import { useLiveQuery } from "dexie-react-hooks";
 
 import { db } from "@resource/db";
+import { isLoginned } from "@libs/twitch";
 
 import { Clock, MiniClock } from "@components/commons/clock";
 import { DrawerOpener } from "@components/dasyui/Drawer";
@@ -23,9 +24,9 @@ const FOOTER_CONTENT = [
   { icon: ICONS.GEAR, text: "設定", path: "/setting" },
 ];
 export const Footer = () => {
+  const isLogin = useLiveQuery(() => isLoginned(), []);
   const live = useLiveQuery(() => db.getLive(), []);
-  if (live == null) return;
-
+  if (!isLogin) return;
   return (
     <footer className="footer items-center bg-primary flex text-primary-content sticky bottom-0 h-fit mt-auto py-3 px-4">
       <div className="flex gap-4 items-center grow">
