@@ -68,9 +68,7 @@ export type TableProps<Type extends object> = (
 
 const Cel = (props: { children: ReactNode }) => <td>{props.children}</td>;
 
-export const TableSkeleton = (props: {
-  bordered?: boolean;
-}) => {
+export const TableSkeleton = (props: { bordered?: boolean }) => {
   const ps = usePerfectScrollbar([props]);
   return (
     <div

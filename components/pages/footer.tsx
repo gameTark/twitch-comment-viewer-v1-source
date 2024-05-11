@@ -1,4 +1,5 @@
-"use client"
+"use client";
+
 import { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -66,7 +67,9 @@ const FooterContent = (props: {
         "flex flex-col items-center cursor-pointer h-full justify-between w-16 whitespace-nowrap",
         activate,
       )}
-      href={props.path}
+      href={{
+        pathname: props.path,
+      }}
       as={props.path}>
       <span>{props.icon}</span>
       <p className="text-xs font-black ">{props.text}</p>

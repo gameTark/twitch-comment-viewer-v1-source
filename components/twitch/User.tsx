@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { db, DbUser } from "@resource/db";
 import { useTwitchFollowersGetById } from "@resource/twitchWithDb";
 import { useEventSubContext } from "@contexts/twitch/eventSubContext";
-import { useUserGetById } from "@contexts/twitch/userContext";
+import { useUserContext } from "@contexts/twitch/userContext";
 import { dayjs } from "@libs/dayjs";
 import { fetchChannelFollowers } from "@libs/twitch";
 import { useAsyncMemo } from "@libs/uses";
@@ -44,9 +44,10 @@ export const useUserInfoModal = (userId?: DbUser["id"]) => {
 
 export const UserInformation = (props: { userId: DbUser["id"] }) => {
   const ctx = useEventSubContext();
-  const user = useUserGetById(props.userId, {
-    immediately: true,
-  });
+  const userContext = useUserContext();
+  const user = useAsyncMemo(async () => {
+    return await userContext.fetchById(props.userId);
+  }, [props.userId]);
   const followers = useTwitchFollowersGetById(ctx?.me.id);
 
   const followed = useMemo(() => {

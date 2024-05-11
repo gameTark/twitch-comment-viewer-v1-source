@@ -2,9 +2,10 @@ import { useMemo } from "react";
 
 import { useTwitchFollowersGetById } from "@resource/twitchWithDb";
 import { useEventSubContext } from "@contexts/twitch/eventSubContext";
-import { useGetUserMap, useUserContextState } from "@contexts/twitch/userContext";
+import { useUserContext } from "@contexts/twitch/userContext";
 import { dayjs } from "@libs/dayjs";
 import { filter } from "@libs/types";
+import { useAsyncMemo } from "@libs/uses";
 
 import { Stat } from "./dasyui/Stat";
 import { Table, TableSkeleton } from "./dasyui/Table";
@@ -13,26 +14,26 @@ import { useUserInfoModal } from "./twitch/User";
 
 const TypeTable = () => {
   const ctx = useEventSubContext();
-  const state = useUserContextState();
   const followers = useTwitchFollowersGetById(ctx?.me.id);
-  const userMap = useGetUserMap(followers?.map((val) => val.userId) || []);
+  const userContext = useUserContext();
   const modal = useUserInfoModal();
 
-  const userWithFollower = useMemo(() => {
-    if (followers == null || userMap == null) return null;
-    return followers
-      .map((val) => {
-        const user = userMap.get(val.userId);
-        if (user == null) return;
-        return {
-          ...user,
-          ...val,
-        };
-      })
-      .filter(filter.notNull);
-  }, [followers, userMap, state]);
+  const userWithFollower = useAsyncMemo(async () => {
+    if (followers == null) return null;
+    return Promise.all(
+      followers
+        .map(async (val) => {
+          const user = await userContext.fetchById(val.userId);
+          return {
+            ...user,
+            ...val,
+          };
+        })
+        .filter(filter.notNull),
+    );
+  }, [followers]);
 
-  if (userWithFollower == null || userWithFollower.length === 0) return <TableSkeleton />
+  if (userWithFollower == null) return <TableSkeleton />;
   return (
     <Table
       type="object"

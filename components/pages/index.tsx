@@ -3,10 +3,10 @@
 import { useEventSubContext } from "@contexts/twitch/eventSubContext";
 
 import { ChatUsers } from "@components/chatUsers";
+import { TableSkeleton } from "@components/dasyui/Table";
 import { FollowerInfo } from "@components/followers";
 import { LiveWatchUsers } from "@components/liveWatchUsers";
 import { ChatList } from "@components/twitch/Chats";
-import { TableSkeleton } from "@components/dasyui/Table";
 
 export const BroadcastContent = () => {
   const ctx = useEventSubContext();

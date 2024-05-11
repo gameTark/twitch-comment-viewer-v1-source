@@ -13,10 +13,10 @@ import {
 import clsx from "clsx";
 
 import { DbGame } from "@resource/db";
-import { useGameGetById } from "@contexts/twitch/gameContext";
+import { useGameContext } from "@contexts/twitch/gameContext";
 import { parser } from "@libs/parser";
 import { fetchSearchCategories } from "@libs/twitch";
-import { useDebounce, useInput } from "@libs/uses";
+import { useAsyncMemo, useDebounce, useInput } from "@libs/uses";
 
 import { useModalContext } from "@components/dasyui/Modal";
 import { ICONS } from "@components/icons";
@@ -33,7 +33,11 @@ interface Card {
   actions?: ReactNode;
 }
 export const GameViewer = (props: Item | Card) => {
-  const game = useGameGetById(props.id);
+  const gameContext = useGameContext();
+  const game = useAsyncMemo(async () => {
+    if (props.id == null) return;
+    return await gameContext.fetchById(props.id);
+  }, [props]);
   const twitchImage = useMemo(() => {
     if (game == null) return;
     return parser.twitchImage.parseImage(game.box_art_url)({

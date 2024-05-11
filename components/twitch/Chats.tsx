@@ -2,12 +2,13 @@ import { ReactNode, useMemo } from "react";
 import * as escaper from "html-escaper";
 
 import { DbAction, DbUser } from "@resource/db";
-import { useUserGetById } from "@contexts/twitch/userContext";
+import { useUserContext } from "@contexts/twitch/userContext";
 import { dayjs } from "@libs/dayjs";
 import { ChatFragment } from "@libs/notification/channelChatMessage";
 import { urlLinkTagReplacement } from "@libs/regex";
 import { getEmoteImage, twitchLinks } from "@libs/twitch";
 import { filter } from "@libs/types";
+import { useAsyncMemo } from "@libs/uses";
 
 import { ChatBubble, ChatSkeleton } from "@components/dasyui/ChatBubble";
 import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
@@ -100,7 +101,10 @@ const ParseFragment = (props: { fragments: ChatFragment[] }) => {
 };
 
 const Reward = (props: Comment) => {
-  const user = useUserGetById(props.userId);
+  const userContext = useUserContext();
+  const user = useAsyncMemo(async () => {
+    return userContext.fetchById(props.userId);
+  }, [props.userId]);
   const userName = useMemo(() => user?.displayName || user?.login, [user]);
   const openModal = useUserInfoModal(props.userId);
 
@@ -124,7 +128,10 @@ const Reward = (props: Comment) => {
 };
 
 const Bubble = (props: Comment) => {
-  const user = useUserGetById(props.userId);
+  const userContext = useUserContext();
+  const user = useAsyncMemo(async () => {
+    return userContext.fetchById(props.userId);
+  }, [props.userId]);
   const userName = useMemo(() => user?.displayName || user?.login, [user]);
   const openModal = useUserInfoModal(props.userId);
 
