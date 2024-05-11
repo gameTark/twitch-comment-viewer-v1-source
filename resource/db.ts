@@ -15,67 +15,14 @@ const DB_VERSION = {
   "2024/05/09": 24, // game
   "2024/05/10": 26, // game
   "2024/05/10.1": 28,
+  "2024/05/11": 29, // パラメーターをスキーマ化
 };
-
-// TODO: 永続化を行う https://gist.github.com/loilo/ed43739361ec718129a15ae5d531095b
 
 interface BaseSchema {
   createdAt?: Date;
   updateAt?: Date;
   deletedAt?: Date;
 }
-
-// followers
-/**
- * broadcasts
- * 開始時間と終了時間が取れない可能性がある（どうしたいい？）
- * -> videoAPIとかで取れるかも？
- * -> リアタイでとる必要ある？ なさそう
- * 最初に取るメソッド等を探すと良さそう。
- * ビデオ消した場合とか考え辛いかも
- *
- * 初回に情報取得した後
- * 以後ソケットで更新 https://dev.twitch.tv/docs/api/reference/#get-channel-information
- * 定期的にポーリング（１０分おきぐらいで良さそう） https://dev.twitch.tv/docs/api/reference/#get-channel-followers
- *      -> データは残しておきたい
- * 定期的にポーリング　https://dev.twitch.tv/docs/api/reference/#get-chatters
- *      -> データは残しておきたい
- *
- * ユーザーチャットカラーを取得できるみたい。https://dev.twitch.tv/docs/api/reference/#get-user-chat-color
- * ゲームラベルの取得 https://dev.twitch.tv/docs/api/reference/#get-content-classification-labels
- *      DBに保存しておきたい、変わらないから
- *      保存して検索
- */
-
-/**
-
-主キーの構文
-++キーパス	自動インクリメント主キー	主キーが自動的にインクリメントされることを意味します。主キーは常に一意である必要があります。
-++	非表示の自動インクリメントされた主キー	主キーは自動インクリメントされますが、オブジェクトには表示されないことを意味します。
-キーパス	主キーを自動インクリメントしない	主キーはどのようなタイプでもよく、自分で指定する必要があることを意味します
-（空白）	隠された主キー	最初のエントリを空白のままにすると、主キーは非表示になり、自動インクリメントされません。
-
-インデックスの構文
-キーパス		keyPath がインデックス化されていることを意味します
-&キーパス	個性的	keyPath にはインデックスが付けられており、キーは一意である必要があることを意味します
-*キーパス	多値	キーが配列の場合、各配列値がオブジェクトのキーとしてみなされることを意味します。
-[キーパス1+キーパス2]	コンパウンド	keyPath1 と keyPath2 の複合インデックスの定義
-
-example
-db.version(1).stores({
-    friends: '++id,name,shoeSize', // Primary Key is auto-incremented (++id)
-    pets: 'id, name, kind',        // Primary Key is not auto-incremented (id)
-    cars: '++, name',              // Primary Key auto-incremented but not inbound
-    enemies: ',name,*weaknesses',  // Primary key is neither inbound nor auto-incr
-                                   // 'weaknesses' contains an array of keys (*)
-    users: 'meta.ssn, addr.city',  // Dotted keypath refers to nested property 
-    people: '[name+ssn], &ssn'     // Compound primary key. Unique index ssn
-});
-
- */
-
-// https://dexie.org/docs/Version/Version.stores()
-// TODO: DbCommentをDbActionへ変更する
 export class MySubClassedDexie extends Dexie {
   users!: Table<DbUser>;
   games!: Table<DbGame>;
@@ -87,10 +34,11 @@ export class MySubClassedDexie extends Dexie {
   listenerHistories!: Table<DbListenerHistories>;
 
   settings!: Table<Setting, Setting["id"]>;
+  parameters!: Table<DbParametes, DbParametes["type"]>;
 
   constructor() {
     super("twitch-comments");
-    this.version(DB_VERSION["2024/05/10.1"]).stores({
+    this.version(DB_VERSION["2024/05/11"]).stores({
       users: "id,*userId,displayName,type,broadcasterType",
       actions: "++autoincrementId,id,*channel,messageType,*userId,*timestamp,[channel+timestamp]",
       followers: "++id,channelId,userId,[channelId+userId],createdAt,[channelId+createdAt]",
@@ -98,6 +46,7 @@ export class MySubClassedDexie extends Dexie {
       listenerHistories: "++id,channelId,userId,[channelId+timestamp]",
       games: "id,igdb_id,name",
       broadcastTemplates: "++id,channelId,gameId,*tags,favorite",
+      parameters: "type",
       settings: "id",
     });
   }
@@ -164,7 +113,22 @@ export const useDbPagination = <Type>(
   };
 };
 
-// TODO: 1時間おきに更新させたい
+interface AbstractParameter<Type, Value> {
+  type: Type,
+  value: Value;
+}
+export type DbParametes = 
+  | AbstractParameter<"me", DbUser['id']> 
+  | AbstractParameter<"live", {
+    isLive: boolean;
+    viewCount: number;
+    startedAt: Date;
+  }>
+  | AbstractParameter<"chatters", {
+    users: DbUser['id'][]
+    total: number;
+  }>;
+
 export interface DbListenerHistories {
   id?: number;
   channelId: DbUser["id"];
@@ -177,7 +141,7 @@ export interface DbChannelHistories extends BaseSchema {
   channelId: DbUser["id"];
   type: "update" | "online" | "offline";
   broadcastTitle: string;
-  categoryId: string; // DbGameをそのうち作成する。
+  categoryId: string;
   categoryName: string;
   language: string;
   timestamp: Date;
@@ -269,9 +233,6 @@ export interface DbFollowers extends BaseSchema {
 }
 
 export const db = new MySubClassedDexie();
-// TODO: migraton https://dexie.org/docs/Tutorial/Migrating-existing-DB-to-Dexie
-
-// https://dexie.org/docs/Version/Version.upgrade()
 export const databaseMigration = async () => {
   console.log("migration");
   db.version(DB_VERSION["2024/05/10.1"]).upgrade((trans) => {
