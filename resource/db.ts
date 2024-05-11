@@ -114,20 +114,26 @@ export const useDbPagination = <Type>(
 };
 
 interface AbstractParameter<Type, Value> {
-  type: Type,
+  type: Type;
   value: Value;
 }
-export type DbParametes = 
-  | AbstractParameter<"me", DbUser['id']> 
-  | AbstractParameter<"live", {
-    isLive: boolean;
-    viewCount: number;
-    startedAt: Date;
-  }>
-  | AbstractParameter<"chatters", {
-    users: DbUser['id'][]
-    total: number;
-  }>;
+export type DbParametes =
+  | AbstractParameter<"me", DbUser["id"]>
+  | AbstractParameter<
+      "live",
+      {
+        isLive: boolean;
+        viewCount: number;
+        startedAt: Date;
+      }
+    >
+  | AbstractParameter<
+      "chatters",
+      {
+        users: DbUser["id"][];
+        total: number;
+      }
+    >;
 
 export interface DbListenerHistories {
   id?: number;
