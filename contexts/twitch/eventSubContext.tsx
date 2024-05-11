@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { db } from "@resource/db";
-import { hasLoginToken, initialTwitchToken, isLoginned } from "@libs/twitch";
+import { fetchByMe, hasLoginToken, initialTwitchToken, isLoginned } from "@libs/twitch";
 import { useAsyncMemo, useLogin } from "@libs/uses";
 import { createSharedWorker } from "@libs/workers";
 
@@ -17,15 +17,7 @@ const isProd = process.env.NODE_ENV == "production";
 export const EventSubContext = (props: EventSubContextProps) => {
   useTheme();
   const loginPage = useLogin();
-
   const [initialized, setInitialized] = useState(false);
-  useEffect(() => {
-    initialTwitchToken({
-      onSuccess: () => {
-        location.href = isProd ? "/twitch-comment-viewer-v1-frontend" : "/";
-      },
-    });
-  }, []);
 
   const main = useCallback(async () => {
     const isLogin = await isLoginned();
@@ -33,28 +25,43 @@ export const EventSubContext = (props: EventSubContextProps) => {
       loginPage();
       return () => {};
     }
-    const userData = await db.getMe();
-    if (userData == null) {
+    const me = await fetchByMe();
+    if (me == null) {
       loginPage();
       return () => {};
     }
+    const userData = me.data[0];
+    const result = {
+      id: userData.id,
+      login: userData.login,
+    };
+    await db.parameters.put({
+      type: "me",
+      value: result,
+    });
 
     const worker = createSharedWorker();
     worker.port.start();
-    setInitialized(true);
     return () => {
       worker.port.close();
     };
   }, []);
 
   useEffect(() => {
-    if (hasLoginToken()) return;
-    const destract = main();
-    return () => {
-      destract.then((destoy) => {
-        destoy();
+    if (hasLoginToken()) {
+      initialTwitchToken({
+        onSuccess: () => {
+          location.href = isProd ? "/twitch-comment-viewer-v1-frontend" : "/";
+        },
       });
-    };
+    } else {
+      const destract = main();
+      return () => {
+        destract.then((destoy) => {
+          destoy();
+        });
+      };
+    }
   }, []);
 
   const isLogin = useAsyncMemo(async () => {
@@ -62,6 +69,5 @@ export const EventSubContext = (props: EventSubContextProps) => {
   }, []);
 
   if (hasLoginToken() || !isLogin) return <>{props.children}</>; // loading
-  if (!initialized) return <>{props.children}</>;
   return <>{props.children}</>;
 };
