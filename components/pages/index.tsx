@@ -1,17 +1,11 @@
 "use client";
 
-import { useEventSubContext } from "@contexts/twitch/eventSubContext";
-
 import { ChatUsers } from "@components/chatUsers";
-import { TableSkeleton } from "@components/dasyui/Table";
 import { FollowerInfo } from "@components/followers";
 import { LiveWatchUsers } from "@components/liveWatchUsers";
 import { ChatList } from "@components/twitch/Chats";
 
 export const BroadcastContent = () => {
-  const ctx = useEventSubContext();
-
-  if (ctx == null) return;
   return (
     <div className="flex flex-col gap-2 h-full py-2">
       <div className="h-fit px-2">

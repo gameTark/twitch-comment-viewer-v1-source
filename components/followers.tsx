@@ -1,9 +1,7 @@
-import { useMemo } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 
 import { db } from "@resource/db";
 import { useTwitchFollowersGetById } from "@resource/twitchWithDb";
-import { useEventSubContext } from "@contexts/twitch/eventSubContext";
 import { useUserContext } from "@contexts/twitch/userContext";
 import { dayjs } from "@libs/dayjs";
 import { filter } from "@libs/types";

@@ -1,16 +1,15 @@
 "use client";
 
-import React, { ChangeEventHandler, useCallback, useEffect, useRef, useState } from "react";
+import React, { ChangeEventHandler, useCallback, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 
-import { db, DbBroadcastTemplate, DbGame, DbUser } from "@resource/db";
+import { db, DbBroadcastTemplate } from "@resource/db";
 import {
   deleteBroadcastTemplate,
   getBroadcastTemplates,
   putBroadcastTemplate,
   updateBroadcastTemplate,
 } from "@resource/twitchWithDb";
-import { useEventSubContext } from "@contexts/twitch/eventSubContext";
 import { BROADCAST_LANGUAGE, CLASSIFICATION_LABELS, fetchChannelInfoPatch } from "@libs/twitch";
 import { filter } from "@libs/types";
 

@@ -1,6 +1,5 @@
 import { useLiveQuery } from "dexie-react-hooks";
 
-import { useEventSubContext } from "../contexts/twitch/eventSubContext";
 import { db, DbComment } from "../resource/db";
 import { getUsers } from "../resource/twitchWithDb";
 
