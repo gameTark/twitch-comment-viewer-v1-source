@@ -22,7 +22,7 @@ const TypeListItem = (props: { userData: DbUser }) => {
     if (!isSuccess) return;
     update({ isSpam: true });
   }, [props.userData]);
-  const openModal = useUserInfoModal();
+  const openModal = useUserInfoModal(props.userData.id);
   const followers = useTwitchFollowersGetById(ctx?.me.id);
 
   if (ctx == null || followers == null) return;

@@ -113,7 +113,7 @@ const Reward = (props: Comment) => {
           alt={user.login}
           className="rounded-full w-10 border-2 overflow-hidden cursor-pointer"
           tabIndex={0}
-          onClick={() => openModal}
+          onClick={() => openModal()}
         />
         <div className="flex font-bold">
           {userName}が{props.fragment}と交換しました。
@@ -140,7 +140,7 @@ const Bubble = (props: Comment) => {
         header={userName}
         footer={dayjs(props.timestamp).format("HH:MM:SS")}
         message={props.fragment}
-        onClickAvater={openModal}
+        onClickAvater={() => openModal()}
       />
     </li>
   );

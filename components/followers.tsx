@@ -44,7 +44,7 @@ const TypeTable = () => {
               <img
                 src={val.profileImageUrl}
                 onClick={() => {
-                  modal(val.userId)
+                  modal(val.userId);
                 }}
                 tabIndex={0}
                 alt={val.login}
