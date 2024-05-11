@@ -48,6 +48,7 @@ export const EventSubContext = (props: EventSubContextProps) => {
   }, []);
 
   useEffect(() => {
+    if (hasLoginToken()) return;
     const destract = main();
     return () => {
       destract.then((destoy) => {
