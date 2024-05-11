@@ -51,26 +51,24 @@ export interface ChatUsersProps {
 export const ChatUsers = (props: ChatUsersProps) => {
   const me = useLiveQuery(() => db.getMe(), []);
   const chatters = useLiveQuery(() => db.getChatters(), []);
-
   const userContext = useUserContext();
-  const users = useAsyncMemo(async () => {
+  const users = useLiveQuery(async () => {
     if (me == null) return;
     if (chatters == null) return;
     const result = await Promise.all(chatters.users.map((val) => userContext.fetchById(val)));
     return result.filter(filter.notNull);
   }, [me?.id, chatters]);
-
+  
   const ps = usePerfectScrollbar([chatters]);
-  if (users == null) return;
 
   switch (props.type) {
     case "number":
-      return <div>{users.length}</div>;
+      return <div>{users?.length}</div>;
     case "stat":
       return (
         <Stat
           title={<div className="flex gap-2">チャットユーザー数</div>}
-          value={`${users.length}人`}
+          value={`${users?.length}人`}
           icon={ICONS.COMMENT}
         />
       );
@@ -79,10 +77,8 @@ export const ChatUsers = (props: ChatUsersProps) => {
         <div className={clsx("px-4 py-2 perfect-scrollbar")} ref={ps.ref}>
           <ul>
             {users
-              .filter((val) => val.id !== me?.id)
-              .map((val) => (
-                <TypeListItem key={val.id} userData={val} />
-              ))}
+              ?.filter((val) => val.id !== me?.id)
+              .map((val) => <TypeListItem key={val.id} userData={val} />)}
           </ul>
         </div>
       );

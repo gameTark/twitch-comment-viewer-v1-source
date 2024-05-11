@@ -51,7 +51,7 @@ export const useGetCommentsByUserId = (
 export const useGetComments = (options?: { limit?: number; before?: Date; after?: Date }) => {
   const me = useLiveQuery(() => db.getMe(), []);
   const channel = me?.login;
-  const limit = options?.limit || 100;
+  const limit = options?.limit || 300;
 
   // TODO: 日付ライブラリに置き換え
   const prevday = options?.before || new Date();

@@ -212,7 +212,7 @@ export function BroadcastInformation() {
         });
       },
     });
-  }, []);
+  }, [me]);
 
   const allItems = useLiveQuery(async () => {
     return (await getBroadcastTemplates()).filter(filter.notNull);
