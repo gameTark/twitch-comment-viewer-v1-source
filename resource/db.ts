@@ -15,7 +15,7 @@ const DB_VERSION = {
   "2024/05/09": 24, // game
   "2024/05/10": 26, // game
   "2024/05/10.1": 28,
-  "2024/05/11": 29, // パラメーターをスキーマ化
+  "2024/05/11": 30, // パラメーターをスキーマ化
 };
 
 interface BaseSchema {
@@ -36,6 +36,8 @@ export class MySubClassedDexie extends Dexie {
   settings!: Table<Setting, Setting["id"]>;
   parameters!: Table<DbParametes, DbParametes["type"]>;
 
+  spam!: Table<Spam, Spam["login"]>;
+
   constructor() {
     super("twitch-comments");
     this.version(DB_VERSION["2024/05/11"]).stores({
@@ -47,6 +49,7 @@ export class MySubClassedDexie extends Dexie {
       games: "id,igdb_id,name",
       broadcastTemplates: "++id,channelId,gameId,*tags,favorite",
       parameters: "type",
+      spam: "login",
       settings: "id",
     });
   }
@@ -178,6 +181,9 @@ export interface DbChannelHistories extends BaseSchema {
 export interface Setting {
   id: string;
   value: string;
+}
+export interface Spam {
+  login: string;
 }
 
 export type DbAction = DbComment | DbReward | DbAutomaticReward;

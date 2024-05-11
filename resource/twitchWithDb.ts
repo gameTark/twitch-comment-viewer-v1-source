@@ -3,16 +3,11 @@
 import { useCallback, useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 
-import { db, DbBroadcastTemplate, DbFollowers, DbGame, DbUser } from "@resource/db";
-import { dayjs } from "@libs/dayjs";
-import {
-  fetchChannelFollowers,
-  fetchGame,
-  fetchStreams,
-  fetchUsers,
-  getChatUsers,
-} from "@libs/twitch";
+import { db, DbBroadcastTemplate, DbGame, DbUser } from "@resource/db";
+import { useUserContext } from "@contexts/twitch/userContext";
+import { fetchGame, fetchStreams, fetchUsers, getChatUsers } from "@libs/twitch";
 import { filter } from "@libs/types";
+import { useAsyncMemo } from "@libs/uses";
 
 import { useGetComments } from "../watcher/useCommentWatcher";
 
@@ -166,6 +161,15 @@ export const useCommentCount = () => {
   return data.length;
 };
 
+export const useSpamCheck = (login?: string) => {
+  const isSpam = useAsyncMemo(async () => {
+    if (login == null) return;
+    const spam = await db.spam.get(login);
+    return spam != null;
+  }, [login]);
+  return isSpam;
+};
+
 const updateUser = async (id: string[]) => {
   if (id.length === 0) return [];
 
@@ -180,8 +184,9 @@ const updateUser = async (id: string[]) => {
   );
 
   const result = await Promise.all(
-    res.flat().map(async (targetUser) => {
-      const result = {
+    res.flat().map(async (targetUser): Promise<DbUser> => {
+      const spam = await db.spam.get(targetUser.login);
+      const result: DbUser = {
         id: targetUser.id,
         login: targetUser.login,
         displayName: targetUser.display_name,
@@ -192,6 +197,7 @@ const updateUser = async (id: string[]) => {
         offlineImageUrl: targetUser.offline_image_url,
         createdAt: new Date(),
         updateAt: new Date(),
+        isSpam: spam != null,
         rowData: JSON.stringify(targetUser),
       };
       return result;

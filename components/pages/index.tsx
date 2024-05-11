@@ -1,9 +1,9 @@
 "use client";
 
-import { ChatUsers } from "@components/chatUsers";
 import { FollowerInfo } from "@components/followers";
 import { LiveWatchUsers } from "@components/liveWatchUsers";
 import { ChatList } from "@components/twitch/Chats";
+import { ChatUsers } from "@components/twitch/Chatters";
 
 export const BroadcastContent = () => {
   return (

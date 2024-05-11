@@ -8,16 +8,15 @@ import { useUserContext } from "@contexts/twitch/userContext";
 import { filter } from "@libs/types";
 import { useAsyncMemo } from "@libs/uses";
 
+import { Stat } from "@components/dasyui/Stat";
+import { ICONS } from "@components/icons";
 import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
-import { Stat } from "./dasyui/Stat";
-import { ICONS } from "./icons";
-import { useUserInfoModal } from "./twitch/User";
+import { useUserInfoModal } from "./User";
 
 // https://daisyui.com/components/stat/
 const TypeListItem = (props: { userData: DbUser }) => {
   const update = useTiwtchUpdateUserById(props.userData.id);
   const me = useLiveQuery(() => db.getMe(), []);
-
   const handleSpam = useCallback(() => {
     const isSuccess = confirm("スパムとして認識させますか？");
     if (!isSuccess) return;
@@ -25,12 +24,11 @@ const TypeListItem = (props: { userData: DbUser }) => {
   }, [props.userData]);
   const openModal = useUserInfoModal(props.userData.id);
   const followers = useTwitchFollowersGetById(me?.id);
-
   if (followers == null) return;
   return (
     <li className="flex gap-2">
       <div className="whitespace-nowrap w-full">
-        <a className="link" tabIndex={0} onClick={() => openModal}>
+        <a className="link" tabIndex={0} onClick={() => openModal()}>
           {props.userData.displayName || props.userData.login}
         </a>
       </div>
@@ -71,16 +69,7 @@ export const ChatUsers = (props: ChatUsersProps) => {
     case "stat":
       return (
         <Stat
-          title={
-            <div className="flex gap-2">
-              チャットユーザー数{" "}
-              <span
-                className="tooltip tooltip-bottom tooltip-info"
-                data-tip="`反映までには多少ラグが発生します。">
-                {ICONS.INFORMATION}
-              </span>
-            </div>
-          }
+          title={<div className="flex gap-2">チャットユーザー数</div>}
           value={`${users.length}人`}
           icon={ICONS.COMMENT}
         />

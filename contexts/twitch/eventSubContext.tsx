@@ -1,13 +1,14 @@
 "use client";
 
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 
+import { db } from "@resource/db";
+import { hasLoginToken, initialTwitchToken, isLoginned } from "@libs/twitch";
 import { useAsyncMemo, useLogin } from "@libs/uses";
 import { createSharedWorker } from "@libs/workers";
 
 import { useTheme } from "@components/dasyui/Theme";
-import { hasLoginToken, initialTwitchToken, isLoginned } from "@libs/twitch";
-import { db } from "@resource/db";
+
 export interface EventSubContextProps {
   children: JSX.Element | JSX.Element[];
 }
@@ -17,6 +18,7 @@ export const EventSubContext = (props: EventSubContextProps) => {
   useTheme();
   const loginPage = useLogin();
 
+  const [initialized, setInitialized] = useState(false);
   useEffect(() => {
     initialTwitchToken({
       onSuccess: () => {
@@ -39,6 +41,7 @@ export const EventSubContext = (props: EventSubContextProps) => {
 
     const worker = createSharedWorker();
     worker.port.start();
+    setInitialized(true);
     return () => {
       worker.port.close();
     };
@@ -58,5 +61,6 @@ export const EventSubContext = (props: EventSubContextProps) => {
   }, []);
 
   if (hasLoginToken() || !isLogin) return <>{props.children}</>; // loading
+  if (!initialized) return <>{props.children}</>;
   return <>{props.children}</>;
 };

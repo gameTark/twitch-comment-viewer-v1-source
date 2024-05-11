@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import Link from "next/link";
 import clsx from "clsx";
 import { useLiveQuery } from "dexie-react-hooks";
 
@@ -7,6 +8,7 @@ import { useUserContext } from "@contexts/twitch/userContext";
 import { deleteTwitchToken, twitchLinks } from "@libs/twitch";
 import { useAsyncMemo } from "@libs/uses";
 
+import { ICONS } from "@components/icons";
 import ExternalIcon from "@components/icons/external";
 
 export const Me = () => {
@@ -24,7 +26,28 @@ export const Me = () => {
     location.reload();
   };
 
-  const links = useMemo(() => (me == null ? null : twitchLinks(me.login)), [me]);
+  const navigation = useMemo(() => {
+    if (me == null) return [];
+    const links = twitchLinks(me.login);
+    return [
+      {
+        value: "ボットアカウントの見極め方",
+        external: true,
+        href: "https://twitchinsights.net/bots",
+      },
+      {
+        value: "チャンネルへ",
+        external: true,
+        href: links.CHANNEL,
+      },
+      {
+        value: "チャンネルマネージャーへ",
+        external: true,
+        href: links.STREAM_MANAGER,
+      },
+    ];
+  }, [me]);
+
   return (
     <div className="dropdown dropdown-top" style={{ lineHeight: 0 }}>
       <div className="avatar" tabIndex={0} role="button">
@@ -35,26 +58,23 @@ export const Me = () => {
           {me?.profileImageUrl != null ? <img src={me.profileImageUrl} /> : null}
         </div>
       </div>
-      {links == null ? null : (
-        <ul
-          className="p-2 shadow menu dropdown-content z-[1] bg-base-100 text-base-content dasy-rounded w-52 border"
-          tabIndex={0}>
-          <li>
-            <a className="link flex gap-x-2" target="_blank" href={links.CHANNEL}>
-              チャンネルへ <ExternalIcon className="scale-90 origin-center" />
-            </a>
+      <ul
+        className="p-2 shadow menu dropdown-content z-[1] bg-base-100 text-base-content dasy-rounded w-64 border"
+        tabIndex={0}>
+        {navigation.map((val) => (
+          <li key={val.value}>
+            <Link
+              className="link flex justify-between items-center"
+              target={val.external ? "_blank" : undefined}
+              href={val.href}>
+              {val.value} {val.external ? ICONS.EXTERNAL : null}
+            </Link>
           </li>
-          <li>
-            <a className="link flex gap-x-2" target="_blank" href={links.STREAM_MANAGER}>
-              チャンネルマネージャーへ
-              <ExternalIcon className="scale-90 origin-center" />
-            </a>
-          </li>
-          <li onClick={logout}>
-            <a>ログアウト</a>
-          </li>
-        </ul>
-      )}
+        ))}
+        <li onClick={logout}>
+          <a>ログアウト</a>
+        </li>
+      </ul>
     </div>
   );
 };

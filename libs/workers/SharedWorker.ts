@@ -1,15 +1,21 @@
+import dayjs from "dayjs";
+
 import { db, DbFollowers } from "@resource/db";
-
-
 
 import { createType } from "../eventSubConstants";
 import { EventsubMessageMap } from "../eventSubInterface";
 import { SocketEventNotificationMap } from "../notification";
-import { createEventsub, fetchByMe, fetchChannelFollowers, fetchStreams, getChatUsers } from "../twitch";
+import {
+  createEventsub,
+  fetchByMe,
+  fetchChannelFollowers,
+  fetchStreams,
+  getChatUsers,
+} from "../twitch";
 import { EventListenerMap, filter, valueOf } from "../types";
 
-
 export default null; //TypeScript警告避け
+
 const INTERVAL_TIME = 10000;
 const getUserData = async () => {
   const dataMe = await db.getMe();
@@ -21,14 +27,52 @@ const getUserData = async () => {
       login: userData.login,
     };
     await db.parameters.put({
-      type: 'me',
-      value: result
-    })
+      type: "me",
+      value: result,
+    });
     return result;
   }
   return dataMe;
 };
+/* bots */
+const fetchBotList = async () => {
+  interface Bot {
+    bots: [string, number, number][];
+    _total: number;
+  }
+  try {
+    const res = await fetch("https://api.twitchinsights.net/v1/bots/all", {
+      method: "GET",
+    });
+    const value = await res.json();
+    return value as Bot;
+  } catch {
+    return {
+      bots: [],
+      _total: 0,
+    };
+  }
+};
+const DB_SPAM_SETTING = "SPAM_UPDATED_AT";
+const getSpamList = async () => {
+  const updateAt = await db.settings.get(DB_SPAM_SETTING);
+  if (updateAt?.value != null) {
+    // 今日より7日後より前の場合は更新しない
+    if (dayjs(updateAt.value).isSameOrBefore(dayjs(new Date()).add(7, "day"))) return;
+  }
 
+  const data = await fetchBotList();
+  db.settings.put({
+    id: DB_SPAM_SETTING,
+    value: new Date().toISOString(),
+  });
+  db.spam.bulkPut(data.bots.map((val) => ({ login: val[0] })));
+};
+
+getSpamList();
+setInterval(() => {
+  getSpamList();
+}, INTERVAL_TIME);
 /* streams */
 const getStreams = async () => {
   const userData = await getUserData();
@@ -38,25 +82,25 @@ const getStreams = async () => {
   const data = result.data[0];
   if (data == null) {
     db.parameters.put({
-      type: 'live',
+      type: "live",
       value: null,
-    })  
+    });
     return;
   }
   db.parameters.put({
-    type: 'live',
+    type: "live",
     value: {
       isLive: true,
       startedAt: new Date(data.started_at),
       viewCount: data.viewer_count,
-    }
-  })
-}
+    },
+  });
+};
 
 getStreams();
 setInterval(() => {
   getStreams();
-}, INTERVAL_TIME)
+}, INTERVAL_TIME);
 /* chatters */
 const getChatters = async () => {
   const userData = await getUserData();
@@ -65,18 +109,19 @@ const getChatters = async () => {
     broadcaster_id: userData.id,
     moderator_id: userData.id,
   });
+  users.data.sort((a, b) => Number(a.user_id) - Number(b.user_id));
   db.parameters.put({
     type: "chatters",
     value: {
-      users: users.data.map(val => val.user_id),
+      users: users.data.map((val) => val.user_id),
       total: users.total,
-    }
-  })
-}
+    },
+  });
+};
 getChatters();
 setInterval(() => {
   getChatters();
-}, INTERVAL_TIME)
+}, INTERVAL_TIME);
 
 /* follower */
 const getTodayFollowers = async (userId: string) => {
@@ -150,15 +195,15 @@ type NotificationSocketEvent = EventListenerMap<SocketEventNotificationMap, Sock
 
 const createAddListener =
   (socket: WebSocket): SocketEvent =>
-    (type, cb) => {
-      const item = (ev: MessageEvent<string>) => {
-        const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
-        if (type !== value.metadata.message_type) return;
-        cb(value as any, ev);
-      };
-      socket.addEventListener("message", item);
-      return item;
+  (type, cb) => {
+    const item = (ev: MessageEvent<string>) => {
+      const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
+      if (type !== value.metadata.message_type) return;
+      cb(value as any, ev);
     };
+    socket.addEventListener("message", item);
+    return item;
+  };
 
 const createRemoveListener = (socket: WebSocket) => (item: SocketCallback) => {
   socket.removeEventListener("message", item);
@@ -166,16 +211,16 @@ const createRemoveListener = (socket: WebSocket) => (item: SocketCallback) => {
 
 const createAddNotificationListener =
   (socket: WebSocket): NotificationSocketEvent =>
-    (t, cb) => {
-      const item = (ev: MessageEvent<string>) => {
-        const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
-        if (value.metadata.message_type !== "notification") return;
-        if (value.metadata.subscription_type !== t) return;
-        cb(value as any, ev);
-      };
-      socket.addEventListener("message", item);
-      return item;
+  (t, cb) => {
+    const item = (ev: MessageEvent<string>) => {
+      const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
+      if (value.metadata.message_type !== "notification") return;
+      if (value.metadata.subscription_type !== t) return;
+      cb(value as any, ev);
     };
+    socket.addEventListener("message", item);
+    return item;
+  };
 
 const createSocket = () => {
   let socketInstance: WebSocket | null = null;

@@ -1,9 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { useLiveQuery } from "dexie-react-hooks";
 
 import { db, DbUser } from "@resource/db";
-import { useTwitchFollowersGetById } from "@resource/twitchWithDb";
+import {
+  useSpamCheck,
+  useTiwtchUpdateUserById,
+  useTwitchFollowersGetById,
+} from "@resource/twitchWithDb";
 import { useUserContext } from "@contexts/twitch/userContext";
 import { dayjs } from "@libs/dayjs";
 import { fetchChannelFollowers } from "@libs/twitch";
@@ -50,6 +54,7 @@ export const UserInformation = (props: { userId: DbUser["id"] }) => {
   }, [props.userId]);
   const followers = useTwitchFollowersGetById(me?.id);
 
+  const update = useTiwtchUpdateUserById(props.userId);
   const followed = useMemo(() => {
     if (followers == null) return null;
     const followedAt = followers.find((val) => val.userId === props.userId)?.followedAt || null;
@@ -60,24 +65,31 @@ export const UserInformation = (props: { userId: DbUser["id"] }) => {
   const [bio, setBio] = useState<string>("");
   // component will mount
   useEffect(() => {
-    const user = db.users.where("id").equals(props.userId).first();
-    user.then((res) => {
-      if (res == null) return;
-      setBio(res.metaComment || "");
+    if (user == null) return;
+    setBio(user.metaComment || "");
+  }, [user]);
+
+  const updateUserInfo: ChangeEventHandler<HTMLTextAreaElement> = useCallback((e) => {
+    setBio(e.currentTarget.value);
+    update({
+      metaComment: e.currentTarget.value,
     });
-  }, [props.userId]);
+  }, []);
+  const isSpam = useSpamCheck(user?.login);
   const badge = useMemo(() => {
     return (
       <ul className="flex gap-2">
         <li>
-          <Badge name="スパム" type="badge-error" disabled={!user?.isSpam} />
-        </li>
-        <li>
           <Badge name="フォロワー" type="badge-info" disabled={followed == null} />
         </li>
+        {isSpam ? (
+          <li>
+            <Badge name="悪質なボット" type="badge-error" />
+          </li>
+        ) : null}
       </ul>
     );
-  }, [followed, me, user]);
+  }, [followed, me, user, isSpam]);
 
   const followerCount = useAsyncMemo(async () => {
     if (user == null) return;
@@ -139,12 +151,8 @@ export const UserInformation = (props: { userId: DbUser["id"] }) => {
           rows={6}
           cols={50}
           value={bio}
-          onChange={(e) => {
-            setBio(e.currentTarget.value);
-            db.users.update(props.userId, {
-              metaComment: e.currentTarget.value,
-            });
-          }}></textarea>
+          onChange={updateUserInfo}
+        />
       </div>
       <div className="flex flex-col gap-2">
         <p className="font-black">コメント一覧</p>
