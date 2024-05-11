@@ -88,57 +88,15 @@ export const useGetUserMapById = () => {
   }, []);
   return data;
 };
-export const useTwitchFollowers = () => {
-  const updateFollowers = useCallback(async (broadcasterId: string) => {
-    const prevData = await getTodayFollowers(broadcasterId);
-    const apiData = await fetchChannelFollowers({
-      broadcaster_id: broadcasterId,
-      first: "100",
-    }).then((result) =>
-      result.data.map(
-        (val): DbFollowers => ({
-          channelId: broadcasterId,
-          userId: val.user_id,
-          followedAt: new Date(val.followed_at),
-          updateAt: new Date(),
-          createdAt: new Date(),
-        }),
-      ),
-    );
 
-    const insertData = apiData
-      // DBに存在しないが、APIに存在するデータは新規フォロワーとする。
-      .filter((val) => {
-        const item = prevData.find(
-          (fVal) => fVal.userId === val.userId && fVal.channelId === val.channelId,
-        );
-        return item == null;
-      });
-
-    const deleteData = prevData
-      // DBに存在していて、APIに存在しないフォロワーはdelete扱い
-      .filter((val) => {
-        const item = apiData.find(
-          (fVal) => fVal.userId === val.userId && fVal.channelId === val.channelId,
-        );
-        return item == null;
-      })
-      .map((val) => ({
-        ...val,
-        deletedAt: new Date(),
-      }));
-    if (insertData.length === 0 && deleteData.length === 0) return;
-    await Promise.all([db.followers.bulkAdd(insertData), db.followers.bulkPut(deleteData)]);
-  }, []);
-
-  return {
-    update: updateFollowers,
-  };
-};
 export const useTwitchFollowersGetById = (channelId?: string) => {
   return useLiveQuery(async () => {
-    if (channelId == null) return;
-    return await getTodayFollowers(channelId);
+    if (channelId == null) return [];
+    const exists = await db.followers.where("channelId").equals(channelId).sortBy("followedAt");
+    return exists
+      .reverse()
+      .filter(filter.notDeleted)
+      .filter((val) => val.deletedAt == null);
   }, [channelId]);
 };
 

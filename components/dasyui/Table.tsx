@@ -41,6 +41,7 @@ interface SimpleTableProps {
 interface KeyMap<T, K extends keyof T> {
   keyName: K;
   displayName?: string;
+  parse?: (value: T) => ReactNode;
   // TODO: parserをここに定義したいが、型が抽出できない。
 }
 export interface ObjectTableProps<Target extends object> {
@@ -62,6 +63,7 @@ export type TableProps<Type extends object> = (
     } & CSVTableProps)
 ) & {
   bordered?: boolean;
+  consecutive?: boolean;
 };
 
 const Cel = (props: { children: ReactNode }) => <td>{props.children}</td>;
@@ -137,6 +139,7 @@ export const Table = <T extends object>(props: TableProps<T>) => {
       const records = props.target.map((record) => {
         return props.keyMap.map((val) => {
           const cel = record[val.keyName];
+          if (val.parse != null) return val.parse(record);
           if (cel == null) return null;
           return celParser(cel);
         });
@@ -160,6 +163,7 @@ export const Table = <T extends object>(props: TableProps<T>) => {
       <table className="table table-pin-rows">
         <thead>
           <tr>
+            {props.consecutive ? <th>#</th> : null}
             {tableInfo.headers.map((val, index) => (
               <th key={index}>
                 <div className="flex justify-between items-center">{val}</div>
@@ -171,6 +175,7 @@ export const Table = <T extends object>(props: TableProps<T>) => {
           {tableInfo.records.map((record, index) => {
             return (
               <tr key={index}>
+                {props.consecutive ? <Cel>{index + 1}</Cel> : null}
                 {record.map((val, index) => (
                   <Cel key={index}>{val}</Cel>
                 ))}

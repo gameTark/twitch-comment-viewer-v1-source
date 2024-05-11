@@ -1,6 +1,8 @@
 import { DependencyList, useLayoutEffect, useRef } from "react";
 import PerfectScrollbar from "perfect-scrollbar";
 
+import { useInterval } from "./useInterval";
+
 export const usePerfectScrollbar = (
   deps: DependencyList,
   options?: ConstructorParameters<typeof PerfectScrollbar>[1],
@@ -13,9 +15,7 @@ export const usePerfectScrollbar = (
     const scroll = new PerfectScrollbar(ref.current, options);
     refScrollbar.current = scroll;
     scroll.update();
-    setTimeout(() => {
-      scroll.update();
-    }, 400);
+
     const resize = new ResizeObserver(() => {
       scroll.update();
     });
@@ -32,6 +32,15 @@ export const usePerfectScrollbar = (
     refScrollbar.current?.update();
   }, deps);
 
+  useInterval(
+    () => {
+      refScrollbar.current?.update();
+    },
+    {
+      interval: 300,
+      deps: [],
+    },
+  );
   return {
     ref,
     refScroll: refScrollbar,

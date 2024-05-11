@@ -28,7 +28,6 @@ const DialogContent = (props: UseDialogProps) => {
 
 export const useDialog = () => {
   const modal = useModalContext();
-
   const open = useCallback((props: UseDialogProps) => {
     const { onSuccess, onFail, ..._props } = props;
     const handleOpen = () => {

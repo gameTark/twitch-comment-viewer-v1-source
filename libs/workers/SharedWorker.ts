@@ -1,12 +1,75 @@
-import { db } from "@resource/db";
+import { db, DbFollowers } from "@resource/db";
 
 import { createType } from "../eventSubConstants";
 import { EventsubMessageMap } from "../eventSubInterface";
 import { SocketEventNotificationMap } from "../notification";
-import { createEventsub, fetchByMe } from "../twitch";
-import { EventListenerMap, valueOf } from "../types";
+import { createEventsub, fetchByMe, fetchChannelFollowers } from "../twitch";
+import { EventListenerMap, filter, valueOf } from "../types";
 
 export default null; //TypeScript警告避け
+const INTERVAL_TIME = 10000;
+const getUserData = async () => {
+  const me = await fetchByMe();
+  const userData = me.data[0];
+  return userData;
+};
+
+/* follower */
+const getTodayFollowers = async (userId: string) => {
+  const exists = await db.followers.where("channelId").equals(userId).sortBy("followedAt");
+  return exists
+    .reverse()
+    .filter(filter.notDeleted)
+    .filter((val) => val.deletedAt == null);
+};
+
+const updateFollowers = async () => {
+  const userData = await getUserData();
+  const prevData = await getTodayFollowers(userData.id);
+  const apiData = await fetchChannelFollowers({
+    broadcaster_id: userData.id,
+    first: "100",
+  }).then((result) =>
+    result.data.map(
+      (val): DbFollowers => ({
+        channelId: userData.id,
+        userId: val.user_id,
+        followedAt: new Date(val.followed_at),
+        updateAt: new Date(),
+        createdAt: new Date(),
+      }),
+    ),
+  );
+  const insertData = apiData
+    // DBに存在しないが、APIに存在するデータは新規フォロワーとする。
+    .filter((val) => {
+      const item = prevData.find(
+        (fVal) => fVal.userId === val.userId && fVal.channelId === val.channelId,
+      );
+      return item == null;
+    });
+
+  const deleteData = prevData
+    // DBに存在していて、APIに存在しないフォロワーはdelete扱い
+    .filter((val) => {
+      const item = apiData.find(
+        (fVal) => fVal.userId === val.userId && fVal.channelId === val.channelId,
+      );
+      return item == null;
+    })
+    .map((val) => ({
+      ...val,
+      deletedAt: new Date(),
+    }));
+  if (insertData.length === 0 && deleteData.length === 0) return;
+  await Promise.all([db.followers.bulkAdd(insertData), db.followers.bulkPut(deleteData)]);
+};
+
+setInterval(() => {
+  updateFollowers();
+}, INTERVAL_TIME);
+
+/* web socket */
 
 const ENDPOINT = "wss://eventsub.wss.twitch.tv/ws";
 const createWsEndpoint = (keepaliveTimeoutSeconds: number) => {
@@ -19,6 +82,7 @@ const createWsEndpoint = (keepaliveTimeoutSeconds: number) => {
 type SocketCallback = (ev: MessageEvent) => void;
 type SocketEvent = EventListenerMap<EventsubMessageMap, SocketCallback>;
 type NotificationSocketEvent = EventListenerMap<SocketEventNotificationMap, SocketCallback>;
+
 const createAddListener =
   (socket: WebSocket): SocketEvent =>
   (type, cb) => {
@@ -58,8 +122,7 @@ const createSocket = () => {
       const removeListener = createRemoveListener(socket);
       socketInstance = socket;
 
-      const me = await fetchByMe();
-      const userData = me.data[0];
+      const userData = await getUserData();
       const start = async () => {
         const id = await new Promise<string>((resolve) => {
           const fn = addListener("session_welcome", function evfn(ev) {

@@ -13,8 +13,8 @@ import { DrawerOpener } from "@components/dasyui/Drawer";
 import { FollowerInfo } from "@components/followers";
 import { ICONS } from "@components/icons";
 import { LiveWatchUsers } from "@components/liveWatchUsers";
-import { Me } from "@components/twitch/Me";
 import { ChatList } from "@components/twitch/Chats";
+import { Me } from "@components/twitch/Me";
 
 const FOOTER_CONTENT = [
   { icon: ICONS.BROADCAST, text: "ライブ", path: "/" },

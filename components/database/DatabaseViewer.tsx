@@ -15,8 +15,13 @@ function Viewer(props: { data: DexieTable<any, any> }) {
 
   const keys = useMemo(() => {
     if (targets.value == null) return [];
-    const result = new Set(targets.value.target.map(val => Object.keys(val)).flat().flat());
-    return new Array(...result.values()).map((val) => ({ keyName: val }))
+    const result = new Set(
+      targets.value.target
+        .map((val) => Object.keys(val))
+        .flat()
+        .flat(),
+    );
+    return new Array(...result.values()).map((val) => ({ keyName: val }));
   }, [targets]);
 
   return (
@@ -26,12 +31,7 @@ function Viewer(props: { data: DexieTable<any, any> }) {
       ) : (
         <>
           <div className="flex flex-col gap-10 h-96 grow">
-            <Table
-              type="object"
-              keyMap={keys as any}
-              target={targets.value.target}
-              bordered
-            />
+            <Table type="object" keyMap={keys as any} target={targets.value.target} bordered />
             <div className="flex justify-between w-full h-fit">
               <button
                 className="btn btn-wide"

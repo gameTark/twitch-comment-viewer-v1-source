@@ -18,10 +18,9 @@ export const urlLinkTagReplacement = (
   },
 ) => text.replace(urlValidation, `${tag.start}$&${tag.end}`);
 
-
 export const isJsonString = (target: string) => {
   try {
-    JSON.parse(target)
+    JSON.parse(target);
     return true;
   } catch {
     return false;

@@ -24,6 +24,7 @@ import {
 import { DbUser } from "@resource/db";
 
 import { UserInformation } from "@components/twitch/User";
+import { useInterval } from "@uses/useInterval";
 import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 
 interface ModalProps {}
@@ -71,7 +72,7 @@ export const ModalProvider = (props: { children: ReactNode }) => {
       <modalContext.Provider value={{ open, close }}>{props.children}</modalContext.Provider>
       <dialog ref={refDialog} className="modal">
         <div className="modal-box perfect-scrollbar-nopadding h-min" ref={scroll.ref}>
-          {node}
+          <div>{node}</div>
         </div>
 
         <form method="dialog" className="modal-backdrop">

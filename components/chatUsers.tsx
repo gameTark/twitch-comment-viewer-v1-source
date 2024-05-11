@@ -2,13 +2,13 @@ import { useCallback, useMemo } from "react";
 import clsx from "clsx";
 
 import { DbUser } from "@resource/db";
-import { useTiwtchUpdateUserById } from "@resource/twitchWithDb";
+import { useTiwtchUpdateUserById, useTwitchFollowersGetById } from "@resource/twitchWithDb";
 import { useEventSubContext } from "@contexts/twitch/eventSubContext";
-import { twitchLinks } from "@libs/twitch";
 
 import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 import { Stat } from "./dasyui/Stat";
 import { ICONS } from "./icons";
+import { useUserInfoModal } from "./twitch/User";
 
 // https://daisyui.com/components/stat/
 
@@ -16,21 +16,20 @@ import { ICONS } from "./icons";
 const TypeListItem = (props: { userData: DbUser }) => {
   const update = useTiwtchUpdateUserById(props.userData.id);
   const ctx = useEventSubContext();
+
   const handleSpam = useCallback(() => {
     const isSuccess = confirm("スパムとして認識させますか？");
     if (!isSuccess) return;
     update({ isSpam: true });
   }, [props.userData]);
+  const openModal = useUserInfoModal();
+  const followers = useTwitchFollowersGetById(ctx?.me.id);
 
-  // TODO: 一旦チャンネルに飛ぶようにしてるけどUserInfoを出す
-  const { CHANNEL } = twitchLinks(props.userData.login);
-
-  if (ctx == null) return;
-
+  if (ctx == null || followers == null) return;
   return (
     <li className="flex gap-2">
       <div className="whitespace-nowrap w-full">
-        <a href={CHANNEL} target="_blank" rel="noopener noreferrer" className="link">
+        <a className="link" tabIndex={0} onClick={openModal}>
           {props.userData.displayName || props.userData.login}
         </a>
       </div>
@@ -42,7 +41,7 @@ const TypeListItem = (props: { userData: DbUser }) => {
       </div>
 
       <div className="w-4">
-        {ctx.followers.findIndex((val) => val.userId === props.userData.id) !== -1 ? "☑" : "☐"}
+        {followers.findIndex((val) => val.userId === props.userData.id) !== -1 ? "☑" : "☐"}
       </div>
     </li>
   );

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 
 import { db, DbUser } from "@resource/db";
+import { useTwitchFollowersGetById } from "@resource/twitchWithDb";
 import { useEventSubContext } from "@contexts/twitch/eventSubContext";
 import { useUserGetById } from "@contexts/twitch/userContext";
 import { dayjs } from "@libs/dayjs";
@@ -9,9 +10,9 @@ import { fetchChannelFollowers } from "@libs/twitch";
 import { useAsyncMemo } from "@libs/uses";
 
 import { DasyBadge, DasyBadgeType } from "@components/dasyui/Badge";
+import { useModalContext } from "@components/dasyui/Modal";
 import { ICONS } from "@components/icons";
 import { ChatTable } from "./Chats";
-import { useModalContext } from "@components/dasyui/Modal";
 
 interface BadgeProps {
   name: string;
@@ -28,24 +29,24 @@ const Badge = (props: BadgeProps) => {
   );
 };
 
-export const useUserInfoModal = (userId?: DbUser['id']) => {
+export const useUserInfoModal = (userId?: DbUser["id"]) => {
   const modal = useModalContext();
   const openModal = useCallback(() => {
     if (userId == null) return;
     modal.open(<UserInformation userId={userId} />);
   }, [userId]);
   return openModal;
-}
+};
 export const UserInformation = (props: { userId: DbUser["id"] }) => {
   const ctx = useEventSubContext();
   const user = useUserGetById(props.userId, {
     immediately: true,
   });
+  const followers = useTwitchFollowersGetById(ctx?.me.id);
 
   const followed = useMemo(() => {
-    if (ctx?.followers == null) return null;
-    const followedAt =
-      ctx?.followers.find((val) => val.userId === props.userId)?.followedAt || null;
+    if (followers == null) return null;
+    const followedAt = followers.find((val) => val.userId === props.userId)?.followedAt || null;
     if (followedAt == null) return null;
     return dayjs(followedAt);
   }, [ctx, props.userId]);

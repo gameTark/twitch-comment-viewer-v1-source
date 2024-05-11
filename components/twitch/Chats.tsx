@@ -23,7 +23,6 @@ interface Comment {
   timestamp: number;
 }
 
-
 const commentParser = (action: DbAction): Comment | undefined => {
   if (action.userId == null) return;
   if (action.timestamp == null) return;
@@ -166,12 +165,20 @@ const TypeFlat = (props: Comment) => {
   switch (props.type) {
     case "chat":
       return <Flat {...props} fragment={<>{props.fragment}</>} />;
-  case "reward":
-      return <Flat {...props} fragment={<span className="font-bold flex justify-between"><span>{props.fragment}</span> <span className="text-xs">ポイント交換</span></span>} />;
-  case "atutomatic-reward":
+    case "reward":
+      return (
+        <Flat
+          {...props}
+          fragment={
+            <span className="font-bold flex justify-between">
+              <span>{props.fragment}</span> <span className="text-xs">ポイント交換</span>
+            </span>
+          }
+        />
+      );
+    case "atutomatic-reward":
       return null;
   }
-  
 };
 
 export const ChatList = () => {
@@ -201,7 +208,7 @@ export const ChatList = () => {
 };
 
 export const ChatTable = (props: { userId?: DbUser["id"] }) => {
-  const comments = useGetComments();
+  const comments = useGetCommentsByUserId(props.userId);
   const type: string = "flat";
 
   const message = useMemo(() => {
@@ -222,9 +229,7 @@ export const ChatTable = (props: { userId?: DbUser["id"] }) => {
   return (
     <div className="h-full flex flex-col">
       <div ref={scroll.ref} className="perfect-scrollbar">
-        <ul className="flex flex-col gap-2 py-6 px-2">
-          {message}
-        </ul>
+        <ul className="flex flex-col gap-2 py-6 px-2">{message}</ul>
       </div>
       <div className="px-2 py-1 border-t-2 text-right">総コメント数:{comments.length}</div>
     </div>

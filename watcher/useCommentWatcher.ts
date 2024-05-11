@@ -30,7 +30,7 @@ export const useTwitchUsers = (userIds: string[]) => {
   };
 };
 export const useGetCommentsByUserId = (
-  userId: DbComment["userId"],
+  userId?: DbComment["userId"],
   options?: {
     limit?: number;
   },

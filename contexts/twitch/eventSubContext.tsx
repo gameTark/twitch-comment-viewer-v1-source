@@ -1,12 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
 
 import { DbFollowers, DbUser } from "@resource/db";
 import {
   useFetchStream,
   useFetchTwitcChatUsersList,
-  useTwitchFollowers,
   useTwitchFollowersGetById,
 } from "@resource/twitchWithDb";
 import * as Twitch from "@libs/twitch";
@@ -27,8 +27,6 @@ interface Context {
   };
   chatUsers: DbUser[];
   live: ReturnType<typeof useFetchStream>["data"];
-  followers: DbFollowers[];
-  // socket: ReturnType<typeof createEventSubscribeSocket>;
 }
 const context = createContext<Context | null>(null);
 export const useEventSubContext = () => {
@@ -58,30 +56,37 @@ export const EventSubContext = (props: EventSubContextProps) => {
     channelName: string;
   } | null>(null);
 
-  useEffect(() => {
-    Twitch.isLoginned().then((isLogin) => {
-      if (!isLogin) {
-        loginPage();
-        return;
-      }
-      Twitch.fetchByMe()
-        .then((res) => {
-          // ログイン済みの場合
-          if (res.data[0] == null) throw new Error("データが見つかりませんでした");
-          setUserData({
-            id: res.data[0].id,
-            channelName: res.data[0].login,
-          });
-          const worker = createSharedWorker();
-          worker.port.start();
-        })
-        .catch(() => {
-          loginPage();
-        });
+  const main = useCallback(async () => {
+    const isLogin = await Twitch.isLoginned();
+    if (!isLogin) {
+      loginPage();
+      return () => {};
+    }
+    const { data } = await Twitch.fetchByMe();
+    const userData = data[0];
+    if (userData == null) {
+      loginPage();
+      return () => {};
+    }
+    setUserData({
+      id: userData.id,
+      channelName: userData.login,
     });
+    const worker = createSharedWorker();
+    worker.port.start();
+    return () => {
+      worker.port.close();
+    };
+  }, []);
+  useEffect(() => {
+    const destract = main();
+    return () => {
+      destract.then((destoy) => {
+        destoy();
+      });
+    };
   }, []);
 
-  const follower = useTwitchFollowers();
   const stream = useFetchStream();
   const chatterList = useFetchTwitcChatUsersList();
   useInterval(
@@ -91,7 +96,6 @@ export const EventSubContext = (props: EventSubContextProps) => {
         userId: userData.id,
         broadcasterId: userData.id,
       });
-      follower.update(userData.id);
       stream.update(userData.id);
     },
     {
@@ -116,7 +120,6 @@ export const EventSubContext = (props: EventSubContextProps) => {
         live: stream.data,
         chatUsers: chatterList.data,
         // socket: socket,
-        followers: followers,
       }}>
       {props.children}
     </Provider>
