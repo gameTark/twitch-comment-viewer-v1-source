@@ -1,4 +1,3 @@
-import { CONFIG } from "../resource/constants";
 import { createType } from "./eventSubConstants";
 import { EventsubMessageMap } from "./eventSubInterface";
 import { SocketEventNotificationMap } from "./notification";

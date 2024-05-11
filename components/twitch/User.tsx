@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
+import { useLiveQuery } from "dexie-react-hooks";
 
 import { db, DbUser } from "@resource/db";
 import { useTwitchFollowersGetById } from "@resource/twitchWithDb";
@@ -43,19 +44,19 @@ export const useUserInfoModal = (userId?: DbUser["id"]) => {
 };
 
 export const UserInformation = (props: { userId: DbUser["id"] }) => {
-  const ctx = useEventSubContext();
+  const me = useLiveQuery(() => db.getMe(), []);
   const userContext = useUserContext();
   const user = useAsyncMemo(async () => {
     return await userContext.fetchById(props.userId);
   }, [props.userId]);
-  const followers = useTwitchFollowersGetById(ctx?.me.id);
+  const followers = useTwitchFollowersGetById(me?.id);
 
   const followed = useMemo(() => {
     if (followers == null) return null;
     const followedAt = followers.find((val) => val.userId === props.userId)?.followedAt || null;
     if (followedAt == null) return null;
     return dayjs(followedAt);
-  }, [ctx, props.userId]);
+  }, [me, props.userId]);
 
   const [bio, setBio] = useState<string>("");
   // component will mount
@@ -77,7 +78,7 @@ export const UserInformation = (props: { userId: DbUser["id"] }) => {
         </li>
       </ul>
     );
-  }, [followed, ctx, user]);
+  }, [followed, me, user]);
 
   const followerCount = useAsyncMemo(async () => {
     if (user == null) return;

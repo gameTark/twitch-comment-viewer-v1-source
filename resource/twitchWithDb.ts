@@ -101,7 +101,7 @@ export const useTwitchFollowersGetById = (channelId?: string) => {
 };
 
 export const useFetchTwitcChatUsersList = () => {
-  const [data, setData] = useState<DbUser['id'][]>([]);
+  const [data, setData] = useState<DbUser["id"][]>([]);
   const update = useCallback(
     async (props: { broadcasterId?: string; userId?: string }) => {
       if (props.broadcasterId == null || props.userId == null) return;
@@ -109,7 +109,7 @@ export const useFetchTwitcChatUsersList = () => {
         broadcaster_id: props.broadcasterId,
         moderator_id: props.userId,
       });
-      setData(users.data.map(val => val.user_id));
+      setData(users.data.map((val) => val.user_id));
     },
     [data],
   );
@@ -170,13 +170,15 @@ const updateUser = async (id: string[]) => {
   if (id.length === 0) return [];
 
   // 100件ごとに分割してリクエストを作成する
-  const res = await Promise.all(new Array(Math.ceil(id.length / 100)).fill(1).map(async (_, index) => {
-    const p = index * 100;
-    const n = index * 100 + 100;
-    console.log(id.slice(p, n), p, n)
-    return (await fetchUsers({id: id.slice(p, n)})).data;
-  }));
-  
+  const res = await Promise.all(
+    new Array(Math.ceil(id.length / 100)).fill(1).map(async (_, index) => {
+      const p = index * 100;
+      const n = index * 100 + 100;
+      console.log(id.slice(p, n), p, n);
+      return (await fetchUsers({ id: id.slice(p, n) })).data;
+    }),
+  );
+
   const result = await Promise.all(
     res.flat().map(async (targetUser) => {
       const result = {

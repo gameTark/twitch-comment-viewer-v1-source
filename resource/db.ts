@@ -50,6 +50,21 @@ export class MySubClassedDexie extends Dexie {
       settings: "id",
     });
   }
+  async getMe() {
+    const typeValue = await this.parameters.get("me");
+    if (typeValue?.type !== "me") return null;
+    return typeValue.value || null;
+  }
+  async getLive() {
+    const typeValue = await this.parameters.get("live");
+    if (typeValue?.type !== "live") return null;
+    return typeValue.value || null;
+  }
+  async getChatters() {
+    const typeValue = await this.parameters.get("chatters");
+    if (typeValue?.type !== "chatters") return null;
+    return typeValue.value || null;
+  }
 }
 export const dbPagination = async <Type>(
   target: Collection<Type, IndexableType> | Table<Type, IndexableType>,
@@ -118,14 +133,20 @@ interface AbstractParameter<Type, Value> {
   value: Value;
 }
 export type DbParametes =
-  | AbstractParameter<"me", DbUser["id"]>
+  | AbstractParameter<
+      "me",
+      {
+        id: DbUser["id"];
+        login: DbUser["login"];
+      }
+    >
   | AbstractParameter<
       "live",
       {
         isLive: boolean;
         viewCount: number;
         startedAt: Date;
-      }
+      } | null
     >
   | AbstractParameter<
       "chatters",

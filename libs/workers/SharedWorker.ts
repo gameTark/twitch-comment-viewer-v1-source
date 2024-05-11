@@ -1,18 +1,82 @@
 import { db, DbFollowers } from "@resource/db";
 
+
+
 import { createType } from "../eventSubConstants";
 import { EventsubMessageMap } from "../eventSubInterface";
 import { SocketEventNotificationMap } from "../notification";
-import { createEventsub, fetchByMe, fetchChannelFollowers } from "../twitch";
+import { createEventsub, fetchByMe, fetchChannelFollowers, fetchStreams, getChatUsers } from "../twitch";
 import { EventListenerMap, filter, valueOf } from "../types";
+
 
 export default null; //TypeScript警告避け
 const INTERVAL_TIME = 10000;
 const getUserData = async () => {
-  const me = await fetchByMe();
-  const userData = me.data[0];
-  return userData;
+  const dataMe = await db.getMe();
+  if (dataMe == null) {
+    const me = await fetchByMe();
+    const userData = me.data[0];
+    const result = {
+      id: userData.id,
+      login: userData.login,
+    };
+    await db.parameters.put({
+      type: 'me',
+      value: result
+    })
+    return result;
+  }
+  return dataMe;
 };
+
+/* streams */
+const getStreams = async () => {
+  const userData = await getUserData();
+  const result = await fetchStreams({
+    user_id: userData.id,
+  });
+  const data = result.data[0];
+  if (data == null) {
+    db.parameters.put({
+      type: 'live',
+      value: null,
+    })  
+    return;
+  }
+  db.parameters.put({
+    type: 'live',
+    value: {
+      isLive: true,
+      startedAt: new Date(data.started_at),
+      viewCount: data.viewer_count,
+    }
+  })
+}
+
+getStreams();
+setInterval(() => {
+  getStreams();
+}, INTERVAL_TIME)
+/* chatters */
+const getChatters = async () => {
+  const userData = await getUserData();
+  if (userData == null) return;
+  const users = await getChatUsers({
+    broadcaster_id: userData.id,
+    moderator_id: userData.id,
+  });
+  db.parameters.put({
+    type: "chatters",
+    value: {
+      users: users.data.map(val => val.user_id),
+      total: users.total,
+    }
+  })
+}
+getChatters();
+setInterval(() => {
+  getChatters();
+}, INTERVAL_TIME)
 
 /* follower */
 const getTodayFollowers = async (userId: string) => {
@@ -65,6 +129,7 @@ const updateFollowers = async () => {
   await Promise.all([db.followers.bulkAdd(insertData), db.followers.bulkPut(deleteData)]);
 };
 
+updateFollowers();
 setInterval(() => {
   updateFollowers();
 }, INTERVAL_TIME);
@@ -85,15 +150,15 @@ type NotificationSocketEvent = EventListenerMap<SocketEventNotificationMap, Sock
 
 const createAddListener =
   (socket: WebSocket): SocketEvent =>
-  (type, cb) => {
-    const item = (ev: MessageEvent<string>) => {
-      const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
-      if (type !== value.metadata.message_type) return;
-      cb(value as any, ev);
+    (type, cb) => {
+      const item = (ev: MessageEvent<string>) => {
+        const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
+        if (type !== value.metadata.message_type) return;
+        cb(value as any, ev);
+      };
+      socket.addEventListener("message", item);
+      return item;
     };
-    socket.addEventListener("message", item);
-    return item;
-  };
 
 const createRemoveListener = (socket: WebSocket) => (item: SocketCallback) => {
   socket.removeEventListener("message", item);
@@ -101,16 +166,16 @@ const createRemoveListener = (socket: WebSocket) => (item: SocketCallback) => {
 
 const createAddNotificationListener =
   (socket: WebSocket): NotificationSocketEvent =>
-  (t, cb) => {
-    const item = (ev: MessageEvent<string>) => {
-      const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
-      if (value.metadata.message_type !== "notification") return;
-      if (value.metadata.subscription_type !== t) return;
-      cb(value as any, ev);
+    (t, cb) => {
+      const item = (ev: MessageEvent<string>) => {
+        const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
+        if (value.metadata.message_type !== "notification") return;
+        if (value.metadata.subscription_type !== t) return;
+        cb(value as any, ev);
+      };
+      socket.addEventListener("message", item);
+      return item;
     };
-    socket.addEventListener("message", item);
-    return item;
-  };
 
 const createSocket = () => {
   let socketInstance: WebSocket | null = null;
@@ -130,18 +195,18 @@ const createSocket = () => {
             resolve(ev.payload.session.id);
           });
         });
-        const userId = userData.id;
+        const userId = userData;
         const typeGenerator = createType(id);
         await Promise.all([
-          createEventsub(typeGenerator.channel.chat.message(userId, userId)),
-          createEventsub(typeGenerator.channel.update(userId)),
-          createEventsub(typeGenerator.stream.online(userId)),
-          createEventsub(typeGenerator.stream.ofline(userId)),
+          createEventsub(typeGenerator.channel.chat.message(userId.id, userId.id)),
+          createEventsub(typeGenerator.channel.update(userId.id)),
+          createEventsub(typeGenerator.stream.online(userId.id)),
+          createEventsub(typeGenerator.stream.ofline(userId.id)),
           createEventsub(
-            typeGenerator.channel.channel_points_automatic_reward_redemption.add(userId),
+            typeGenerator.channel.channel_points_automatic_reward_redemption.add(userId.id),
           ),
-          createEventsub(typeGenerator.channel.channel_points_custom_reward.add(userId)),
-          createEventsub(typeGenerator.channel.points_custom_reward_redemption.add(userId)),
+          createEventsub(typeGenerator.channel.channel_points_custom_reward.add(userId.id)),
+          createEventsub(typeGenerator.channel.points_custom_reward_redemption.add(userId.id)),
         ]);
       };
       start();

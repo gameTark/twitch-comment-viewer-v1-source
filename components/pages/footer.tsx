@@ -4,8 +4,9 @@ import { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
+import { useLiveQuery } from "dexie-react-hooks";
 
-import { useEventSubContext } from "@contexts/twitch/eventSubContext";
+import { db } from "@resource/db";
 
 import { Clock, MiniClock } from "@components/commons/clock";
 import { DrawerOpener } from "@components/dasyui/Drawer";
@@ -22,8 +23,8 @@ const FOOTER_CONTENT = [
   { icon: ICONS.GEAR, text: "設定", path: "/setting" },
 ];
 export const Footer = () => {
-  const ctx = useEventSubContext();
-  if (ctx == null) return;
+  const live = useLiveQuery(() => db.getLive(), []);
+  if (live == null) return;
 
   return (
     <footer className="footer items-center bg-primary flex text-primary-content sticky bottom-0 h-fit mt-auto py-3 px-4">
@@ -33,7 +34,7 @@ export const Footer = () => {
         <div className="flex gap-4 items-center">
           <div className="flex flex-col">
             <p className="text-xs">配信時間</p>
-            <Clock startMilliSeconds={ctx.live?.startedAt?.getTime()} />
+            <Clock startMilliSeconds={live?.startedAt?.getTime()} />
           </div>
           <div>
             <MiniClock />

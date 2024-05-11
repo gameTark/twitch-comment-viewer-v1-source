@@ -1,4 +1,6 @@
-import { useEventSubContext } from "@contexts/twitch/eventSubContext";
+import { useLiveQuery } from "dexie-react-hooks";
+
+import { db } from "@resource/db";
 import { useAsyncMemo } from "@libs/uses";
 
 import { fetchChannelInfo } from "../../libs/twitch";
@@ -7,14 +9,14 @@ import { fetchChannelInfo } from "../../libs/twitch";
 // https://dev.twitch.tv/docs/api/reference/#modify-channel-information
 
 export const channel = () => {
-  const ctx = useEventSubContext();
+  const me = useLiveQuery(() => db.getMe(), []);
   const channelInfo = useAsyncMemo(async () => {
-    if (ctx == null) return;
+    if (me == null) return;
     const info = await fetchChannelInfo({
-      broadcaster_id: ctx.me.id,
+      broadcaster_id: me.id,
     });
     return info.data[0];
-  }, [ctx]);
+  }, [me]);
   if (channelInfo == null) return <></>;
 
   return (

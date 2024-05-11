@@ -1,27 +1,30 @@
 import { useMemo } from "react";
 import clsx from "clsx";
+import { useLiveQuery } from "dexie-react-hooks";
 
-import { useGetUserMapById } from "@resource/twitchWithDb";
-import { useEventSubContext } from "@contexts/twitch/eventSubContext";
+import { db } from "@resource/db";
+import { useUserContext } from "@contexts/twitch/userContext";
 import { deleteTwitchToken, twitchLinks } from "@libs/twitch";
+import { useAsyncMemo } from "@libs/uses";
 
 import ExternalIcon from "@components/icons/external";
 
 export const Me = () => {
-  const ctx = useEventSubContext();
-  const users = useGetUserMapById();
+  const meInstance = useLiveQuery(() => db.getMe(), []);
+  const userContext = useUserContext();
 
-  const me = useMemo(() => {
-    if (ctx == null || users == null) return;
-    return users.get(ctx.me.id);
-  }, [ctx, users]);
+  const me = useAsyncMemo(async () => {
+    if (meInstance?.id == null) return;
+    return await userContext.fetchById(meInstance.id);
+  }, [meInstance, userContext]);
+
   // ページとして切り出す
   const logout = () => {
     deleteTwitchToken();
     location.reload();
   };
 
-  const links = useMemo(() => (ctx == null ? null : twitchLinks(ctx.me.channelName)), [ctx]);
+  const links = useMemo(() => (me == null ? null : twitchLinks(me.login)), [me]);
   return (
     <div className="dropdown dropdown-top" style={{ lineHeight: 0 }}>
       <div className="avatar" tabIndex={0} role="button">

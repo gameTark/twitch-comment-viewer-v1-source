@@ -5,14 +5,13 @@ import { db, DbComment } from "../resource/db";
 import { getUsers } from "../resource/twitchWithDb";
 
 export const useGetAllComments = () => {
-  const sub = useEventSubContext();
-  const channel = sub?.me.channelName;
+  const me = useLiveQuery(() => db.getMe(), []);
   const comments = useLiveQuery(async () => {
-    if (channel == null) return;
+    if (me?.login == null) return;
     const resutl = await db.actions.toArray();
     // 後位一致させるため、便利なメソッドが別にあるかも
     return resutl.reverse();
-  }, [channel]);
+  }, [me]);
 
   return comments || [];
 };
@@ -51,8 +50,8 @@ export const useGetCommentsByUserId = (
 };
 
 export const useGetComments = (options?: { limit?: number; before?: Date; after?: Date }) => {
-  const sub = useEventSubContext();
-  const channel = sub?.me.channelName;
+  const me = useLiveQuery(() => db.getMe(), []);
+  const channel = me?.login;
   const limit = options?.limit || 100;
 
   // TODO: 日付ライブラリに置き換え

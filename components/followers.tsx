@@ -1,5 +1,7 @@
 import { useMemo } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
 
+import { db } from "@resource/db";
 import { useTwitchFollowersGetById } from "@resource/twitchWithDb";
 import { useEventSubContext } from "@contexts/twitch/eventSubContext";
 import { useUserContext } from "@contexts/twitch/userContext";
@@ -13,8 +15,8 @@ import { ICONS } from "./icons";
 import { useUserInfoModal } from "./twitch/User";
 
 const TypeTable = () => {
-  const ctx = useEventSubContext();
-  const followers = useTwitchFollowersGetById(ctx?.me.id);
+  const me = useLiveQuery(() => db.getMe(), []);
+  const followers = useTwitchFollowersGetById(me?.id);
   const userContext = useUserContext();
   const modal = useUserInfoModal();
 
@@ -80,8 +82,8 @@ const TypeTable = () => {
 };
 
 export const FollowerInfo = (props: { type: "list" | "stat" | "table" }) => {
-  const ctx = useEventSubContext();
-  const followers = useTwitchFollowersGetById(ctx?.me.id);
+  const me = useLiveQuery(() => db.getMe(), []);
+  const followers = useTwitchFollowersGetById(me?.id);
 
   if (followers == null) return;
   switch (props.type) {

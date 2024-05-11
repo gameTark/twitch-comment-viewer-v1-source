@@ -2,7 +2,6 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
-import { DbUser } from "@resource/db";
 import {
   useFetchStream,
   useFetchTwitcChatUsersList,
@@ -19,14 +18,7 @@ import { useInterval } from "@uses/useInterval";
 // TODO: 新しい人が来た時にToastで通知したい(chat user)
 // TODO: フォロワー以外の人が来た時にToastで通知したい https://daisyui.com/components/toast/
 
-interface Context {
-  me: {
-    id: string;
-    channelName: string;
-  };
-  chatUsers: DbUser['id'][];
-  live: ReturnType<typeof useFetchStream>["data"];
-}
+interface Context {}
 const context = createContext<Context | null>(null);
 export const useEventSubContext = () => {
   const ctx = useContext(context);
@@ -109,18 +101,5 @@ export const EventSubContext = (props: EventSubContextProps) => {
   // ローディングページの設計を考える
   if (Twitch.hasLoginToken() || !isLogin || userData == null || followers == null)
     return <>{props.children}</>; // loading
-  return (
-    <Provider
-      value={{
-        me: {
-          id: userData.id,
-          channelName: userData.channelName,
-        },
-        live: stream.data,
-        chatUsers: chatterList.data,
-        // socket: socket,
-      }}>
-      {props.children}
-    </Provider>
-  );
+  return <Provider value={{}}>{props.children}</Provider>;
 };

@@ -3,7 +3,7 @@
 import React, { ChangeEventHandler, useCallback, useEffect, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 
-import { DbBroadcastTemplate, DbGame, DbUser } from "@resource/db";
+import { db, DbBroadcastTemplate, DbGame, DbUser } from "@resource/db";
 import {
   deleteBroadcastTemplate,
   getBroadcastTemplates,
@@ -21,7 +21,6 @@ import { DasyBadge } from "@components/dasyui/Badge";
 import { Checkbox } from "@components/dasyui/Checkbox";
 import { Select } from "@components/dasyui/Select";
 import { GameInput, GameViewer } from "@components/twitch/Game";
-import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 
 // DbBroadcastTemplate
 export type HandleBroadcastViewerEvents = (event: DbBroadcastTemplate) => void;
@@ -145,8 +144,8 @@ export function BroadcastViewer(_props: DbBroadcastTemplate & BroadcastViewerEve
 }
 
 export function BroadcastInformation() {
-  const ctx = useEventSubContext();
   const [state, setState] = useState<DbBroadcastTemplate>(INITIAL_BROADCAST_STATE);
+  const me = useLiveQuery(() => db.getMe(), []);
 
   const [type, setType] = useState("viewer");
   const dialog = useDialog();
@@ -168,10 +167,10 @@ export function BroadcastInformation() {
 
   const handleAdd: HandleBroadcastContent = (e) => {
     if (e.gameId == null) return;
-    if (ctx == null) return;
+    if (me == null) return;
     putBroadcastTemplate({
       id: e.id,
-      channelId: ctx?.me.id,
+      channelId: me.id,
       gameId: e.gameId,
       broadcastTitle: e.broadcastTitle,
       language: e.language,
@@ -192,7 +191,7 @@ export function BroadcastInformation() {
     });
   }, []);
   const handleApply: HandleBroadcastViewerEvents = useCallback((ev) => {
-    const id = ctx?.me.id;
+    const id = me?.id;
     if (id == null) return;
     dialog.open({
       title: "配信に適用しますか？",

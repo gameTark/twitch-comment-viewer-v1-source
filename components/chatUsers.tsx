@@ -1,22 +1,22 @@
 import { useCallback } from "react";
 import clsx from "clsx";
+import { useLiveQuery } from "dexie-react-hooks";
 
-import { DbUser } from "@resource/db";
+import { db, DbUser } from "@resource/db";
 import { useTiwtchUpdateUserById, useTwitchFollowersGetById } from "@resource/twitchWithDb";
-import { useEventSubContext } from "@contexts/twitch/eventSubContext";
+import { useUserContext } from "@contexts/twitch/userContext";
+import { filter } from "@libs/types";
+import { useAsyncMemo } from "@libs/uses";
 
 import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 import { Stat } from "./dasyui/Stat";
 import { ICONS } from "./icons";
 import { useUserInfoModal } from "./twitch/User";
-import { useUserContext } from "@contexts/twitch/userContext";
-import { useAsyncMemo } from "@libs/uses";
-import { filter } from "@libs/types";
 
 // https://daisyui.com/components/stat/
 const TypeListItem = (props: { userData: DbUser }) => {
   const update = useTiwtchUpdateUserById(props.userData.id);
-  const ctx = useEventSubContext();
+  const me = useLiveQuery(() => db.getMe(), []);
 
   const handleSpam = useCallback(() => {
     const isSuccess = confirm("スパムとして認識させますか？");
@@ -24,9 +24,9 @@ const TypeListItem = (props: { userData: DbUser }) => {
     update({ isSpam: true });
   }, [props.userData]);
   const openModal = useUserInfoModal(props.userData.id);
-  const followers = useTwitchFollowersGetById(ctx?.me.id);
+  const followers = useTwitchFollowersGetById(me?.id);
 
-  if (ctx == null || followers == null) return;
+  if (followers == null) return;
   return (
     <li className="flex gap-2">
       <div className="whitespace-nowrap w-full">
@@ -51,14 +51,18 @@ export interface ChatUsersProps {
   type: "list" | "number" | "stat";
 }
 export const ChatUsers = (props: ChatUsersProps) => {
-  const ctx = useEventSubContext();
+  const me = useLiveQuery(() => db.getMe(), []);
+  const chatters = useLiveQuery(() => db.getChatters(), []);
+
   const userContext = useUserContext();
   const users = useAsyncMemo(async () => {
-    if (ctx == null) return;
-    const result = await Promise.all(ctx.chatUsers.map(val => userContext.fetchById(val)));
+    if (me == null) return;
+    if (chatters == null) return;
+    const result = await Promise.all(chatters.users.map((val) => userContext.fetchById(val)));
     return result.filter(filter.notNull);
-  }, [ctx?.chatUsers])
-  const ps = usePerfectScrollbar([ctx?.chatUsers]);
+  }, [me?.id, chatters]);
+
+  const ps = usePerfectScrollbar([chatters]);
   if (users == null) return;
 
   switch (props.type) {
@@ -86,7 +90,7 @@ export const ChatUsers = (props: ChatUsersProps) => {
         <div className={clsx("px-4 py-2 perfect-scrollbar")} ref={ps.ref}>
           <ul>
             {users
-              .filter((val) => val.id !== ctx?.me.id)
+              .filter((val) => val.id !== me?.id)
               .map((val) => (
                 <TypeListItem key={val.id} userData={val} />
               ))}

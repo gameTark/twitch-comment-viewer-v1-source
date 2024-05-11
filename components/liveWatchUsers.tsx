@@ -1,12 +1,12 @@
-import { useEventSubContext } from "@contexts/twitch/eventSubContext";
+import { useLiveQuery } from "dexie-react-hooks";
+
+import { db } from "@resource/db";
 
 import { Stat } from "./dasyui/Stat";
 import { ICONS } from "./icons";
 
 // TODO: ライブ視聴者の数とは違う旨を記述する https://daisyui.com/components/tooltip/
 export const LiveWatchUsers = () => {
-  const ctx = useEventSubContext();
-  return (
-    <Stat icon={ICONS.EYE} value={`${ctx?.live?.viewerCount || 0}人`} title="ライブ視聴者数" />
-  );
+  const live = useLiveQuery(() => db.getLive(), []);
+  return <Stat icon={ICONS.EYE} value={`${live?.viewCount || 0}人`} title="ライブ視聴者数" />;
 };
