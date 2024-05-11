@@ -516,6 +516,9 @@ export interface GetUserResult {
     view_count: number;
     created_at: string;
   }[];
+  pagination?: {
+    cursor?: string;
+  }
 }
 
 /** 

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import clsx from "clsx";
 
 import { DbUser } from "@resource/db";
@@ -9,10 +9,11 @@ import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 import { Stat } from "./dasyui/Stat";
 import { ICONS } from "./icons";
 import { useUserInfoModal } from "./twitch/User";
+import { useUserContext } from "@contexts/twitch/userContext";
+import { useAsyncMemo } from "@libs/uses";
+import { filter } from "@libs/types";
 
 // https://daisyui.com/components/stat/
-
-// TODO: ライブ視聴者の数とは違う旨を記述する https://daisyui.com/components/tooltip/
 const TypeListItem = (props: { userData: DbUser }) => {
   const update = useTiwtchUpdateUserById(props.userData.id);
   const ctx = useEventSubContext();
@@ -51,16 +52,18 @@ export interface ChatUsersProps {
 }
 export const ChatUsers = (props: ChatUsersProps) => {
   const ctx = useEventSubContext();
-
-  const chatUsers = useMemo(() => {
-    if (ctx?.chatUsers == null) return;
-    return ctx.chatUsers.sort((a, b) => (Number(a.id || "") < Number(b.id || "") ? 1 : -1));
-  }, [ctx?.chatUsers]);
+  const userContext = useUserContext();
+  const users = useAsyncMemo(async () => {
+    if (ctx == null) return;
+    const result = await Promise.all(ctx.chatUsers.map(val => userContext.fetchById(val)));
+    return result.filter(filter.notNull);
+  }, [ctx?.chatUsers])
   const ps = usePerfectScrollbar([ctx?.chatUsers]);
-  if (chatUsers == null) return;
+  if (users == null) return;
+
   switch (props.type) {
     case "number":
-      return <div>{chatUsers.length}</div>;
+      return <div>{users.length}</div>;
     case "stat":
       return (
         <Stat
@@ -74,7 +77,7 @@ export const ChatUsers = (props: ChatUsersProps) => {
               </span>
             </div>
           }
-          value={`${chatUsers.length}人`}
+          value={`${users.length}人`}
           icon={ICONS.COMMENT}
         />
       );
@@ -82,7 +85,7 @@ export const ChatUsers = (props: ChatUsersProps) => {
       return (
         <div className={clsx("px-4 py-2 perfect-scrollbar")} ref={ps.ref}>
           <ul>
-            {chatUsers
+            {users
               .filter((val) => val.id !== ctx?.me.id)
               .map((val) => (
                 <TypeListItem key={val.id} userData={val} />

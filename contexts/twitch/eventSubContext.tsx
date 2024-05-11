@@ -24,7 +24,7 @@ interface Context {
     id: string;
     channelName: string;
   };
-  chatUsers: DbUser[];
+  chatUsers: DbUser['id'][];
   live: ReturnType<typeof useFetchStream>["data"];
 }
 const context = createContext<Context | null>(null);

@@ -101,7 +101,7 @@ export const useTwitchFollowersGetById = (channelId?: string) => {
 };
 
 export const useFetchTwitcChatUsersList = () => {
-  const [data, setData] = useState<DbUser[]>([]);
+  const [data, setData] = useState<DbUser['id'][]>([]);
   const update = useCallback(
     async (props: { broadcasterId?: string; userId?: string }) => {
       if (props.broadcasterId == null || props.userId == null) return;
@@ -109,24 +109,7 @@ export const useFetchTwitcChatUsersList = () => {
         broadcaster_id: props.broadcasterId,
         moderator_id: props.userId,
       });
-
-      // 実装が汚い bulkで欲しい
-      const results = await Promise.all(users.data.map((val) => getUser(val.user_id))).then(
-        (result) => {
-          return result.filter(filter.notNull);
-        },
-      );
-
-      // 更新が必要な物を抽出
-      const needUpdateResult = results.filter((result) => {
-        const exists = data.find((val) => val.id === result.id);
-        if (exists) return false;
-        return true;
-      });
-
-      // ない場合更新しない
-      if (needUpdateResult.length === 0) return;
-      setData(results);
+      setData(users.data.map(val => val.user_id));
     },
     [data],
   );
@@ -185,9 +168,17 @@ export const useCommentCount = () => {
 
 const updateUser = async (id: string[]) => {
   if (id.length === 0) return [];
-  const res = await fetchUsers({ id: id });
+
+  // 100件ごとに分割してリクエストを作成する
+  const res = await Promise.all(new Array(Math.ceil(id.length / 100)).fill(1).map(async (_, index) => {
+    const p = index * 100;
+    const n = index * 100 + 100;
+    console.log(id.slice(p, n), p, n)
+    return (await fetchUsers({id: id.slice(p, n)})).data;
+  }));
+  
   const result = await Promise.all(
-    res.data.map(async (targetUser) => {
+    res.flat().map(async (targetUser) => {
       const result = {
         id: targetUser.id,
         login: targetUser.login,
@@ -209,7 +200,6 @@ const updateUser = async (id: string[]) => {
   return users.filter(filter.notNull);
 };
 export const getUsers = async (id: string[]): Promise<DbUser[]> => {
-  if (id.length > 100) throw new Error(`request id is 100未満 ${id.length}`);
   const result = (await db.users.bulkGet(id)).filter(filter.notNull);
 
   // 存在しないユーザー
