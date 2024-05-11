@@ -20,7 +20,7 @@ module.exports = {
         "noto-serif": ["Noto Serif JP"],
       },
       animation: {
-        "fade-in": "fade-in 1s ease-out both",
+        "fade-in": "fade-in 0.1s ease-out both",
       },
       keyframes: {
         "fade-in": {

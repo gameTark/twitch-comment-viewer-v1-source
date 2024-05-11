@@ -68,6 +68,20 @@ export type TableProps<Type extends object> = (
 
 const Cel = (props: { children: ReactNode }) => <td>{props.children}</td>;
 
+export const TableSkeleton = (props: {
+  bordered?: boolean;
+}) => {
+  const ps = usePerfectScrollbar([props]);
+  return (
+    <div
+      className={clsx("w-full px-2 perfect-scrollbar py-2 z-0", {
+        ["border"]: props.bordered,
+      })}
+      ref={ps.ref}>
+      <div className=" skeleton h-full w-full animate-fade-in"></div>
+    </div>
+  );
+};
 export const Table = <T extends object>(props: TableProps<T>) => {
   const modal = useModalContext();
   const celParser = (cel?: TableValueType) => {

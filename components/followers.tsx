@@ -7,7 +7,7 @@ import { dayjs } from "@libs/dayjs";
 import { filter } from "@libs/types";
 
 import { Stat } from "./dasyui/Stat";
-import { Table } from "./dasyui/Table";
+import { Table, TableSkeleton } from "./dasyui/Table";
 import { ICONS } from "./icons";
 import { useUserInfoModal } from "./twitch/User";
 
@@ -19,7 +19,7 @@ const TypeTable = () => {
   const modal = useUserInfoModal();
 
   const userWithFollower = useMemo(() => {
-    if (followers == null || userMap == null) return [];
+    if (followers == null || userMap == null) return null;
     return followers
       .map((val) => {
         const user = userMap.get(val.userId);
@@ -31,6 +31,8 @@ const TypeTable = () => {
       })
       .filter(filter.notNull);
   }, [followers, userMap, state]);
+
+  if (userWithFollower == null || userWithFollower.length === 0) return <TableSkeleton />
   return (
     <Table
       type="object"
@@ -74,72 +76,6 @@ const TypeTable = () => {
       consecutive
     />
   );
-  // const userInfo = useShowUserInfoModal();
-
-  // const tableInfo = useMemo(() => {
-  //   if (followers == null || userMap == null) return null;
-  //   return {
-  //     keyMap: [
-  //       {
-  //         keyName: "image",
-  //         displayName: "アイコン",
-  //       },
-  //       {
-  //         keyName: "name",
-  //         displayName: "名前",
-  //       },
-  //       {
-  //         keyName: "followedAt",
-  //         displayName: "フォロー開始日",
-  //       },
-  //     ],
-  //     target: followers
-  //       .map((val): { [key: string]: TableValueType } | undefined => {
-  //         const user = userMap.get(val.userId);
-  //         if (user == null) return;
-  //         return {
-  //           name: {
-  //             type: "jsx",
-  //             value: (
-  //               <p>
-  //                 <a
-  //                   className="cursor-pointer"
-  //                   onClick={() => {
-  //                     userInfo.open(user.id);
-  //                   }}>
-  //                   {user.displayName || user.login}
-  //                 </a>
-  //               </p>
-  //             ),
-  //           },
-  //           image: {
-  //             type: "jsx",
-  //             value: (
-  //               <div className="avatar">
-  //                 <div
-  //                   className="w-7 rounded-full cursor-pointer"
-  //                   onClick={() => {
-  //                     userInfo.open(user.id);
-  //                   }}>
-  //                   <img src={user.profileImageUrl} />
-  //                 </div>
-  //               </div>
-  //             ),
-  //           },
-  //           followedAt: {
-  //             type: "date",
-  //             value: val.followedAt,
-  //             format: "YYYY/MM/DD HH:mm (ddd)",
-  //           },
-  //         };
-  //       })
-  //       .filter(filter.notNull),
-  //   };
-  // }, [f, userMap]);
-
-  // if (tableInfo == null) return;
-
-  // return <Table type="object" {...tableInfo} />;
 };
 
 export const FollowerInfo = (props: { type: "list" | "stat" | "table" }) => {
