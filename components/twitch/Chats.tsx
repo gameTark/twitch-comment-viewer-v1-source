@@ -1,8 +1,7 @@
-import { ReactNode, useCallback, useMemo } from "react";
+import { ReactNode, useMemo } from "react";
 import * as escaper from "html-escaper";
 
 import { DbAction, DbUser } from "@resource/db";
-import { useEventSubContext } from "@contexts/twitch/eventSubContext";
 import { useUserGetById } from "@contexts/twitch/userContext";
 import { dayjs } from "@libs/dayjs";
 import { ChatFragment } from "@libs/notification/channelChatMessage";
@@ -114,7 +113,7 @@ const Reward = (props: Comment) => {
           alt={user.login}
           className="rounded-full w-10 border-2 overflow-hidden cursor-pointer"
           tabIndex={0}
-          onClick={openModal}
+          onClick={() => openModal}
         />
         <div className="flex font-bold">
           {userName}が{props.fragment}と交換しました。
