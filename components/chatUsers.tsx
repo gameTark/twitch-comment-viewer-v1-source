@@ -29,7 +29,7 @@ const TypeListItem = (props: { userData: DbUser }) => {
   return (
     <li className="flex gap-2">
       <div className="whitespace-nowrap w-full">
-        <a className="link" tabIndex={0} onClick={openModal}>
+        <a className="link" tabIndex={0} onClick={() => openModal}>
           {props.userData.displayName || props.userData.login}
         </a>
       </div>
