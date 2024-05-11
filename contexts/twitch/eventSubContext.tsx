@@ -1,9 +1,8 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { useLiveQuery } from "dexie-react-hooks";
 
-import { DbFollowers, DbUser } from "@resource/db";
+import { DbUser } from "@resource/db";
 import {
   useFetchStream,
   useFetchTwitcChatUsersList,

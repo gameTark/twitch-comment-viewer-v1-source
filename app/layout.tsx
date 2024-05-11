@@ -7,10 +7,9 @@ import { EventSubContext } from "@contexts/twitch/eventSubContext";
 import { GameContextProvider } from "@contexts/twitch/gameContext";
 import { UserContextProvider } from "@contexts/twitch/userContext";
 
-import { CodeJavascript } from "@components/commons/SyntaxHightlight";
 import { Drawer } from "@components/dasyui/Drawer";
 import { ModalProvider } from "@components/dasyui/Modal";
-import { Footer } from "@components/pages";
+import { Footer } from "@components/pages/footer";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

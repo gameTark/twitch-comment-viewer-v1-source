@@ -19,6 +19,7 @@ const TypeTable = () => {
 
   const userWithFollower = useMemo(() => {
     if (followers == null || userMap == null) return [];
+    
     return followers
       .map((val) => {
         const user = userMap.get(val.userId);

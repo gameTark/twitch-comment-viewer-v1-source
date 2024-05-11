@@ -60,7 +60,6 @@ export const UserContextProvider = (props: { children: ReactNode }) => {
     fetcher: getUsers,
     idKey: "id",
   });
-  lazyFetch.immediately;
   return (
     <userContext.Provider
       value={{

@@ -233,13 +233,3 @@ export interface DbFollowers extends BaseSchema {
 }
 
 export const db = new MySubClassedDexie();
-export const databaseMigration = async () => {
-  console.log("migration");
-  db.version(DB_VERSION["2024/05/10.1"]).upgrade((trans) => {
-    return trans.table("followers").clear();
-  });
-  return true;
-};
-databaseMigration().then(() => {
-  console.log("migrated");
-});
