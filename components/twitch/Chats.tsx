@@ -145,7 +145,7 @@ const Bubble = (props: Comment) => {
           alt: user.login,
         }}
         header={userName}
-        footer={dayjs(props.timestamp).format("HH:MM:SS")}
+        footer={dayjs(props.timestamp).format("HH:MM:ss")}
         message={props.fragment}
         onClickAvater={() => openModal()}
       />
