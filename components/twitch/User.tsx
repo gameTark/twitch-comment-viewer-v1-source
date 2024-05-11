@@ -31,12 +31,14 @@ const Badge = (props: BadgeProps) => {
 
 export const useUserInfoModal = (userId?: DbUser["id"]) => {
   const modal = useModalContext();
-  const openModal = useCallback(() => {
-    if (userId == null) return;
-    modal.open(<UserInformation userId={userId} />);
+  const openModal = useCallback((_userId?: DbUser["id"]) => {
+    const u = _userId || userId;
+    if (u== null) return;
+    modal.open(<UserInformation userId={u} />);
   }, [userId]);
   return openModal;
 };
+
 export const UserInformation = (props: { userId: DbUser["id"] }) => {
   const ctx = useEventSubContext();
   const user = useUserGetById(props.userId, {

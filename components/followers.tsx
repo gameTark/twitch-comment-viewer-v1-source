@@ -9,11 +9,13 @@ import { filter } from "@libs/types";
 import { Stat } from "./dasyui/Stat";
 import { Table } from "./dasyui/Table";
 import { ICONS } from "./icons";
+import { useUserInfoModal } from "./twitch/User";
 
 const TypeTable = () => {
   const ctx = useEventSubContext();
   const followers = useTwitchFollowersGetById(ctx?.me.id);
   const userMap = useGetUserMap(followers?.map((val) => val.userId) || []);
+  const modal = useUserInfoModal();
 
   const userWithFollower = useMemo(() => {
     if (followers == null || userMap == null) return [];
@@ -39,14 +41,27 @@ const TypeTable = () => {
           displayName: "画像",
           parse: (val) => {
             return (
-              <img src={val.profileImageUrl} alt={val.login} width={35} className="rounded-full" />
+              <img
+                src={val.profileImageUrl}
+                onClick={() => {
+                  modal(val.userId)
+                }}
+                tabIndex={0}
+                alt={val.login}
+                width={35}
+                className="rounded-full cursor-pointer"
+              />
             );
           },
         },
         {
           keyName: "displayName",
           displayName: "名前",
-          parse: (val) => val.displayName || val.login || "none",
+          parse: (val) => (
+            <p onClick={() => modal(val.userId)} tabIndex={0} className=" cursor-pointer">
+              {val.displayName || val.login || "none"}
+            </p>
+          ),
         },
         {
           keyName: "followedAt",
