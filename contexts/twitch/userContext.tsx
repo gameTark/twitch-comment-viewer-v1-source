@@ -12,7 +12,9 @@ import { useBaseResourceLazyLoad } from "../baseLazyLoader";
  * user情報を定期的に回してLazyLoadさせるためのBulk機構
  */
 
-interface State {}
+interface State {
+  state: string;
+}
 interface Event {
   fetchUserById: (id: DbUser["id"]) => Promise<DbUser | null>;
   fetchUserByIds: (id: DbUser["id"][]) => Promise<Map<DbUser["id"], DbUser>>;
@@ -20,6 +22,7 @@ interface Event {
 }
 
 const userContext = createContext<State & Event>({
+  state: "",
   fetchUserById: () => {
     throw new Error("error");
   },
@@ -32,13 +35,13 @@ const userContext = createContext<State & Event>({
 });
 
 export const useUserContext = () => useContext(userContext);
-
+export const useUserContextState = () => useUserContext().state;
 export const useGetUserMap = (ids: DbUser["id"][]) => {
   const userContext = useUserContext();
   return useLiveQuery(async () => {
     const result = await userContext.fetchUserByIds(ids);
     return result;
-  }, [ids]);
+  }, [ids, userContext.state]);
 };
 export const useUserGetById = (id: DbUser["id"], options?: { immediately?: boolean }) => {
   const immediately = options?.immediately || false;
@@ -63,6 +66,7 @@ export const UserContextProvider = (props: { children: ReactNode }) => {
   return (
     <userContext.Provider
       value={{
+        state: lazyFetch.state,
         fetchUserByIds: async (userId: DbUser["id"][]) => {
           return await lazyFetch.fetchByIds(userId);
         },

@@ -4,19 +4,8 @@ import { useEventSubContext } from "@contexts/twitch/eventSubContext";
 
 import { ChatUsers } from "@components/chatUsers";
 import { FollowerInfo } from "@components/followers";
-import { ICONS } from "@components/icons";
 import { LiveWatchUsers } from "@components/liveWatchUsers";
 import { ChatList } from "@components/twitch/Chats";
-
-const FOOTER_CONTENT = [
-  { icon: ICONS.BROADCAST, text: "ライブ", path: "/" },
-  { icon: ICONS.GAME, text: "ゲーム", path: "/games" },
-  // { icon: ICONS.FOLLOW, text: "フォロワー", path: "/followers" },
-  // { icon: ICONS.REWARD, text: "報酬管理", path: "/reward" },
-  // { icon: ICONS.TODO, text: "TODO", path: "/todo" },
-  { icon: ICONS.DATABASE, text: "集計データ", path: "/database" },
-  { icon: ICONS.GEAR, text: "設定", path: "/setting" },
-];
 
 export const BroadcastContent = () => {
   const ctx = useEventSubContext();

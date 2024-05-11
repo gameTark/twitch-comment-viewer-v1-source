@@ -33,23 +33,18 @@ export const ChatBubble = ({
   header?: ReactNode;
   footer?: ReactNode;
 }) => {
-  const _image =
-    image == null ? null : (
-      <div className="chat-image avatar cursor-pointer" onClick={onClickAvater}>
-        <div className="w-10 rounded-full border-2">
-          <img {...image} />
-        </div>
-      </div>
-    );
-  const _footer = footer == null ? null : <div className="chat-footer">{footer}</div>;
-  const _header = header == null ? null : <div className="chat-header">{header}</div>;
-
   return (
     <div className={clsx("chat", type)}>
-      {_image}
-      {_header}
+      {image == null ? null : (
+        <div className="chat-image avatar cursor-pointer" onClick={onClickAvater}>
+          <div className="w-10 rounded-full border-2">
+            <img {...image} />
+          </div>
+        </div>
+      )}
+      {header == null ? null : <div className="chat-header">{header}</div>}
       <p className={clsx("chat-bubble", color)}>{message}</p>
-      {_footer}
+      {footer == null ? null : <div className="chat-footer">{footer}</div>}
     </div>
   );
 };

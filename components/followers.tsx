@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 import { useTwitchFollowersGetById } from "@resource/twitchWithDb";
 import { useEventSubContext } from "@contexts/twitch/eventSubContext";
-import { useGetUserMap } from "@contexts/twitch/userContext";
+import { useGetUserMap, useUserContextState } from "@contexts/twitch/userContext";
 import { dayjs } from "@libs/dayjs";
 import { filter } from "@libs/types";
 
@@ -13,13 +13,13 @@ import { useUserInfoModal } from "./twitch/User";
 
 const TypeTable = () => {
   const ctx = useEventSubContext();
+  const state = useUserContextState();
   const followers = useTwitchFollowersGetById(ctx?.me.id);
   const userMap = useGetUserMap(followers?.map((val) => val.userId) || []);
   const modal = useUserInfoModal();
 
   const userWithFollower = useMemo(() => {
     if (followers == null || userMap == null) return [];
-
     return followers
       .map((val) => {
         const user = userMap.get(val.userId);
@@ -30,8 +30,7 @@ const TypeTable = () => {
         };
       })
       .filter(filter.notNull);
-  }, [followers, userMap]);
-
+  }, [followers, userMap, state]);
   return (
     <Table
       type="object"

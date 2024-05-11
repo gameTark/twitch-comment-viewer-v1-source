@@ -152,9 +152,9 @@ const Flat = (props: Comment) => {
 const TypeViewer = (props: Comment) => {
   switch (props.type) {
     case "chat":
-      return <Bubble key={props.id} {...props} />;
+      return <Bubble {...props} />;
     case "reward":
-      return <Reward key={props.id} {...props} />;
+      return <Reward {...props} />;
     case "atutomatic-reward":
       return null;
   }

@@ -23,8 +23,8 @@ export const useBaseResourceLazyLoad = <
   interval?: number;
   timeout?: number;
 }) => {
-  const log = logger("production");
-  const _interval = interval || 100;
+  const log = logger("debug");
+  const _interval = interval || 300;
   const _timeout = timeout || 900;
   const [machine, send] = useStateMachine({
     initial: "initialized",
@@ -93,33 +93,32 @@ export const useBaseResourceLazyLoad = <
     });
   }, [machine]);
 
-  const isInitialized = useCallback(() => {
-    return refQueues.current.size == 0 && refData.current.size === 0;
-  }, []);
-
   const initialize = useCallback(() => {
-    if (isInitialized()) return;
     refQueues.current = new Set();
-    refData.current = new Map();
+    // refData.current = new Map(); // TODO: キャッシュ戦略を考える
+    queue.current = new Set();
   }, []);
 
   const fetchProcess = useCallback(async () => {
     const result = await fetcher(Array.from(refQueues.current));
     result.forEach((val) => refData.current.set(val[idKey], val));
+    return null;
   }, []);
 
   const fetchByIds = useCallback(async (ids: Id[]): Promise<Map<Result[typeof idKey], Result>> => {
+    const getResults = () => {
+      const completedIds = ids.filter((id) => refData.current.has(id)).length;
+      if (completedIds !== ids.length) return;
+      return refData.current;
+    };
+    const result = getResults();
+    if (result != null) return result; // TODO: キャッシュ戦略を考える
+
     send("REQUEST_CREATE");
     const id = uuid();
     queue.current.add(id);
     ids.forEach((val) => refQueues.current.add(val));
     return new Promise((resolve, reject) => {
-      const getResults = () => {
-        const completedIds = ids.filter((id) => refData.current.has(id)).length;
-        if (completedIds !== ids.length) return;
-        return refData.current;
-      };
-
       const cancelLoop = loop(() => {
         const data = getResults();
         if (data == null) return;
@@ -150,5 +149,6 @@ export const useBaseResourceLazyLoad = <
   return {
     fetchByIds,
     immediately: fetcher,
+    state: machine.value,
   };
 };
