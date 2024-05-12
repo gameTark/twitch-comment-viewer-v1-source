@@ -159,6 +159,20 @@ const Flat = (props: Comment) => {
   return <li className="border-b pb-1">{props.fragment}</li>;
 };
 
+const Mini = (props: Comment) => {
+  const userContext = useUserContext();
+  const user = useLiveQuery(async () => userContext.fetchById(props.userId), []);
+  const openModal = useUserInfoModal(props.userId);
+  return (
+    <li className="border-b pb-1 flex gap-4 items-center px-5">
+      <span className=" text-sm inline-block min-w-32 break-all font-bold cursor-pointer" onClick={() => openModal()}>
+        {user?.displayName || user?.login}
+      </span>
+      <span className="inline-block break-all">{props.fragment}</span>
+    </li>
+  );
+};
+
 const TypeViewer = (props: Comment) => {
   switch (props.type) {
     case "chat":
@@ -170,7 +184,7 @@ const TypeViewer = (props: Comment) => {
   }
 };
 
-const TypeFlat = (props: Comment) => {
+const CommentOnliy = (props: Comment) => {
   switch (props.type) {
     case "chat":
       return <Flat {...props} fragment={<>{props.fragment}</>} />;
@@ -191,7 +205,7 @@ const TypeFlat = (props: Comment) => {
 };
 
 export const ChatList = (props: {
-  type: "viewewr" | "flat";
+  type: string;
   query: Parameters<typeof getActions>[0];
 }) => {
   const comments = useLiveQuery(async () => {
@@ -207,10 +221,12 @@ export const ChatList = (props: {
           case "viewewr":
             return <TypeViewer key={action.id} {...action} />;
           case "flat":
-            return <TypeFlat key={action.id} {...action} />;
+            return <CommentOnliy key={action.id} {...action} />;
+          case "mini":
+            return <Mini key={action.id} {...action} />;
         }
       });
-  }, [comments]);
+  }, [comments, props.type]);
 
   const scroll = usePerfectScrollbar([comments]);
 
@@ -246,7 +262,7 @@ export const ChatTable = (props: { userId: DBUser["id"] }) => {
           case "viewer":
             return <TypeViewer key={action.id} {...action} />;
           case "flat":
-            return <TypeFlat key={action.id} {...action} />;
+            return <CommentOnliy key={action.id} {...action} />;
         }
       });
   }, [data]);
