@@ -13,7 +13,10 @@ const nextConfig = {
   publicRuntimeConfig: {
     basePath: isProd ? SUB_DIRECTORY : "",
   },
-  reactStrictMode: false, // <= trueからfalseに！！
+  reactStrictMode: true, // <= trueからfalseに！！
+  experimental: {
+    clientRouterFilter: false,
+  },
   webpack(config, context) {
     config.plugins.push(
       new NextPublicTsPlugin({
