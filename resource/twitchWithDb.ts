@@ -20,7 +20,7 @@ const createPatchDatabase = <T extends BaseSchema, Id extends IndexableType>(pro
   options?: {
     updateTiming?: { value: number, unit?: ManipulateType };
   },
-}) => async (ids: Id[]) => {
+}) => async (ids: Id[]): Promise<T[]> => {
   const results = (await props.table.bulkGet(ids)).filter(filter.notNull).filter((value) => {
     if (props.options?.updateTiming != null) {
       return dayjs(value.updateAt).isSameOrBefore(dayjs(new Date()).add(props.options.updateTiming.value, props.options.updateTiming.unit));
@@ -35,7 +35,7 @@ const createPatchDatabase = <T extends BaseSchema, Id extends IndexableType>(pro
   const notExistsUserList = await props.fetcher(notExistsIdList);
   await props.table.bulkPut(notExistsUserList);
 
-  return await props.table.bulkGet(ids);
+  return (await props.table.bulkGet(ids)).filter(filter.notNull);
 }
 
 const _createFetcher = <T extends object, Id extends IndexableType>(fetcher: (id: Id[]) => Promise<T[]>) => async (id: Id[]): Promise<T[]> => {
