@@ -1,9 +1,9 @@
 import { useCallback, useState } from "react";
+import { DBGame, DBGameIndex } from "@schemas/twitch/Game";
+import { DBUser, DBUserIndex } from "@schemas/twitch/User";
 import Dexie, { Collection, IndexableType, Table } from "dexie";
 import { useLiveQuery } from "dexie-react-hooks";
-
-import { ChatFragment } from "@libs/notification/channelChatMessage";
-
+import { DBAction, DBActionIndex } from "@schemas/twitch/Actions";
 const DB_VERSION = {
   "2024/04/03.1": 14, // followersのcreatedAtにindexを追加
   "2024/04/10": 16, // followersのcreatedAtにindexを追加
@@ -24,10 +24,11 @@ export interface BaseSchema {
   deletedAt?: Date;
 }
 export class MySubClassedDexie extends Dexie {
-  users!: Table<DbUser>;
-  games!: Table<DbGame>;
+  users!: Table<DBUser>;
+  games!: Table<DBGame>;
+  actions!: Table<DBAction>;
+
   broadcastTemplates!: Table<DbBroadcastTemplate>;
-  actions!: Table<DbAction>;
   followers!: Table<DbFollowers>;
 
   channelHistories!: Table<DbChannelHistories>;
@@ -41,12 +42,12 @@ export class MySubClassedDexie extends Dexie {
   constructor() {
     super("twitch-comments");
     this.version(DB_VERSION["2024/05/11"]).stores({
-      users: "id,*userId,displayName,type,broadcasterType",
-      actions: "++autoincrementId,id,*channel,messageType,*userId,*timestamp,[channel+timestamp]",
+      users: DBUserIndex,
+      games: DBGameIndex,
+      actions: DBActionIndex,
       followers: "++id,channelId,userId,[channelId+userId],createdAt,[channelId+createdAt]",
       channelHistories: "++id,channelId,type,categoryId,timestamp,[channelId+timestamp]",
       listenerHistories: "++id,channelId,userId,[channelId+timestamp]",
-      games: "id,igdb_id,name",
       broadcastTemplates: "++id,channelId,gameId,*tags,favorite",
       parameters: "type",
       spam: "login",
@@ -139,8 +140,8 @@ export type DbParametes =
   | AbstractParameter<
       "me",
       {
-        id: DbUser["id"];
-        login: DbUser["login"];
+        id: DBUser["id"];
+        login: DBUser["login"];
       }
     >
   | AbstractParameter<
@@ -154,21 +155,21 @@ export type DbParametes =
   | AbstractParameter<
       "chatters",
       {
-        users: DbUser["id"][];
+        users: DBUser["id"][];
         total: number;
       }
     >;
 
 export interface DbListenerHistories {
   id?: number;
-  channelId: DbUser["id"];
-  userId: DbUser["id"];
+  channelId: DBUser["id"];
+  userId: DBUser["id"];
   timestamp: Date;
   score: number; // 1 - 0
 }
 export interface DbChannelHistories extends BaseSchema {
   id?: number;
-  channelId: DbUser["id"];
+  channelId: DBUser["id"];
   type: "update" | "online" | "offline";
   broadcastTitle: string;
   categoryId: string;
@@ -186,33 +187,9 @@ export interface Spam {
   login: string;
 }
 
-export type DbAction = DbComment | DbReward | DbAutomaticReward;
-
-export interface DbBaseAction extends BaseSchema {
-  autoincrementId?: number;
-  id: string;
-  channel: string;
-  userId: string | null;
-  timestamp?: number; // unix time
-  bits?: string;
-  rowdata: any; // JSON.stringfy
-}
-export interface DbComment extends DbBaseAction {
-  messageType: "chat";
-  message: string;
-  fragments: ChatFragment[];
-}
-
-export interface DbReward extends DbBaseAction {
-  messageType: "reward";
-  rewardId: string;
-  userTitle: string;
-  userInput: string;
-}
-
 export interface DbBroadcastTemplate extends BaseSchema {
   id?: number;
-  channelId?: DbUser["id"];
+  channelId?: DBUser["id"];
 
   gameId?: string;
   broadcastTitle: string;
@@ -225,30 +202,9 @@ export interface DbBroadcastTemplate extends BaseSchema {
   favorite?: boolean;
 }
 
-export interface DbAutomaticReward extends DbBaseAction {
-  messageType: "atutomatic-reward";
-  rewardId: string;
-  userTitle: string;
-  userInput: string;
-}
-
 export interface Config {
-  channelId: DbUser["id"];
+  channelId: DBUser["id"];
   followerUpdateInterval: number;
-}
-
-export interface DbUser extends BaseSchema {
-  id: string;
-  displayName: string;
-  login: string;
-  type: string;
-  broadcasterType: string;
-  description: string;
-  profileImageUrl: string;
-  offlineImageUrl: string;
-  metaComment?: string;
-  isSpam?: boolean;
-  rowData: string;
 }
 
 export interface DbGame extends BaseSchema {
@@ -260,8 +216,8 @@ export interface DbGame extends BaseSchema {
 
 export interface DbFollowers extends BaseSchema {
   id?: number;
-  channelId: DbUser["id"];
-  userId: DbUser["id"];
+  channelId: DBUser["id"];
+  userId: DBUser["id"];
   followedAt: Date;
 }
 

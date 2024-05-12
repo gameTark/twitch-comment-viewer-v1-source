@@ -1,12 +1,12 @@
 import { useCallback } from "react";
+import { DBUser } from "@schemas/twitch/User";
 import clsx from "clsx";
 import { useLiveQuery } from "dexie-react-hooks";
 
-import { db, DbUser } from "@resource/db";
+import { db } from "@resource/db";
 import { useTiwtchUpdateUserById, useTwitchFollowersGetById } from "@resource/twitchWithDb";
 import { useUserContext } from "@contexts/twitch/userContext";
 import { filter } from "@libs/types";
-import { useAsyncMemo } from "@libs/uses";
 
 import { Stat } from "@components/dasyui/Stat";
 import { ICONS } from "@components/icons";
@@ -14,7 +14,7 @@ import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 import { useUserInfoModal } from "./User";
 
 // https://daisyui.com/components/stat/
-const TypeListItem = (props: { userData: DbUser }) => {
+const TypeListItem = (props: { userData: DBUser }) => {
   const update = useTiwtchUpdateUserById(props.userData.id);
   const me = useLiveQuery(() => db.getMe(), []);
   const handleSpam = useCallback(() => {
@@ -58,7 +58,7 @@ export const ChatUsers = (props: ChatUsersProps) => {
     const result = await Promise.all(chatters.users.map((val) => userContext.fetchById(val)));
     return result.filter(filter.notNull);
   }, [me?.id, chatters]);
-  
+
   const ps = usePerfectScrollbar([chatters]);
 
   switch (props.type) {

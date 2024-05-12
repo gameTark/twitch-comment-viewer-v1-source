@@ -1,73 +1,82 @@
 "use client";
 
 import { useCallback } from "react";
+import { DBUser, DBUserSchema } from "@schemas/twitch/User";
+import { ManipulateType } from "dayjs";
+import { IndexableType, Table } from "dexie";
 import { useLiveQuery } from "dexie-react-hooks";
 
-import { BaseSchema, db, DbBroadcastTemplate, DbGame, DbUser } from "@resource/db";
+import { BaseSchema, db, DbBroadcastTemplate, DbGame } from "@resource/db";
+import { dayjs } from "@libs/dayjs";
 import { fetchGame, fetchUsers } from "@libs/twitch";
 import { filter } from "@libs/types";
 import { useAsyncMemo } from "@libs/uses";
 
 import { useGetComments } from "../watcher/useCommentWatcher";
-import { IndexableType, Table } from "dexie";
-import { ManipulateType } from "dayjs";
-import { dayjs } from "@libs/dayjs";
 
-const createPatchDatabase = <T extends BaseSchema, Id extends IndexableType>(props: {
-  table: Table<T>,
-  idKey: keyof T,
-  fetcher: (ids: Id[]) => Promise<T[]>,
-  options?: {
-    updateTiming?: { value: number, unit?: ManipulateType };
-  },
-}) => async (ids: Id[]): Promise<T[]> => {
-  const results = (await props.table.bulkGet(ids)).filter(filter.notNull).filter((value) => {
-    if (props.options?.updateTiming != null) {
-      return dayjs(value.updateAt).isSameOrBefore(dayjs(new Date()).add(props.options.updateTiming.value, props.options.updateTiming.unit));
-    }
-    return true;
-  });
-  const notExistsIdList = ids.filter((val) => {
-    return results.findIndex((result) => {
-      return result[props.idKey] === val
-    }) === - 1
-  });
-  const notExistsUserList = await props.fetcher(notExistsIdList);
-  await props.table.bulkPut(notExistsUserList);
+const createPatchDatabase =
+  <T extends BaseSchema, Id extends IndexableType>(props: {
+    table: Table<T>;
+    idKey: keyof T;
+    fetcher: (ids: Id[]) => Promise<T[]>;
+    options?: {
+      updateTiming?: { value: number; unit?: ManipulateType };
+    };
+  }) =>
+  async (ids: Id[]): Promise<T[]> => {
+    const results = (await props.table.bulkGet(ids)).filter(filter.notNull).filter((value) => {
+      if (props.options?.updateTiming != null) {
+        return dayjs(value.updateAt).isSameOrBefore(
+          dayjs(new Date()).add(props.options.updateTiming.value, props.options.updateTiming.unit),
+        );
+      }
+      return true;
+    });
+    const notExistsIdList = ids.filter((val) => {
+      return (
+        results.findIndex((result) => {
+          return result[props.idKey] === val;
+        }) === -1
+      );
+    });
+    const notExistsUserList = await props.fetcher(notExistsIdList);
+    await props.table.bulkPut(notExistsUserList);
 
-  return (await props.table.bulkGet(ids)).filter(filter.notNull);
-}
+    return (await props.table.bulkGet(ids)).filter(filter.notNull);
+  };
 
-const _createFetcher = <T extends object, Id extends IndexableType>(fetcher: (id: Id[]) => Promise<T[]>) => async (id: Id[]): Promise<T[]> => {
-  if (id.length === 0) return [];
-  const res = await Promise.all(
-    new Array(Math.ceil(id.length / 100)).fill(1).map(async (_, index) => {
-      const p = index * 100;
-      const n = index * 100 + 100;
-      return (await fetcher(id.slice(p, n)));
-    }),
-  );
-  return res.flat();
-}
+const _createFetcher =
+  <T extends object, Id extends IndexableType>(fetcher: (id: Id[]) => Promise<T[]>) =>
+  async (id: Id[]): Promise<T[]> => {
+    if (id.length === 0) return [];
+    const res = await Promise.all(
+      new Array(Math.ceil(id.length / 100)).fill(1).map(async (_, index) => {
+        const p = index * 100;
+        const n = index * 100 + 100;
+        return await fetcher(id.slice(p, n));
+      }),
+    );
+    return res.flat();
+  };
 
 export const getBroadcastTemplates = (
   props?:
     | {
-      type: "id";
-      value: Required<DbBroadcastTemplate>["id"][];
-    }
+        type: "id";
+        value: Required<DbBroadcastTemplate>["id"][];
+      }
     | {
-      type: "gameId";
-      value: Required<DbBroadcastTemplate>["gameId"][];
-    }
+        type: "gameId";
+        value: Required<DbBroadcastTemplate>["gameId"][];
+      }
     | {
-      type: "tags";
-      value: Required<DbBroadcastTemplate>["tags"];
-    }
+        type: "tags";
+        value: Required<DbBroadcastTemplate>["tags"];
+      }
     | {
-      type: "favorite";
-      value: Required<DbBroadcastTemplate>["favorite"];
-    },
+        type: "favorite";
+        value: Required<DbBroadcastTemplate>["favorite"];
+      },
 ) => {
   if (props === undefined) return db.broadcastTemplates.toArray();
   switch (props.type) {
@@ -116,7 +125,7 @@ export const getFollowers = async (userId: string) => {
 export const useGetUserMapById = () => {
   const data = useLiveQuery(async () => {
     const result = await db.users.toArray();
-    const userMap = new Map<DbUser["id"], DbUser>();
+    const userMap = new Map<DBUser["id"], DBUser>();
     result.forEach((val) => userMap.set(val.id, val));
     return userMap;
   }, []);
@@ -136,7 +145,7 @@ export const useTwitchFollowersGetById = (channelId?: string) => {
 
 export const useTiwtchUpdateUserById = (id: string) => {
   const updateUser = useCallback(
-    async (user: Partial<DbUser>) => {
+    async (user: Partial<DBUser>) => {
       const result = await db.users.update(id, user);
       return result;
     },
@@ -168,20 +177,20 @@ export const useSpamCheck = (login?: string) => {
  */
 export const getUsers = createPatchDatabase({
   table: db.users,
-  idKey: 'id',
+  idKey: "id",
   options: {
     updateTiming: {
       value: 1,
-      unit: 'day',
-    }
+      unit: "day",
+    },
   },
   fetcher: _createFetcher(async (ids) => {
     const result = await fetchUsers({
-      id: ids.map(val => val.toString()),
+      id: ids.map((val) => val.toString()),
     });
-    const spam = await db.spam.bulkGet(result.data.map(val => val.login));
-    return result.data.map(val => {
-      return {
+    const spam = await db.spam.bulkGet(result.data.map((val) => val.login));
+    return result.data.map((val) => {
+      return DBUserSchema.parse({
         id: val.id,
         login: val.login,
         displayName: val.display_name,
@@ -192,12 +201,12 @@ export const getUsers = createPatchDatabase({
         offlineImageUrl: val.offline_image_url,
         createdAt: new Date(),
         updateAt: new Date(),
-        isSpam: spam.findIndex(v => v?.login === val.login) !== -1,
+        isSpam: spam.findIndex((v) => v?.login === val.login) !== -1,
         rowData: JSON.stringify(val),
-      }
+      });
     });
-  })
-});;
+  }),
+});
 
 /*
 ==========================================================================
@@ -206,9 +215,9 @@ export const getUsers = createPatchDatabase({
  */
 export const getGames = createPatchDatabase({
   table: db.games,
-  idKey: 'id',
+  idKey: "id",
   fetcher: _createFetcher(async (ids) => {
-    const res = await fetchGame({ id: ids.map(id => id.toString()) });
+    const res = await fetchGame({ id: ids.map((id) => id.toString()) });
     const dbData = res.data.map((game): DbGame => {
       return {
         id: game.id,
@@ -220,5 +229,5 @@ export const getGames = createPatchDatabase({
       };
     });
     return dbData;
-  })
-});;
+  }),
+});

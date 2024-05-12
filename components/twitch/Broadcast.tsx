@@ -189,30 +189,33 @@ export function BroadcastInformation() {
       },
     });
   }, []);
-  const handleApply: HandleBroadcastViewerEvents = useCallback((ev) => {
-    const id = me?.id;
-    if (id == null) return;
-    dialog.open({
-      title: "配信に適用しますか？",
-      onSuccess: () => {
-        return fetchChannelInfoPatch({
-          id: {
-            broadcaster_id: id,
-          },
-          patch: {
-            game_id: ev.gameId,
-            broadcaster_language: ev.language,
-            title: ev.broadcastTitle,
-            tags: ev.tags,
-            content_classification_labels: ev.classificationLabels,
-            is_branded_content: ev.isBrandedContent,
-          },
-        }).then(() => {
-          dialog.close();
-        });
-      },
-    });
-  }, [me]);
+  const handleApply: HandleBroadcastViewerEvents = useCallback(
+    (ev) => {
+      const id = me?.id;
+      if (id == null) return;
+      dialog.open({
+        title: "配信に適用しますか？",
+        onSuccess: () => {
+          return fetchChannelInfoPatch({
+            id: {
+              broadcaster_id: id,
+            },
+            patch: {
+              game_id: ev.gameId,
+              broadcaster_language: ev.language,
+              title: ev.broadcastTitle,
+              tags: ev.tags,
+              content_classification_labels: ev.classificationLabels,
+              is_branded_content: ev.isBrandedContent,
+            },
+          }).then(() => {
+            dialog.close();
+          });
+        },
+      });
+    },
+    [me],
+  );
 
   const allItems = useLiveQuery(async () => {
     return (await getBroadcastTemplates()).filter(filter.notNull);

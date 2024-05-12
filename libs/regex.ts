@@ -10,9 +10,9 @@ export const urlLinkTagReplacement = (
     start: string;
     end: string;
   } = {
-      start: '<a class="link link-info" href="$&" target="__blank">',
-      end: "</a>",
-    },
+    start: '<a class="link link-info" href="$&" target="__blank">',
+    end: "</a>",
+  },
 ) => text.replace(urlRegexp, `${tag.start}$&${tag.end}`);
 
 export const isJsonString = (target: string) => {
@@ -30,5 +30,5 @@ export const isUrl = (target: string) => {
   } catch {
     return false;
   }
-}
+};
 export const isImage = /(http(s?):)([/|.|\w|\s|-])*\.(?:jpg|gif|png|webp|JPG)/;

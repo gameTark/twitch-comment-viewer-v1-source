@@ -1,5 +1,7 @@
 "use client";
 
+import { DBGameSchema } from "@schemas/twitch/Game";
+
 import { FollowerInfo } from "@components/followers";
 import { LiveWatchUsers } from "@components/liveWatchUsers";
 import { ChatList } from "@components/twitch/Chats";

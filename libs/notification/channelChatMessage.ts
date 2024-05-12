@@ -1,3 +1,5 @@
+import { Fragment } from "@schemas/twitch/Fragment";
+
 export interface ChannelChatMessageResult {
   metadata: Metadata;
   payload: Payload;
@@ -56,7 +58,7 @@ interface Event {
 
 interface Message {
   text: string;
-  fragments: ChatFragment[];
+  fragments: Fragment[];
 }
 
 interface Badge {

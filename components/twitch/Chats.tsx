@@ -1,10 +1,9 @@
 import { ReactNode, useMemo } from "react";
+import { DBUser } from "@schemas/twitch/User";
 import * as escaper from "html-escaper";
 
-import { DbAction, DbUser } from "@resource/db";
 import { useUserContext } from "@contexts/twitch/userContext";
 import { dayjs } from "@libs/dayjs";
-import { ChatFragment } from "@libs/notification/channelChatMessage";
 import { urlLinkTagReplacement } from "@libs/regex";
 import { getEmoteImage, twitchLinks } from "@libs/twitch";
 import { filter } from "@libs/types";
@@ -14,16 +13,18 @@ import { ChatBubble, ChatSkeleton } from "@components/dasyui/ChatBubble";
 import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 import { useGetComments, useGetCommentsByUserId } from "../../watcher/useCommentWatcher";
 import { useUserInfoModal } from "./User";
+import { Fragment } from "@schemas/twitch/Fragment";
+import { DBAction } from "@schemas/twitch/Actions";
 
 interface Comment {
   id: string;
-  type: DbAction["messageType"];
-  userId: DbUser["id"];
+  type: DBAction["messageType"];
+  userId: DBUser["id"];
   fragment: ReactNode;
   timestamp: number;
 }
 
-const commentParser = (action: DbAction): Comment | undefined => {
+const commentParser = (action: DBAction): Comment | undefined => {
   if (action.userId == null) return;
   if (action.timestamp == null) return;
   switch (action.messageType) {
@@ -60,7 +61,7 @@ const commentParser = (action: DbAction): Comment | undefined => {
   }
 };
 
-const ParseFragment = (props: { fragments: ChatFragment[] }) => {
+const ParseFragment = (props: { fragments: Fragment[] }) => {
   return (
     <>
       {props.fragments.map((fragment, index) => {
@@ -213,7 +214,7 @@ export const ChatList = () => {
   );
 };
 
-export const ChatTable = (props: { userId?: DbUser["id"] }) => {
+export const ChatTable = (props: { userId?: DBUser["id"] }) => {
   const comments = useGetCommentsByUserId(props.userId);
   const type: string = "flat";
 

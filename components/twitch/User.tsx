@@ -1,8 +1,9 @@
 import { ChangeEventHandler, useCallback, useEffect, useMemo, useState } from "react";
+import { DBUser } from "@schemas/twitch/User";
 import clsx from "clsx";
 import { useLiveQuery } from "dexie-react-hooks";
 
-import { db, DbUser } from "@resource/db";
+import { db } from "@resource/db";
 import {
   useSpamCheck,
   useTiwtchUpdateUserById,
@@ -33,10 +34,10 @@ const Badge = (props: BadgeProps) => {
   );
 };
 
-export const useUserInfoModal = (userId?: DbUser["id"]) => {
+export const useUserInfoModal = (userId?: DBUser["id"]) => {
   const modal = useModalContext();
   const openModal = useCallback(
-    (_userId?: DbUser["id"]) => {
+    (_userId?: DBUser["id"]) => {
       const u = _userId || userId;
       if (u == null) return;
       modal.open(<UserInformation userId={u} />);
@@ -46,7 +47,7 @@ export const useUserInfoModal = (userId?: DbUser["id"]) => {
   return openModal;
 };
 
-export const UserInformation = (props: { userId: DbUser["id"] }) => {
+export const UserInformation = (props: { userId: DBUser["id"] }) => {
   const me = useLiveQuery(() => db.getMe(), []);
   const userContext = useUserContext();
   const user = useAsyncMemo(async () => {

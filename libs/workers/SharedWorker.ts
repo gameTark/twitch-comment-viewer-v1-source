@@ -13,6 +13,7 @@ import {
   getChatUsers,
 } from "../twitch";
 import { EventListenerMap, filter, valueOf } from "../types";
+import { DBAction, DBActionSchema } from "@schemas/twitch/Actions";
 
 export default null; //TypeScript警告避け
 
@@ -260,7 +261,7 @@ const createSocket = () => {
       });
 
       notice("channel.chat.message", (event) => {
-        db.actions.add({
+        db.actions.add(DBActionSchema.parse({
           id: event.payload.event.message_id,
           userId: event.payload.event.chatter_user_id,
           channel: userData.login,
@@ -271,10 +272,10 @@ const createSocket = () => {
           rowdata: JSON.stringify(event),
           updateAt: new Date(),
           createdAt: new Date(),
-        });
+        } as DBAction));
       });
       notice("channel.channel_points_automatic_reward_redemption.add", (event) => {
-        db.actions.add({
+        db.actions.add(DBActionSchema.parse({
           id: event.payload.event.id,
           userId: event.payload.event.user_id,
           channel: userData.login,
@@ -286,10 +287,10 @@ const createSocket = () => {
           rowdata: JSON.stringify(event),
           updateAt: new Date(),
           createdAt: new Date(),
-        });
+        } as DBAction));
       });
       notice("channel.channel_points_custom_reward_redemption.add", (event) => {
-        db.actions.add({
+        db.actions.add(DBActionSchema.parse({
           id: event.payload.event.id,
           userId: event.payload.event.user_id,
           channel: userData.login,
@@ -301,8 +302,9 @@ const createSocket = () => {
           rowdata: JSON.stringify(event),
           updateAt: new Date(),
           createdAt: new Date(),
-        });
+        } as DBAction));
       });
+
       notice("channel.update", (e) => {
         db.channelHistories.put({
           channelId: userData.login,
@@ -318,6 +320,7 @@ const createSocket = () => {
         });
       });
     },
+
     close: () => {
       if (socketInstance == null) return;
       socketInstance.close();
