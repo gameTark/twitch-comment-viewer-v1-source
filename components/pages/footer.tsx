@@ -14,7 +14,13 @@ import { DrawerOpener } from "@components/dasyui/Drawer";
 import { ICONS } from "@components/icons";
 import { Me } from "@components/twitch/Me";
 
-const FOOTER_CONTENT = [
+type LinkType = __next_route_internal_types__.RouteImpl<unknown>
+
+const FOOTER_CONTENT: {
+  icon: ReactNode,
+  text: string;
+  path: LinkType,
+}[] = [
   { icon: ICONS.BROADCAST, text: "ライブ", path: "/" },
   { icon: ICONS.GAME, text: "ゲーム", path: "/games" },
   // { icon: ICONS.FOLLOW, text: "フォロワー", path: "/followers" },
@@ -53,7 +59,7 @@ const FooterContent = (props: {
   icon: ReactNode;
   text: string;
   active?: boolean;
-  path: string;
+  path: LinkType;
 }) => {
   const active = props.active || false;
   const activate = clsx(
@@ -69,8 +75,7 @@ const FooterContent = (props: {
         "flex flex-col items-center cursor-pointer h-full justify-between w-16 whitespace-nowrap",
         activate,
       )}
-      href={props.path}
-      as={props.path}>
+      href={props.path}>
       <span>{props.icon}</span>
       <p className="text-xs font-black ">{props.text}</p>
     </Link>

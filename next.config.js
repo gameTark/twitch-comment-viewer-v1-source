@@ -15,6 +15,7 @@ const nextConfig = {
   },
   reactStrictMode: true, // <= trueからfalseに！！
   experimental: {
+    typedRoutes: true,
     clientRouterFilter: false,
   },
   webpack(config, context) {
