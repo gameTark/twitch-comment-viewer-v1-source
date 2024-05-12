@@ -115,8 +115,8 @@ export const UserInformation = (props: { userId: DBUser["id"] }) => {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex gap-6 content-stretch bg-cover">
-        <div className="chat-image avatar dropdown dropdown-end">
-          <div className="w-40 rounded-full border" tabIndex={0} role="button">
+        <div className="chat-image avatar dropdown dropdown-end select-none">
+          <div className="w-40 rounded-full border">
             <img alt={user.displayName} src={user.profileImageUrl} />
           </div>
         </div>
@@ -130,7 +130,7 @@ export const UserInformation = (props: { userId: DBUser["id"] }) => {
               <p>フォロー開始日: {followed.from(dayjs())}</p>
             </>
           )}
-          <div className="mt-auto">{badge}</div>
+          <div className="mt-auto select-none">{badge}</div>
         </div>
       </div>
       <div>

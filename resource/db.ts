@@ -1,9 +1,10 @@
-import { useCallback, useState } from "react";
+import { DependencyList, useCallback, useEffect, useState } from "react";
+import { DBAction, DBActionIndex } from "@schemas/twitch/Actions";
 import { DBGame, DBGameIndex } from "@schemas/twitch/Game";
 import { DBUser, DBUserIndex } from "@schemas/twitch/User";
 import Dexie, { Collection, IndexableType, Table } from "dexie";
 import { useLiveQuery } from "dexie-react-hooks";
-import { DBAction, DBActionIndex } from "@schemas/twitch/Actions";
+
 const DB_VERSION = {
   "2024/04/03.1": 14, // followersのcreatedAtにindexを追加
   "2024/04/10": 16, // followersのcreatedAtにindexを追加
@@ -80,6 +81,7 @@ export const dbPagination = async <Type>(
   }): Promise<{
     target: Type[];
     page: number;
+    count: number;
     maxPage: number;
     hasPrev: boolean;
     hasNext: boolean;
@@ -90,6 +92,7 @@ export const dbPagination = async <Type>(
       .toArray();
     return {
       target: value,
+      count: count,
       page: props.pageNo + 1,
       maxPage: Math.ceil(count / props.pageSize),
       hasPrev: props.pageNo >= 1,
@@ -103,20 +106,19 @@ export const useDbPagination = <Type>(
     pageNo: number;
     pageSize: number;
   },
+  deps: any[],
 ) => {
   const [page, setPage] = useState(pagintaiton.pageNo);
-  const p = useLiveQuery(async () => {
+  useEffect(() => {
     setPage(0);
-    return dbPagination(target);
-  }, [target]);
-
-  const value = useLiveQuery(() => {
-    if (p == null) return;
+  }, deps);
+  const value = useLiveQuery(async () => {
+    const p = await dbPagination(target);
     return p({
       pageNo: page,
       pageSize: pagintaiton.pageSize,
     });
-  }, [p, page, pagintaiton.pageSize]);
+  }, [page, pagintaiton.pageSize, ...deps]);
 
   const next = useCallback(() => {
     setPage((v) => Math.max(v + 1, 0));

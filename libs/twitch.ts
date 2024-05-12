@@ -275,6 +275,7 @@ export const generateTwitchOAtuhURL = ({
 
 /**
  * コンテンツ分類（飲酒等）の注意タグを記載する
+ * tips MatureGame 成人向けゲームはデータがない場合のみ記載可能
  */
 interface FetchContentClassificationLabelPramas {
   locale?: string; // default:en-US "bg-BG", "cs-CZ", "da-DK", "da-DK", "de-DE", "el-GR", "en-GB", "en-US", "es-ES", "es-MX", "fi-FI", "fr-FR", "hu-HU", "it-IT", "ja-JP", "ko-KR", "nl-NL", "no-NO", "pl-PL", "pt-BT", "pt-PT", "ro-RO", "ru-RU", "sk-SK", "sv-SE", "th-TH", "tr-TR", "vi-VN", "zh-CN", "zh-TW"

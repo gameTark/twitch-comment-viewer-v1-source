@@ -1,20 +1,29 @@
 import * as z from "zod";
 
+import { DBBaseSchema } from "./BaseSchema";
 import { FragmentSchema } from "./Fragment";
 import { DBUserId } from "./User";
-import { DBBaseSchema } from "./BaseSchema";
 
-export const DBActionIndex = "++autoincrementId,id,*channel,messageType,*userId,*timestamp,[channel+timestamp]";
+const indexes = {
+  autoincrementId: {
+    primary: true,
+  },
+  id: {},
+};
+export const DBActionIndex =
+  "++autoincrementId,id,*channel,messageType,*userId,*timestamp,[channel+timestamp]";
 
-const DBBaseActionSchema = z.object({
-  autoincrementId: z.number().optional(),
-  id: z.string(),
-  channel: z.string(),
-  userId: DBUserId.nullable().default(null),
-  timestamp: z.number().optional(),
-  bits: z.string().optional(),
-  rowdata: z.string().optional(), // json?
-}).and(DBBaseSchema);
+const DBBaseActionSchema = z
+  .object({
+    autoincrementId: z.number().optional(),
+    id: z.string(),
+    channel: z.string(),
+    userId: DBUserId.nullable().default(null),
+    timestamp: z.number().optional(),
+    bits: z.string().optional(),
+    rowdata: z.string().optional(), // json?
+  })
+  .and(DBBaseSchema);
 
 export const DBComentSchema = z
   .object({
@@ -32,7 +41,6 @@ export const DBReward = z
     userInput: z.string(),
   })
   .and(DBBaseActionSchema);
-
 
 export const DBActionSchema = DBComentSchema.or(DBReward);
 export type DBAction = z.infer<typeof DBActionSchema>;

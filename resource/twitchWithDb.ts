@@ -12,8 +12,6 @@ import { fetchGame, fetchUsers } from "@libs/twitch";
 import { filter } from "@libs/types";
 import { useAsyncMemo } from "@libs/uses";
 
-import { useGetComments } from "../watcher/useCommentWatcher";
-
 const createPatchDatabase =
   <T extends BaseSchema, Id extends IndexableType>(props: {
     table: Table<T>;
@@ -152,13 +150,6 @@ export const useTiwtchUpdateUserById = (id: string) => {
     [id],
   );
   return updateUser;
-};
-
-export const useCommentCount = () => {
-  const data = useGetComments({
-    limit: Infinity,
-  });
-  return data.length;
 };
 
 export const useSpamCheck = (login?: string) => {

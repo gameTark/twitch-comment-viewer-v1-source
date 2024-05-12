@@ -28,7 +28,7 @@ export const Footer = () => {
   const live = useLiveQuery(() => db.getLive(), []);
   if (!isLogin) return;
   return (
-    <footer className="footer items-center bg-primary flex text-primary-content sticky bottom-0 h-fit mt-auto py-3 px-4">
+    <footer className="footer items-center bg-primary flex text-primary-content sticky bottom-0 h-fit mt-auto py-3 px-4 select-none">
       <div className="flex gap-4 items-center grow">
         <Me />
         <FooterContentList />

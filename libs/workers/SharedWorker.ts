@@ -1,3 +1,4 @@
+import { DBAction, DBActionSchema } from "@schemas/twitch/Actions";
 import dayjs from "dayjs";
 
 import { db, DbFollowers } from "@resource/db";
@@ -13,7 +14,6 @@ import {
   getChatUsers,
 } from "../twitch";
 import { EventListenerMap, filter, valueOf } from "../types";
-import { DBAction, DBActionSchema } from "@schemas/twitch/Actions";
 
 export default null; //TypeScript警告避け
 
@@ -261,48 +261,54 @@ const createSocket = () => {
       });
 
       notice("channel.chat.message", (event) => {
-        db.actions.add(DBActionSchema.parse({
-          id: event.payload.event.message_id,
-          userId: event.payload.event.chatter_user_id,
-          channel: userData.login,
-          message: event.payload.event.message.text,
-          messageType: "chat",
-          fragments: event.payload.event.message.fragments,
-          timestamp: Date.now(),
-          rowdata: JSON.stringify(event),
-          updateAt: new Date(),
-          createdAt: new Date(),
-        } as DBAction));
+        db.actions.add(
+          DBActionSchema.parse({
+            id: event.payload.event.message_id,
+            userId: event.payload.event.chatter_user_id,
+            channel: userData.login,
+            message: event.payload.event.message.text,
+            messageType: "chat",
+            fragments: event.payload.event.message.fragments,
+            timestamp: Date.now(),
+            rowdata: JSON.stringify(event),
+            updateAt: new Date(),
+            createdAt: new Date(),
+          } as DBAction),
+        );
       });
       notice("channel.channel_points_automatic_reward_redemption.add", (event) => {
-        db.actions.add(DBActionSchema.parse({
-          id: event.payload.event.id,
-          userId: event.payload.event.user_id,
-          channel: userData.login,
-          userTitle: event.payload.event.reward.type,
-          userInput: event.payload.event.user_input,
-          rewardId: event.payload.event.reward.type,
-          messageType: "atutomatic-reward",
-          timestamp: Date.now(),
-          rowdata: JSON.stringify(event),
-          updateAt: new Date(),
-          createdAt: new Date(),
-        } as DBAction));
+        db.actions.add(
+          DBActionSchema.parse({
+            id: event.payload.event.id,
+            userId: event.payload.event.user_id,
+            channel: userData.login,
+            userTitle: event.payload.event.reward.type,
+            userInput: event.payload.event.user_input,
+            rewardId: event.payload.event.reward.type,
+            messageType: "atutomatic-reward",
+            timestamp: Date.now(),
+            rowdata: JSON.stringify(event),
+            updateAt: new Date(),
+            createdAt: new Date(),
+          } as DBAction),
+        );
       });
       notice("channel.channel_points_custom_reward_redemption.add", (event) => {
-        db.actions.add(DBActionSchema.parse({
-          id: event.payload.event.id,
-          userId: event.payload.event.user_id,
-          channel: userData.login,
-          userTitle: event.payload.event.reward.title,
-          userInput: event.payload.event.user_input,
-          rewardId: event.payload.event.reward.id,
-          messageType: "reward",
-          timestamp: Date.now(),
-          rowdata: JSON.stringify(event),
-          updateAt: new Date(),
-          createdAt: new Date(),
-        } as DBAction));
+        db.actions.add(
+          DBActionSchema.parse({
+            id: event.payload.event.id,
+            userId: event.payload.event.user_id,
+            channel: userData.login,
+            userTitle: event.payload.event.reward.title,
+            userInput: event.payload.event.user_input,
+            rewardId: event.payload.event.reward.id,
+            messageType: "reward",
+            timestamp: Date.now(),
+            rowdata: JSON.stringify(event),
+            updateAt: new Date(),
+            createdAt: new Date(),
+          } as DBAction),
+        );
       });
 
       notice("channel.update", (e) => {

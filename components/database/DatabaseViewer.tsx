@@ -8,10 +8,14 @@ import { db, useDbPagination } from "@resource/db";
 import { Table } from "@components/dasyui/Table";
 
 function Viewer(props: { data: DexieTable<any, any> }) {
-  const targets = useDbPagination(props.data, {
-    pageNo: 0,
-    pageSize: 10,
-  });
+  const targets = useDbPagination(
+    props.data,
+    {
+      pageNo: 0,
+      pageSize: 10,
+    },
+    [props],
+  );
 
   const keys = useMemo(() => {
     if (targets.value == null) return [];

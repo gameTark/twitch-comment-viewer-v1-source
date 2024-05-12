@@ -1,7 +1,5 @@
 "use client";
 
-import { DBGameSchema } from "@schemas/twitch/Game";
-
 import { FollowerInfo } from "@components/followers";
 import { LiveWatchUsers } from "@components/liveWatchUsers";
 import { ChatList } from "@components/twitch/Chats";
@@ -35,7 +33,7 @@ export const BroadcastContent = () => {
             <p className="whitespace-nowrap px-4 py-2 font-black text-xs bg-base-300 text-base-content dasy-rounded">
               コメント一覧
             </p>
-            <ChatList />
+            <ChatList type="viewewr" query={{ type: "timestamp" }} />
           </div>
         </div>
       </div>
