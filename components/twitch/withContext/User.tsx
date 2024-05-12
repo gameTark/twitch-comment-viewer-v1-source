@@ -109,7 +109,7 @@ const EditableMetaComment = (props: TypeTextarea) => {
     console.log(user.metaComment);
     setBio(user.metaComment);
     ref.current.value = user.metaComment || "";
-  }, [user?.id])
+  }, [user?.id]);
 
   const updateUserInfo: ChangeEventHandler<HTMLTextAreaElement> = useCallback((e) => {
     setBio(e.currentTarget.value);
@@ -126,8 +126,7 @@ const EditableMetaComment = (props: TypeTextarea) => {
       {...props}
       onChange={updateUserInfo}
       defaultValue={bio}
-      ref={ref}
-    ></textarea>
+      ref={ref}></textarea>
   );
 };
 

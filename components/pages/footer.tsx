@@ -14,12 +14,12 @@ import { DrawerOpener } from "@components/dasyui/Drawer";
 import { ICONS } from "@components/icons";
 import { Me } from "@components/twitch/Me";
 
-type LinkType = __next_route_internal_types__.RouteImpl<unknown>
+type LinkType = __next_route_internal_types__.RouteImpl<unknown>;
 
 const FOOTER_CONTENT: {
-  icon: ReactNode,
+  icon: ReactNode;
   text: string;
-  path: LinkType,
+  path: LinkType;
 }[] = [
   { icon: ICONS.BROADCAST, text: "ライブ", path: "/" },
   { icon: ICONS.GAME, text: "ゲーム", path: "/games" },

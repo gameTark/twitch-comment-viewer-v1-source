@@ -5,13 +5,13 @@ import { DBUser, DBUserSchema } from "@schemas/twitch/User";
 import { ManipulateType } from "dayjs";
 import { IndexableType, Table } from "dexie";
 import { useLiveQuery } from "dexie-react-hooks";
+import Fuse from "fuse.js";
 
 import { BaseSchema, db, DbBroadcastTemplate, DbGame } from "@resource/db";
 import { dayjs } from "@libs/dayjs";
 import { fetchGame, fetchUsers } from "@libs/twitch";
 import { filter } from "@libs/types";
 import { useAsyncMemo } from "@libs/uses";
-import Fuse from "fuse.js";
 
 const createPatchDatabase =
   <T extends BaseSchema, Id extends IndexableType>(props: {
@@ -148,8 +148,6 @@ export const useSpamCheck = (login?: string) => {
                           Broadcast Template
 ==========================================================================
  */
-
-
 
 export const putBroadcastTemplate = (
   props: Omit<Omit<DbBroadcastTemplate, "updateAt">, "createdAt">,

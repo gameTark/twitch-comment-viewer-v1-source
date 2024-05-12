@@ -1,7 +1,7 @@
 import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
+import { useUserInfoModal } from "./twitch/UserInfo";
 import { Follower } from "./twitch/withContext/Follower";
 import { User } from "./twitch/withContext/User";
-import { useUserInfoModal } from "./twitch/UserInfo";
 
 const Record = () => {
   const open = useUserInfoModal();

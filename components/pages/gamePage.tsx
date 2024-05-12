@@ -58,14 +58,15 @@ export default function GamePage() {
           placeholder="あいまい検索"
         />
 
-        <div className=" dropdown-content z-10 bg-base-100 border-3 rounded-b-box shadow-2xl w-9/12 h-80 perfect-scrollbar" ref={scroll2.ref}>
+        <div
+          className=" dropdown-content z-10 bg-base-100 border-3 rounded-b-box shadow-2xl w-9/12 h-80 perfect-scrollbar"
+          ref={scroll2.ref}>
           <div className="flex flex-wrap gap-2 m-5 rounded-box bg-base-100">
-          {data?.map((val) => (
-            <div key={val.id} className=" w-3/12">
-              <BroadcastViewer {...val} />
-            </div>
-          ))}
-
+            {data?.map((val) => (
+              <div key={val.id} className=" w-3/12">
+                <BroadcastViewer {...val} />
+              </div>
+            ))}
           </div>
         </div>
       </div>

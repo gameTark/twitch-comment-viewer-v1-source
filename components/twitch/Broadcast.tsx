@@ -141,7 +141,6 @@ export function BroadcastViewer(_props: DbBroadcastTemplate & BroadcastViewerEve
   );
 }
 
-
 export function BroadcastInformation() {
   const [state, setState] = useState<DbBroadcastTemplate>(INITIAL_BROADCAST_STATE);
   const me = useLiveQuery(() => db.getMe(), []);

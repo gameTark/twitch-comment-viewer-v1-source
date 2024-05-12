@@ -7,9 +7,9 @@ import { useDbPagination } from "@resource/db";
 import { ChatBubble } from "@components/dasyui/ChatBubble";
 import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 import { getActions } from "../../watcher/useCommentWatcher";
+import { useUserInfoModal } from "./UserInfo";
 import { chats } from "./withContext/ChatList";
 import { User } from "./withContext/User";
-import { useUserInfoModal } from "./UserInfo";
 
 const TypeBubble = () => {
   const openModal = useUserInfoModal();

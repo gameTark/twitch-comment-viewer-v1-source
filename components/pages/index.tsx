@@ -35,9 +35,7 @@ export const BroadcastContent = () => {
             <div className="whitespace-nowrap px-4 py-2 font-black text-xs bg-base-300 text-base-content dasy-rounded flex gap-5 items-center justify-between">
               コメント一覧
               <div className="flex gap-2 items-center select-none">
-                <span>
-                  表示タイプ
-                </span>
+                <span>表示タイプ</span>
                 <select
                   value={state}
                   className=" cursor-pointer select select-xs select-bordered"

@@ -11,7 +11,8 @@ html:has(.drawer-toggle:checked) {
 html {
   @apply font-noto-serif font-noto-sans;
 }
-html, body {
+html,
+body {
   @apply overflow-hidden;
 }
 

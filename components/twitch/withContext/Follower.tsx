@@ -6,14 +6,16 @@ import { db, DbFollowers } from "@resource/db";
 import { dayjs } from "@libs/dayjs";
 import { filter } from "@libs/types";
 
-
 const followerContext = createContext<DbFollowers | undefined>(undefined);
 const useFollowerContext = () => useContext(followerContext);
 
 // type TypeSpan = DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>;
 type TypeLi = DetailedHTMLProps<HTMLAttributes<HTMLLIElement>, HTMLLIElement>;
 type TypeUl = DetailedHTMLProps<HTMLAttributes<HTMLUListElement>, HTMLUListElement>;
-type TypeTableSelection = DetailedHTMLProps<HTMLAttributes<HTMLTableSectionElement>, HTMLTableSectionElement>;
+type TypeTableSelection = DetailedHTMLProps<
+  HTMLAttributes<HTMLTableSectionElement>,
+  HTMLTableSectionElement
+>;
 
 type TypeTime = DetailedHTMLProps<HTMLAttributes<HTMLTimeElement>, HTMLTimeElement> & {
   format?: string;
@@ -55,7 +57,11 @@ const RecordProvider = (props: TypeTableSelection) => {
 
   return (
     <tbody {...p}>
-      {data?.map((val) => <FollowerProvider key={val.id} value={val}>{children}</FollowerProvider>)}
+      {data?.map((val) => (
+        <FollowerProvider key={val.id} value={val}>
+          {children}
+        </FollowerProvider>
+      ))}
     </tbody>
   );
 };
