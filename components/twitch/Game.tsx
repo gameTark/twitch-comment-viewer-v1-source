@@ -51,7 +51,7 @@ export const GameViewer = (props: Item | Card) => {
   switch (props.type) {
     case "item":
       return (
-        <div className="flex items-center gap-2 cursor-pointer">
+        <div className="flex items-center gap-2 cursor-pointer w-full">
           <div className="avatar placeholder">
             {isNotSelected ? (
               <div className="w-16 dasy-rounded bg-neutral text-neutral-content">

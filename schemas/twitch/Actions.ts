@@ -4,12 +4,6 @@ import { DBBaseSchema } from "./BaseSchema";
 import { FragmentSchema } from "./Fragment";
 import { DBUserId } from "./User";
 
-const indexes = {
-  autoincrementId: {
-    primary: true,
-  },
-  id: {},
-};
 export const DBActionIndex =
   "++autoincrementId,id,*channel,messageType,*userId,*timestamp,[channel+timestamp]";
 
@@ -44,3 +38,5 @@ export const DBReward = z
 
 export const DBActionSchema = DBComentSchema.or(DBReward);
 export type DBAction = z.infer<typeof DBActionSchema>;
+export type DBReward = z.infer<typeof DBReward>;
+export type DBComment = z.infer<typeof DBComentSchema>;

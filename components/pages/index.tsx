@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { FollowerInfo } from "@components/followers";
+import { FollowerTable } from "@components/followers";
 import { LiveWatchUsers } from "@components/liveWatchUsers";
 import { ChatList } from "@components/twitch/Chats";
 import { ChatUsers } from "@components/twitch/Chatters";
@@ -15,7 +15,6 @@ export const BroadcastContent = () => {
         <div className="flex stats shadow mt-2">
           <ChatUsers type="stat" />
           <LiveWatchUsers />
-          <FollowerInfo type="stat" />
         </div>
       </div>
       <div className="h-96 grow px-2">
@@ -30,7 +29,7 @@ export const BroadcastContent = () => {
             <p className="whitespace-nowrap px-4 py-2 font-black text-xs bg-base-300 text-base-content dasy-rounded">
               フォロワ一覧
             </p>
-            <FollowerInfo type="table" />
+            <FollowerTable />
           </div>
           <div className="flex flex-col w-5/12 grow">
             <div className="whitespace-nowrap px-4 py-2 font-black text-xs bg-base-300 text-base-content dasy-rounded flex gap-5 items-center justify-between">

@@ -1,108 +1,44 @@
-import { useLiveQuery } from "dexie-react-hooks";
+import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
+import { Follower } from "./twitch/withContext/Follower";
+import { User } from "./twitch/withContext/User";
+import { useUserInfoModal } from "./twitch/UserInfo";
 
-import { db } from "@resource/db";
-import { useTwitchFollowersGetById } from "@resource/twitchWithDb";
-import { useUserContext } from "@contexts/twitch/userContext";
-import { dayjs } from "@libs/dayjs";
-import { filter } from "@libs/types";
-import { useAsyncMemo } from "@libs/uses";
-
-import { Stat } from "./dasyui/Stat";
-import { Table, TableSkeleton } from "./dasyui/Table";
-import { ICONS } from "./icons";
-import { useUserInfoModal } from "./twitch/User";
-
-const TypeTable = () => {
-  const me = useLiveQuery(() => db.getMe(), []);
-  const followers = useTwitchFollowersGetById(me?.id);
-  const userContext = useUserContext();
-  const modal = useUserInfoModal();
-
-  const userWithFollower = useAsyncMemo(async () => {
-    if (followers == null) return null;
-    return Promise.all(
-      followers
-        .map(async (val) => {
-          const user = await userContext.fetchById(val.userId);
-          return {
-            ...user,
-            ...val,
-          };
-        })
-        .filter(filter.notNull),
-    );
-  }, [followers]);
-
-  if (userWithFollower == null) return <TableSkeleton />;
+const Record = () => {
+  const open = useUserInfoModal();
   return (
-    <Table
-      type="object"
-      target={userWithFollower}
-      keyMap={[
-        {
-          keyName: "profileImageUrl",
-          displayName: "画像",
-          parse: (val) => {
-            return (
-              <img
-                src={val.profileImageUrl}
-                onClick={() => {
-                  modal(val.userId);
-                }}
-                tabIndex={0}
-                alt={val.login}
-                width={35}
-                className="rounded-full cursor-pointer"
-              />
-            );
-          },
-        },
-        {
-          keyName: "displayName",
-          displayName: "名前",
-          parse: (val) => (
-            <p onClick={() => modal(val.userId)} tabIndex={0} className=" cursor-pointer">
-              {val.displayName || val.login || "none"}
-            </p>
-          ),
-        },
-        {
-          keyName: "followedAt",
-          displayName: "フォロー開始日",
-          parse: (val) => {
-            return dayjs(val.followedAt).format("YYYY/MM/DD hh:mm:ss(ddd)");
-          },
-        },
-      ]}
-      consecutive
-    />
+    <tr className="h-16 cursor-pointer select-none" onClick={open} tabIndex={0}>
+      <td>
+        <div className="flex justify-center items-center">
+          <User.ProfileImage className="rounded-full overflow-hidden w-10" />
+        </div>
+      </td>
+      <td>
+        <User.Name />
+      </td>
+      <td>
+        <Follower.FollowedAt format="YYYY/MM/DD hh:mm:ss" className=" whitespace-nowrap" />
+      </td>
+    </tr>
   );
 };
-
-export const FollowerInfo = (props: { type: "list" | "stat" | "table" }) => {
-  const me = useLiveQuery(() => db.getMe(), []);
-  const followers = useTwitchFollowersGetById(me?.id);
-
-  if (followers == null) return;
-  switch (props.type) {
-    case "table":
-      return <TypeTable />;
-    case "list":
-      return (
-        <div>
-          <h2>info</h2>
-          <ul>
-            {followers.map((val) => {
-              return (
-                <li key={val.userId}>
-                  <p>{dayjs(val.followedAt).format("YYYY/MM/DD HH:mm:ss")}</p>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      );
-    case "stat":
-      return <Stat title="フォロワー数" value={`${followers.length}人`} icon={ICONS.FOLLOW} />;
-  }
+export const FollowerTable = () => {
+  const ps = usePerfectScrollbar([]);
+  return (
+    <div className=" perfect-scrollbar" ref={ps.ref}>
+      <table className=" table table-pin-rows z-0 table-xs">
+        <thead>
+          <tr>
+            <th className="w-16 text-center">画像</th>
+            <th className="">名前</th>
+            <th className="w-36 text-center">フォロー日</th>
+          </tr>
+        </thead>
+        <Follower.RecordProvider>
+          <Follower.UserProvider Povider={User.Provider}>
+            <Record />
+          </Follower.UserProvider>
+        </Follower.RecordProvider>
+      </table>
+    </div>
+  );
 };

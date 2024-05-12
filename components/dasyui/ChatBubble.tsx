@@ -20,6 +20,7 @@ export const ChatBubble = ({
   type,
   color,
   image,
+  imageNode,
   message,
   header,
   footer,
@@ -27,6 +28,7 @@ export const ChatBubble = ({
 }: {
   type?: Base;
   image?: Image;
+  imageNode?: ReactNode;
   onClickAvater?: () => void;
   message: ReactNode;
   color?: ChatBubbleModifire;
@@ -35,11 +37,9 @@ export const ChatBubble = ({
 }) => {
   return (
     <div className={clsx("chat", type)}>
-      {image == null ? null : (
+      {(image || imageNode) == null ? null : (
         <div className="chat-image avatar cursor-pointer" onClick={onClickAvater}>
-          <div className="w-10 rounded-full border-2">
-            <img {...image} />
-          </div>
+          <div className="w-10 rounded-full border-2">{imageNode || <img {...image} />}</div>
         </div>
       )}
       {header == null ? null : <div className="chat-header">{header}</div>}

@@ -7,7 +7,6 @@ import { db, DbBroadcastTemplate } from "@resource/db";
 import {
   deleteBroadcastTemplate,
   getBroadcastTemplates,
-  putBroadcastTemplate,
   updateBroadcastTemplate,
 } from "@resource/twitchWithDb";
 import { BROADCAST_LANGUAGE, CLASSIFICATION_LABELS, fetchChannelInfoPatch } from "@libs/twitch";
@@ -54,7 +53,7 @@ export function BroadcastViewer(_props: DbBroadcastTemplate & BroadcastViewerEve
     });
   }, []);
   return (
-    <div className="relative z-0 h-full">
+    <div className="relative z-0 h-full w-full">
       <div
         className="
         absolute
@@ -142,6 +141,7 @@ export function BroadcastViewer(_props: DbBroadcastTemplate & BroadcastViewerEve
   );
 }
 
+
 export function BroadcastInformation() {
   const [state, setState] = useState<DbBroadcastTemplate>(INITIAL_BROADCAST_STATE);
   const me = useLiveQuery(() => db.getMe(), []);
@@ -167,8 +167,8 @@ export function BroadcastInformation() {
   const handleAdd: HandleBroadcastContent = (e) => {
     if (e.gameId == null) return;
     if (me == null) return;
-    putBroadcastTemplate({
-      id: e.id,
+    if (e.id == null) return;
+    updateBroadcastTemplate(e.id, {
       channelId: me.id,
       gameId: e.gameId,
       broadcastTitle: e.broadcastTitle,
@@ -240,13 +240,13 @@ export function BroadcastInformation() {
   }
   if (type === "viewer") {
     return (
-      <div className="p-10 h-fit flex flex-col gap-5">
+      <div className="p-10 h-fit flex flex-col gap-5 w-full">
         <h2 className="heading-2">お気に入り</h2>
         <div className="flex gap-y-7 gap-x-2 items-stretch flex-wrap">
           {favoriteItems?.map((val) => {
             if (val.id == null) return;
             return (
-              <div className="w-60 flex" key={val.id}>
+              <div className=" w-3/12 flex" key={val.id}>
                 <BroadcastViewer
                   {...val}
                   onEdit={handleEdit}
@@ -262,7 +262,7 @@ export function BroadcastInformation() {
           {allItems?.map((val) => {
             if (val.id == null) return;
             return (
-              <div className="w-60 flex" key={val.id}>
+              <div className=" w-2/12 flex" key={val.id}>
                 <BroadcastViewer
                   {...val}
                   onEdit={handleEdit}

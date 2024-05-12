@@ -63,12 +63,12 @@ export const Me = () => {
         tabIndex={0}>
         {navigation.map((val) => (
           <li key={val.value}>
-            <Link
+            <a
               className="link flex justify-between items-center"
               target={val.external ? "_blank" : undefined}
               href={val.href}>
               {val.value} {val.external ? ICONS.EXTERNAL : null}
-            </Link>
+            </a>
           </li>
         ))}
         <li onClick={logout}>

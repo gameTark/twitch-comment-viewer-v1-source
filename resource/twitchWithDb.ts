@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { DBUser, DBUserSchema } from "@schemas/twitch/User";
 import { ManipulateType } from "dayjs";
 import { IndexableType, Table } from "dexie";
@@ -11,6 +11,7 @@ import { dayjs } from "@libs/dayjs";
 import { fetchGame, fetchUsers } from "@libs/twitch";
 import { filter } from "@libs/types";
 import { useAsyncMemo } from "@libs/uses";
+import Fuse from "fuse.js";
 
 const createPatchDatabase =
   <T extends BaseSchema, Id extends IndexableType>(props: {
@@ -90,26 +91,6 @@ export const getBroadcastTemplates = (
       });
   }
 };
-export const putBroadcastTemplate = (
-  props: Omit<Omit<DbBroadcastTemplate, "updateAt">, "createdAt">,
-) => {
-  return db.broadcastTemplates.put({
-    ...props,
-    updateAt: new Date(),
-    createdAt: new Date(),
-  });
-};
-export const updateBroadcastTemplate = (
-  id: Required<DbBroadcastTemplate>["id"],
-  props: Partial<Omit<DbBroadcastTemplate, "id">>,
-) => {
-  return db.broadcastTemplates.update(id, {
-    ...props,
-  });
-};
-export const deleteBroadcastTemplate = (id: Required<DbBroadcastTemplate>["id"][]) => {
-  return db.broadcastTemplates.bulkDelete(id);
-};
 
 export const getFollowers = async (userId: string) => {
   const exists = await db.followers.where("channelId").equals(userId).sortBy("followedAt");
@@ -141,9 +122,10 @@ export const useTwitchFollowersGetById = (channelId?: string) => {
   }, [channelId]);
 };
 
-export const useTiwtchUpdateUserById = (id: string) => {
+export const useTiwtchUpdateUserById = (id?: string) => {
   const updateUser = useCallback(
     async (user: Partial<DBUser>) => {
+      if (id == null) return;
       const result = await db.users.update(id, user);
       return result;
     },
@@ -159,6 +141,36 @@ export const useSpamCheck = (login?: string) => {
     return spam != null;
   }, [login]);
   return isSpam;
+};
+
+/*
+==========================================================================
+                          Broadcast Template
+==========================================================================
+ */
+
+
+
+export const putBroadcastTemplate = (
+  props: Omit<Omit<DbBroadcastTemplate, "updateAt">, "createdAt">,
+) => {
+  return db.broadcastTemplates.put({
+    ...props,
+    updateAt: new Date(),
+    createdAt: new Date(),
+  });
+};
+export const updateBroadcastTemplate = (
+  id: Required<DbBroadcastTemplate>["id"],
+  props: Partial<Omit<DbBroadcastTemplate, "id">>,
+) => {
+  return db.broadcastTemplates.update(id, {
+    ...props,
+    updateAt: new Date(),
+  });
+};
+export const deleteBroadcastTemplate = (id: Required<DbBroadcastTemplate>["id"][]) => {
+  return db.broadcastTemplates.bulkDelete(id);
 };
 
 /*

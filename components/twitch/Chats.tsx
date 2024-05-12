@@ -1,245 +1,115 @@
-import { ReactNode, useMemo } from "react";
-import { DBAction } from "@schemas/twitch/Actions";
-import { Fragment } from "@schemas/twitch/Fragment";
+import { useMemo } from "react";
 import { DBUser } from "@schemas/twitch/User";
 import { useLiveQuery } from "dexie-react-hooks";
-import * as escaper from "html-escaper";
 
-import { dbPagination, useDbPagination } from "@resource/db";
-import { useUserContext } from "@contexts/twitch/userContext";
-import { dayjs } from "@libs/dayjs";
-import { urlLinkTagReplacement } from "@libs/regex";
-import { getEmoteImage, twitchLinks } from "@libs/twitch";
-import { filter } from "@libs/types";
-import { useAsyncMemo } from "@libs/uses";
+import { useDbPagination } from "@resource/db";
 
-import { ChatBubble, ChatSkeleton } from "@components/dasyui/ChatBubble";
+import { ChatBubble } from "@components/dasyui/ChatBubble";
 import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 import { getActions } from "../../watcher/useCommentWatcher";
-import { useUserInfoModal } from "./User";
+import { chats } from "./withContext/ChatList";
+import { User } from "./withContext/User";
+import { useUserInfoModal } from "./UserInfo";
 
-interface Comment {
-  id: string;
-  type: DBAction["messageType"];
-  userId: DBUser["id"];
-  fragment: ReactNode;
-  timestamp: number;
-}
-
-const commentParser = (action: DBAction): Comment | undefined => {
-  if (action.userId == null) return;
-  if (action.timestamp == null) return;
-  switch (action.messageType) {
-    case "chat":
-      if (action.fragments == null || action.fragments.length === 0) {
-        return {
-          id: action.id,
-          type: action.messageType,
-          userId: action.userId,
-          fragment: <span>{action.message}</span>,
-          timestamp: action.timestamp,
-        };
-      }
-      return {
-        id: action.id,
-        type: action.messageType,
-        userId: action.userId,
-        fragment: <ParseFragment fragments={action.fragments} />,
-        timestamp: action.timestamp,
-      };
-    case "atutomatic-reward":
-      // TODO: 一旦実装しない
-      return;
-    case "reward":
-      return {
-        id: action.id,
-        type: action.messageType,
-        userId: action.userId,
-        fragment: <span>{action.userTitle}</span>,
-        timestamp: action.timestamp,
-      };
-    default:
-      return;
-  }
-};
-
-const ParseFragment = (props: { fragments: Fragment[] }) => {
+const TypeBubble = () => {
+  const openModal = useUserInfoModal();
   return (
-    <>
-      {props.fragments.map((fragment, index) => {
-        switch (fragment.type) {
-          case "emote":
-            return (
-              <img
-                key={index}
-                src={getEmoteImage(fragment.emote.id)}
-                alt={fragment.text}
-                className="inline mx-1"
-              />
-            );
-          case "text":
-            return (
-              <span
-                key={index}
-                className="break-all"
-                dangerouslySetInnerHTML={{
-                  __html: urlLinkTagReplacement(escaper.escape(fragment.text)),
-                }}
-              />
-            );
-          case "mention":
-            return (
-              <a
-                className="link link-info"
-                target="__blank"
-                key={index}
-                href={twitchLinks(fragment.mention.user_login).CHANNEL}>
-                {fragment.text}
-              </a>
-            );
-        }
-      })}
-    </>
-  );
-};
-
-const Reward = (props: Comment) => {
-  const userContext = useUserContext();
-  const user = useAsyncMemo(async () => {
-    return userContext.fetchById(props.userId);
-  }, [props.userId]);
-  const userName = useMemo(() => user?.displayName || user?.login, [user]);
-  const openModal = useUserInfoModal(props.userId);
-
-  if (user == null) return;
-  return (
-    <li className="flex justify-center">
-      <div className="flex items-center gap-2">
-        <img
-          src={user.profileImageUrl}
-          alt={user.login}
-          className="rounded-full w-10 border-2 overflow-hidden cursor-pointer"
-          tabIndex={0}
-          onClick={() => openModal()}
+    <chats.ListItem className="w-full">
+      {/* chat */}
+      <chats.chat.ChatProvider>
+        <ChatBubble
+          type="chat-end"
+          imageNode={<User.ProfileImage onClick={openModal} tabIndex={0} />}
+          header={<User.Name onClick={openModal} tabIndex={0} />}
+          message={<chats.chat.Fragment />}
+          footer={<chats.SendedAt format="hh:mm:ss" />}
+          // onClickAvater={() => openModal()}
         />
-        <div className="flex font-bold">
-          {userName}が{props.fragment}と交換しました。
+      </chats.chat.ChatProvider>
+
+      {/* reward */}
+      <chats.reward.RewardProvider>
+        <div className="flex items-center gap-2 justify-center">
+          <User.ProfileImage
+            className="rounded-full w-10 border-2 overflow-hidden cursor-pointer"
+            tabIndex={0}
+          />
+          <div className="flex">
+            <User.Name className="font-bold" />
+            が
+            <chats.reward.UserTitle className="font-bold" />
+            と交換しました。
+          </div>
         </div>
-      </div>
-    </li>
+      </chats.reward.RewardProvider>
+    </chats.ListItem>
   );
 };
-
-const Bubble = (props: Comment) => {
-  const userContext = useUserContext();
-  const user = useAsyncMemo(async () => {
-    return userContext.fetchById(props.userId);
-  }, [props.userId]);
-  const userName = useMemo(() => user?.displayName || user?.login, [user]);
-  const openModal = useUserInfoModal(props.userId);
-
-  if (user == null) return <ChatSkeleton hasImage hasFooter hasHeader />;
+const TypeFlat = () => {
   return (
-    <li>
-      <ChatBubble
-        type="chat-end"
-        image={{
-          src: user.profileImageUrl,
-          alt: user.login,
-        }}
-        header={userName}
-        footer={dayjs(props.timestamp).format("HH:MM:ss")}
-        message={props.fragment}
-        onClickAvater={() => openModal()}
-      />
-    </li>
+    <chats.ListItem className="w-full border-b-2 last:border-0 pb-2">
+      {/* chat */}
+      <chats.chat.ChatProvider>
+        <chats.chat.Fragment />
+      </chats.chat.ChatProvider>
+
+      {/* reward */}
+      <chats.reward.RewardProvider>
+        <chats.reward.UserTitle className="font-bold" />
+      </chats.reward.RewardProvider>
+    </chats.ListItem>
   );
 };
-const Flat = (props: Comment) => {
-  return <li className="border-b pb-1">{props.fragment}</li>;
-};
-
-const Mini = (props: Comment) => {
-  const userContext = useUserContext();
-  const user = useLiveQuery(async () => userContext.fetchById(props.userId), []);
-  const openModal = useUserInfoModal(props.userId);
+const TypeMini = () => {
   return (
-    <li className="border-b pb-1 flex gap-4 items-center px-5">
-      <span className=" text-sm inline-block min-w-32 break-all font-bold cursor-pointer" onClick={() => openModal()}>
-        {user?.displayName || user?.login}
+    <chats.ListItem className="w-full border-b-2 last:border-0 pb-2 flex items-center gap-3">
+      <User.Name className=" inline-block text-xs font-bold min-w-32" />
+
+      {/* chat */}
+      <span className="inline-block grow">
+        <chats.chat.ChatProvider>
+          <chats.chat.Fragment />
+        </chats.chat.ChatProvider>
+
+        {/* reward */}
+        <chats.reward.RewardProvider>
+          <span className=" inline-block text-sm font-bold">リワード交換</span>
+          <chats.reward.UserTitle className=" text-info font-black" />
+        </chats.reward.RewardProvider>
       </span>
-      <span className="inline-block break-all">{props.fragment}</span>
-    </li>
+
+      <chats.SendedAt format="hh:mm:ss" className="text-xs opacity-70" />
+    </chats.ListItem>
   );
 };
 
-const TypeViewer = (props: Comment) => {
-  switch (props.type) {
-    case "chat":
-      return <Bubble {...props} />;
-    case "reward":
-      return <Reward {...props} />;
-    case "atutomatic-reward":
-      return null;
-  }
-};
+export const ChatList = (props: { type: string; query: Parameters<typeof getActions>[0] }) => {
+  const data = useLiveQuery(async () => {
+    return await getActions(props.query).reverse().sortBy("timestamp");
+  }, [props.query]);
+  const scroll = usePerfectScrollbar([data]);
 
-const CommentOnliy = (props: Comment) => {
-  switch (props.type) {
-    case "chat":
-      return <Flat {...props} fragment={<>{props.fragment}</>} />;
-    case "reward":
-      return (
-        <Flat
-          {...props}
-          fragment={
-            <span className="font-bold flex justify-between">
-              <span>{props.fragment}</span> <span className="text-xs">ポイント交換</span>
-            </span>
-          }
-        />
-      );
-    case "atutomatic-reward":
-      return null;
-  }
-};
-
-export const ChatList = (props: {
-  type: string;
-  query: Parameters<typeof getActions>[0];
-}) => {
-  const comments = useLiveQuery(async () => {
-    return getActions(props.query).sortBy("timestamp");
-  }, []);
-  const messages = useMemo(() => {
-    if (comments == null) return;
-    return comments
-      .map(commentParser)
-      .filter(filter.notNull)
-      .map((action) => {
-        switch (props.type) {
-          case "viewewr":
-            return <TypeViewer key={action.id} {...action} />;
-          case "flat":
-            return <CommentOnliy key={action.id} {...action} />;
-          case "mini":
-            return <Mini key={action.id} {...action} />;
-        }
-      });
-  }, [comments, props.type]);
-
-  const scroll = usePerfectScrollbar([comments]);
-
+  const target = useMemo(() => {
+    switch (props.type) {
+      case "viewewr":
+        return <TypeBubble />;
+      case "flat":
+        return <TypeFlat />;
+      case "mini":
+        return <TypeMini />;
+    }
+    return <TypeBubble />;
+  }, [props.type]);
   return (
     <div className="h-full perfect-scrollbar" ref={scroll.ref}>
-      <ul className="flex flex-col gap-4 py-6">{messages}</ul>
+      <chats.ListProvider data={data || []} className="flex flex-col gap-2 py-8 px-4">
+        <chats.UserProvider>{target}</chats.UserProvider>
+      </chats.ListProvider>
     </div>
   );
 };
 
 export const ChatTable = (props: { userId: DBUser["id"] }) => {
-  const type: string = "flat";
-
   const data = useDbPagination(
     getActions({
       type: "userId",
@@ -252,25 +122,15 @@ export const ChatTable = (props: { userId: DBUser["id"] }) => {
     [props.userId],
   );
 
-  const message = useMemo(() => {
-    if (data.value == null) return <></>;
-    return data.value.target
-      .map(commentParser)
-      .filter(filter.notNull)
-      .map((action) => {
-        switch (type) {
-          case "viewer":
-            return <TypeViewer key={action.id} {...action} />;
-          case "flat":
-            return <CommentOnliy key={action.id} {...action} />;
-        }
-      });
-  }, [data]);
   const scroll = usePerfectScrollbar([props.userId]);
   return (
     <div className="h-full flex flex-col">
       <div ref={scroll.ref} className="perfect-scrollbar">
-        <ul className="flex flex-col gap-2 py-6 px-2">{message}</ul>
+        <chats.ListProvider
+          data={data.value?.target || []}
+          className="flex flex-col gap-2 py-6 px-2">
+          <TypeFlat />
+        </chats.ListProvider>
       </div>
       <div className="flex justify-between border-t-2 items-center select-none">
         <div className="flex">
