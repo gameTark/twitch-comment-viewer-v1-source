@@ -630,12 +630,3 @@ const baseFetch = (token: string): typeof fetch => {
     }, ...other);
   };
 }
-
-// https://api-docs.igdb.com/#examples
-// CORSが無理ゲー
-// export const igdbGetGame = async (props: { id: string }) =>  {
-//   return await twitchFetch({
-//     METHOD: 'IGDB',
-//     ENDPOINT: 'https://api.igdb.com/v4/games',
-//   }, `fields *; where id = ${props.id};`)
-// }

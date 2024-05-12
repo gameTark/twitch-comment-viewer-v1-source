@@ -1,34 +1,73 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 
-import { db, DbBroadcastTemplate, DbGame, DbUser } from "@resource/db";
-import { useUserContext } from "@contexts/twitch/userContext";
-import { fetchGame, fetchStreams, fetchUsers, getChatUsers } from "@libs/twitch";
+import { BaseSchema, db, DbBroadcastTemplate, DbGame, DbUser } from "@resource/db";
+import { fetchGame, fetchUsers } from "@libs/twitch";
 import { filter } from "@libs/types";
 import { useAsyncMemo } from "@libs/uses";
 
 import { useGetComments } from "../watcher/useCommentWatcher";
+import { IndexableType, Table } from "dexie";
+import { ManipulateType } from "dayjs";
+import { dayjs } from "@libs/dayjs";
+
+const createPatchDatabase = <T extends BaseSchema, Id extends IndexableType>(props: {
+  table: Table<T>,
+  idKey: keyof T,
+  fetcher: (ids: Id[]) => Promise<T[]>,
+  options?: {
+    updateTiming?: { value: number, unit?: ManipulateType };
+  },
+}) => async (ids: Id[]) => {
+  const results = (await props.table.bulkGet(ids)).filter(filter.notNull).filter((value) => {
+    if (props.options?.updateTiming != null) {
+      return dayjs(value.updateAt).isSameOrBefore(dayjs(new Date()).add(props.options.updateTiming.value, props.options.updateTiming.unit));
+    }
+    return true;
+  });
+  const notExistsIdList = ids.filter((val) => {
+    return results.findIndex((result) => {
+      return result[props.idKey] === val
+    }) === - 1
+  });
+  const notExistsUserList = await props.fetcher(notExistsIdList);
+  await props.table.bulkPut(notExistsUserList);
+
+  return await props.table.bulkGet(ids);
+}
+
+const _createFetcher = <T extends object, Id extends IndexableType>(fetcher: (id: Id[]) => Promise<T[]>) => async (id: Id[]): Promise<T[]> => {
+  if (id.length === 0) return [];
+  const res = await Promise.all(
+    new Array(Math.ceil(id.length / 100)).fill(1).map(async (_, index) => {
+      const p = index * 100;
+      const n = index * 100 + 100;
+      return (await fetcher(id.slice(p, n)));
+    }),
+  );
+  return res.flat();
+}
 
 export const getBroadcastTemplates = (
   props?:
     | {
-        type: "id";
-        value: Required<DbBroadcastTemplate>["id"][];
-      }
+      type: "id";
+      value: Required<DbBroadcastTemplate>["id"][];
+    }
     | {
-        type: "gameId";
-        value: Required<DbBroadcastTemplate>["gameId"][];
-      }
+      type: "gameId";
+      value: Required<DbBroadcastTemplate>["gameId"][];
+    }
     | {
-        type: "tags";
-        value: Required<DbBroadcastTemplate>["tags"];
-      }
+      type: "tags";
+      value: Required<DbBroadcastTemplate>["tags"];
+    }
     | {
-        type: "favorite";
-        value: Required<DbBroadcastTemplate>["favorite"];
-      },
+      type: "favorite";
+      value: Required<DbBroadcastTemplate>["favorite"];
+    },
 ) => {
   if (props === undefined) return db.broadcastTemplates.toArray();
   switch (props.type) {
@@ -65,7 +104,7 @@ export const deleteBroadcastTemplate = (id: Required<DbBroadcastTemplate>["id"][
   return db.broadcastTemplates.bulkDelete(id);
 };
 
-export const getTodayFollowers = async (userId: string) => {
+export const getFollowers = async (userId: string) => {
   const exists = await db.followers.where("channelId").equals(userId).sortBy("followedAt");
   return exists
     .reverse()
@@ -95,54 +134,6 @@ export const useTwitchFollowersGetById = (channelId?: string) => {
   }, [channelId]);
 };
 
-export const useFetchTwitcChatUsersList = () => {
-  const [data, setData] = useState<DbUser["id"][]>([]);
-  const update = useCallback(
-    async (props: { broadcasterId?: string; userId?: string }) => {
-      if (props.broadcasterId == null || props.userId == null) return;
-      const users = await getChatUsers({
-        broadcaster_id: props.broadcasterId,
-        moderator_id: props.userId,
-      });
-      setData(users.data.map((val) => val.user_id));
-    },
-    [data],
-  );
-
-  return {
-    data,
-    update,
-  };
-};
-
-export interface FetchStreamResult {
-  isLive: boolean;
-  startedAt: Date;
-  viewerCount: number;
-}
-export const useFetchStream = () => {
-  const [data, setData] = useState<FetchStreamResult | null>(null);
-  const update = useCallback(async (userId: string) => {
-    const result = await fetchStreams({
-      user_id: userId,
-    });
-    const data = result.data[0];
-    if (data == null) {
-      setData(null);
-      return;
-    }
-    setData({
-      isLive: true,
-      startedAt: new Date(data.started_at),
-      viewerCount: data.viewer_count,
-    });
-  }, []);
-  return {
-    data,
-    update,
-  };
-};
-
 export const useTiwtchUpdateUserById = (id: string) => {
   const updateUser = useCallback(
     async (user: Partial<DbUser>) => {
@@ -170,105 +161,64 @@ export const useSpamCheck = (login?: string) => {
   return isSpam;
 };
 
-const updateUser = async (id: string[]) => {
-  if (id.length === 0) return [];
-
-  // 100件ごとに分割してリクエストを作成する
-  const res = await Promise.all(
-    new Array(Math.ceil(id.length / 100)).fill(1).map(async (_, index) => {
-      const p = index * 100;
-      const n = index * 100 + 100;
-      console.log(id.slice(p, n), p, n);
-      return (await fetchUsers({ id: id.slice(p, n) })).data;
-    }),
-  );
-
-  const result = await Promise.all(
-    res.flat().map(async (targetUser): Promise<DbUser> => {
-      const spam = await db.spam.get(targetUser.login);
-      const result: DbUser = {
-        id: targetUser.id,
-        login: targetUser.login,
-        displayName: targetUser.display_name,
-        type: targetUser.type,
-        broadcasterType: targetUser.broadcaster_type,
-        description: targetUser.description,
-        profileImageUrl: targetUser.profile_image_url,
-        offlineImageUrl: targetUser.offline_image_url,
+/*
+==========================================================================
+                          User
+==========================================================================
+ */
+export const getUsers = createPatchDatabase({
+  table: db.users,
+  idKey: 'id',
+  options: {
+    updateTiming: {
+      value: 1,
+      unit: 'day',
+    }
+  },
+  fetcher: _createFetcher(async (ids) => {
+    const result = await fetchUsers({
+      id: ids.map(val => val.toString()),
+    });
+    const spam = await db.spam.bulkGet(result.data.map(val => val.login));
+    return result.data.map(val => {
+      return {
+        id: val.id,
+        login: val.login,
+        displayName: val.display_name,
+        type: val.type,
+        broadcasterType: val.broadcaster_type,
+        description: val.description,
+        profileImageUrl: val.profile_image_url,
+        offlineImageUrl: val.offline_image_url,
         createdAt: new Date(),
         updateAt: new Date(),
-        isSpam: spam != null,
-        rowData: JSON.stringify(targetUser),
-      };
-      return result;
-    }),
-  );
-  await db.users.bulkPut(result);
-  const users = await db.users.bulkGet(id);
-  return users.filter(filter.notNull);
-};
-export const getUsers = async (id: string[]): Promise<DbUser[]> => {
-  const result = (await db.users.bulkGet(id)).filter(filter.notNull);
-
-  // 存在しないユーザー
-  const notExistsUserList = await updateUser(
-    id.filter((val) => result.findIndex((r) => r.id === val) === -1),
-  );
-
-  // TODO: 更新処理を挟み込む
-  return [...result, ...notExistsUserList].filter((val) => val.isSpam !== true);
-};
-export const getUser = async (id: string) => {
-  return (await getUsers([id]))[0];
-};
-
-const updateGame = async (id: string[]) => {
-  if (id.length === 0) return [];
-  const res = await fetchGame({ id: id });
-  const dbData = res.data.map((game): DbGame => {
-    return {
-      id: game.id,
-      box_art_url: game.box_art_url,
-      name: game.name,
-      igdb_id: game.igdb_id,
-      createdAt: new Date(),
-      updateAt: new Date(),
-    };
-  });
-  await db.games.bulkPut(dbData);
-  const games = await db.games.bulkGet(id);
-  return games.filter(filter.notNull);
-};
-export const getGames = async (id: DbGame["id"][]): Promise<DbGame[]> => {
-  if (id.length > 100) throw new Error(`request id is 100未満 ${id.length}`);
-  const result = (await db.games.bulkGet(id)).filter(filter.notNull);
-
-  // 存在しないゲーム
-  const notExistsUserList = await updateGame(
-    id.filter((val) => result.findIndex((r) => r.id === val) === -1),
-  );
-
-  // TODO: 更新処理を挟み込む
-  return [...result, ...notExistsUserList];
-};
-
-export const useTwitchBulkGetByUserId = (ids: string[]) => {
-  const result = useLiveQuery(async () => {
-    const promises = ids.map(async (id) => {
-      return await getUser(id);
+        isSpam: spam.findIndex(v => v?.login === val.login) !== -1,
+        rowData: JSON.stringify(val),
+      }
     });
-    return Promise.all(promises);
-  }, [ids]);
-  const res = useMemo(() => {
-    return result?.filter(filter.notNull);
-  }, [result]);
-  return res;
-};
+  })
+});;
 
-export const useTwitchGetByUserId = (id: string) => {
-  const user = useLiveQuery(async () => {
-    return await getUser(id);
-  });
-
-  return user;
-};
+/*
+==========================================================================
+                          Game
+==========================================================================
+ */
+export const getGames = createPatchDatabase({
+  table: db.games,
+  idKey: 'id',
+  fetcher: _createFetcher(async (ids) => {
+    const res = await fetchGame({ id: ids.map(id => id.toString()) });
+    const dbData = res.data.map((game): DbGame => {
+      return {
+        id: game.id,
+        box_art_url: game.box_art_url,
+        name: game.name,
+        igdb_id: game.igdb_id,
+        createdAt: new Date(),
+        updateAt: new Date(),
+      };
+    });
+    return dbData;
+  })
+});;

@@ -18,7 +18,7 @@ const DB_VERSION = {
   "2024/05/11": 30, // パラメーターをスキーマ化
 };
 
-interface BaseSchema {
+export interface BaseSchema {
   createdAt?: Date;
   updateAt?: Date;
   deletedAt?: Date;
