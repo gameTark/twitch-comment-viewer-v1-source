@@ -21,7 +21,8 @@ export const MultiTag = <TFieldValues extends FieldValues>(
   });
   const [input, setInput] = useState("");
   const addTag = () => {
-    if (input === "" || input == null) return;
+    // validation error message 調整
+    if (input === "" || input == null || controller.field.value.includes(input)) return;
     append(input as any);
     setInput("");
   };

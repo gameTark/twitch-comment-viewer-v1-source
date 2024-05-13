@@ -8,6 +8,7 @@ import { db, DbBroadcastTemplate } from "@resource/db";
 import {
   deleteBroadcastTemplate,
   getBroadcastTemplates,
+  putBroadcastTemplate,
   updateBroadcastTemplate,
 } from "@resource/twitchWithDb";
 import { fetchChannelInfoPatch } from "@libs/twitch";
@@ -79,13 +80,16 @@ export function BroadcastViewer(_props: DbBroadcastTemplate & BroadcastViewerEve
         
         z-40
       ">
-        <button className="btn btn-outline btn-success w-full" onClick={handleApply}>
+        <button className="btn btn-success w-full btn-xs" onClick={handleApply}>
           配信に適用
         </button>
-        <button className="btn btn-outline btn-info w-full" onClick={handleEdit}>
+        <button className="btn btn-info w-full btn-xs" onClick={handleApply}>
+          コピーして作成
+        </button>
+        <button className="btn btn-info w-full btn-xs" onClick={handleEdit}>
           編集
         </button>
-        <button className="btn btn-outline btn-error w-full" onClick={handleDelete}>
+        <button className="btn btn-error w-full btn-xs" onClick={handleDelete}>
           削除
         </button>
       </div>
@@ -165,7 +169,19 @@ export function BroadcastInformation() {
   const handleAdd: HandleBroadcastContent = (e) => {
     if (e.gameId == null) return;
     if (me == null) return;
-    if (e.id == null) return;
+    if (e.id == null) {
+      putBroadcastTemplate({
+        channelId: me.id,
+        gameId: e.gameId,
+        broadcastTitle: e.broadcastTitle,
+        language: e.language,
+        tags: e.tags,
+        classificationLabels: e.classificationLabels,
+        isBrandedContent: e.isBrandedContent,
+      });
+      setType("viewer");
+      return;
+    }
     updateBroadcastTemplate(e.id, {
       channelId: me.id,
       gameId: e.gameId,
@@ -300,7 +316,6 @@ export type BroadcastProps = {
 export default function BroadcastEditor(props: BroadcastProps) {
   const handleSubmit = (value: Partial<DBBroadcast>) => {
     const result = DBBroadcastSchema.parse(value);
-    console.log(result);
     props.onCommit && props.onCommit(result);
   };
   return (

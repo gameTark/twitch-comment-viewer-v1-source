@@ -12,7 +12,7 @@ export const DBBroadcastSchema = z
     broadcastTitle: z.string().max(140, "最大140文字まで入力可能です。").default(""),
 
     language: z.string(),
-    tags: z.string().array().max(25, "最大のタグ数は25件までです。").default([]),
+    tags: z.array(z.string()).max(25, "最大のタグ数は25件までです。").default([]),
     classificationLabels: z.string().array().default([]),
     isBrandedContent: z.boolean().default(false),
 

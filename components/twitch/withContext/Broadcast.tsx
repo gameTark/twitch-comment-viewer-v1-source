@@ -18,6 +18,9 @@ import { MultiTag } from "@components/hookForm/MultiTag";
 import { Game } from "./Game";
 import { ContextElements, createSpan, createTime } from "./interface";
 
+/**
+ * viewer
+ */
 const boroadcastContext = createContext<DbBroadcastTemplate | undefined | null>(null);
 const useBroadcastTemplate = () => useContext(boroadcastContext);
 const Provider = (props: { data?: DbBroadcastTemplate; children: ReactNode }) => {
@@ -61,20 +64,17 @@ const Favorite = (props: ContextElements["Input"]) => {
 
 const TagBadge = () => {
   const template = useBroadcastTemplate();
-  return template?.tags.map((val) => (
-    <DasyBadge size="badge-sm" key={val}>
-      {val}
-    </DasyBadge>
-  ));
+  return (
+    <ul className="inline-flex gap-2">
+      {template?.tags.map((val) => (
+        <DasyBadge size="badge-sm" key={val}>
+          {val}
+        </DasyBadge>
+      ))}
+    </ul>
+  );
 };
 
-const ApplyGameProvider = (props: {
-  Provider: (props: { id?: DbGame["id"]; children?: ReactNode }) => ReactNode;
-  children: ReactNode;
-}) => {
-  const template = useBroadcastTemplate();
-  return <props.Provider id={template?.gameId}>{props.children}</props.Provider>;
-};
 /**
  * edit
  */
@@ -138,7 +138,7 @@ const EditClassificationLabels = () => {
   return (
     <>
       {CLASSIFICATION_LABELS.map((val) => (
-        <div className=" inline-flex gap-2 justify-center">
+        <div key={val.id} className=" inline-flex gap-2 justify-center">
           <input
             key={val.id}
             type="checkbox"
@@ -166,6 +166,16 @@ const EditGame = () => {
   );
 };
 
+/**
+ * with provider
+ */
+const ApplyGameProvider = (props: {
+  Provider: (props: { id?: DbGame["id"]; children?: ReactNode }) => ReactNode;
+  children: ReactNode;
+}) => {
+  const template = useBroadcastTemplate();
+  return <props.Provider id={template?.gameId}>{props.children}</props.Provider>;
+};
 export const Broadcast = {
   Provider,
   Title,

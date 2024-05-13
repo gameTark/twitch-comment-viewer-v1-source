@@ -8,14 +8,6 @@ html:has(.drawer-toggle:checked) {
   scrollbar-gutter: auto !important;
 }
 
-html {
-  @apply font-noto-serif font-noto-sans;
-}
-html,
-body {
-  @apply overflow-hidden;
-}
-
 .drawer-toggle:checked ~ .drawer-side > .drawer-overlay {
   background-color: transparent;
   cursor: auto !important;
@@ -55,7 +47,7 @@ body {
   h4,
   h5 {
     margin-bottom: 0.3em;
-    @apply font-noto-serif tracking-widest leading-loose;
+    @apply font-noto-sans tracking-widest leading-loose;
   }
   p {
     @apply tracking-wide leading-relaxed;
