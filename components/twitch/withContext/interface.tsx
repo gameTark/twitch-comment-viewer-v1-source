@@ -12,11 +12,13 @@ export type ContextElements = {
     "alt"
   >;
   Span: React.DetailedHTMLProps<React.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>;
+  Input: React.DetailedHTMLProps<React.HTMLAttributes<HTMLInputElement>, HTMLInputElement>;
   Li: React.DetailedHTMLProps<React.HTMLAttributes<HTMLLIElement>, HTMLLIElement>;
   Ul: React.DetailedHTMLProps<React.HTMLAttributes<HTMLUListElement>, HTMLUListElement>;
   Time: React.DetailedHTMLProps<React.HTMLAttributes<HTMLTimeElement>, HTMLTimeElement> & {
     format?: string;
   };
+  Form: React.DetailedHTMLProps<React.FormHTMLAttributes<HTMLFormElement>, HTMLFormElement>;
   TypeTableSelection: React.DetailedHTMLProps<
     React.HTMLAttributes<HTMLTableSectionElement>,
     HTMLTableSectionElement

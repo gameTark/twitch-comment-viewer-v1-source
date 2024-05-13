@@ -12,6 +12,7 @@ modal-bottom	Responsive	Moves the modal to bottom
 modal-middle	Responsive	Moves the modal to middle (default)
  */
 import { createContext, ReactNode, useCallback, useContext, useRef, useState } from "react";
+
 import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 
 interface ModalProps {}
@@ -25,7 +26,6 @@ const modalContext = createContext<ModalProps & ModalAction>({
 });
 
 export const useModalContext = () => useContext(modalContext);
-
 
 export const ModalProvider = (props: { children: ReactNode }) => {
   const [node, setNode] = useState<ReactNode | null>(null);

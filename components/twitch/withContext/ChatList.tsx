@@ -12,7 +12,7 @@ import { User } from "./User";
  * action list
  */
 const ListProvider = (
-  props: ContextElements['Ul'] & {
+  props: ContextElements["Ul"] & {
     data: DBAction[];
   },
 ) => {
@@ -28,7 +28,7 @@ const ListProvider = (
     </ul>
   );
 };
-const ListItem = (props: ContextElements['Li']) => {
+const ListItem = (props: ContextElements["Li"]) => {
   return <li {...props} />;
 };
 
@@ -70,7 +70,7 @@ const ChatProvider = (props: { children?: ReactNode }) => {
   }
   return null;
 };
-const Fragment = (props: ContextElements['Span']) => {
+const Fragment = (props: ContextElements["Span"]) => {
   const chat = useChatContext();
   return (
     <span {...props}>

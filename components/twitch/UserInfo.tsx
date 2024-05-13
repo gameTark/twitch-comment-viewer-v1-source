@@ -9,11 +9,14 @@ import { User } from "./withContext/User";
 export const useUserInfoModal = () => {
   const modal = useModalContext();
   const user = User.useUser();
-  const openModal = useCallback((userId?: string) => {
-    const id = userId || user?.id;
-    if (id == null) return;
-    modal.open(<UserInformation userId={id} />);
-  }, [user]);
+  const openModal = useCallback(
+    (userId?: string) => {
+      const id = userId || user?.id;
+      if (id == null) return;
+      modal.open(<UserInformation userId={id} />);
+    },
+    [user],
+  );
   return openModal;
 };
 

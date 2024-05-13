@@ -1,6 +1,7 @@
 "use client";
 
 import React, { ChangeEventHandler, useCallback, useRef, useState } from "react";
+import { DBBroadcast, DBBroadcastSchema } from "@schemas/twitch/Broadcast";
 import { useLiveQuery } from "dexie-react-hooks";
 
 import { db, DbBroadcastTemplate } from "@resource/db";
@@ -9,17 +10,14 @@ import {
   getBroadcastTemplates,
   updateBroadcastTemplate,
 } from "@resource/twitchWithDb";
-import { BROADCAST_LANGUAGE, CLASSIFICATION_LABELS, fetchChannelInfoPatch } from "@libs/twitch";
+import { fetchChannelInfoPatch } from "@libs/twitch";
 import { filter } from "@libs/types";
 
 import { AddCard } from "@components/commons/addCard";
 import { useDialog } from "@components/commons/Dialog";
-import { MultiTag } from "@components/commons/multiTag";
 import { DasyBadge } from "@components/dasyui/Badge";
-import { Checkbox } from "@components/dasyui/Checkbox";
-import { Select } from "@components/dasyui/Select";
 import { GameViewer } from "@components/twitch/Game";
-import { Game } from "./withContext/Game";
+import { Broadcast } from "./withContext/Broadcast";
 
 // DbBroadcastTemplate
 export type HandleBroadcastViewerEvents = (event: DbBroadcastTemplate) => void;
@@ -299,166 +297,47 @@ export type BroadcastProps = {
   onCommit?: HandleBroadcastContent;
   onCancel?: () => void;
 };
-const FIELD_NAMES = {
-  title: "title",
-  gameId: "gameId",
-  language: "language",
-  tags: "tags",
-  classificationLabels: "classification-labels",
-  isBrandedContents: "isBrandedContents",
-};
 export default function BroadcastEditor(props: BroadcastProps) {
-  const refInput = useRef<DbBroadcastTemplate>(props.value);
-
-  const onChangeState: ChangeEventHandler<HTMLInputElement | HTMLSelectElement> = useCallback(
-    (changeEvent) => {
-      if (props.onChange == null) return;
-      switch (changeEvent.currentTarget.name) {
-        case FIELD_NAMES.title:
-          refInput.current.broadcastTitle = changeEvent.currentTarget.value;
-          break;
-        case FIELD_NAMES.gameId:
-          refInput.current.gameId = changeEvent.currentTarget.value;
-          break;
-        case FIELD_NAMES.language:
-          refInput.current.language = changeEvent.currentTarget.value;
-          break;
-        case FIELD_NAMES.tags:
-          refInput.current.tags = changeEvent.currentTarget.value
-            .split(",")
-            .filter((val) => val != "");
-          break;
-        case FIELD_NAMES.classificationLabels:
-          if (changeEvent.currentTarget instanceof HTMLSelectElement) break;
-          if (changeEvent.currentTarget.checked) {
-            refInput.current.classificationLabels.push(changeEvent.currentTarget.value);
-          } else {
-            refInput.current.classificationLabels = refInput.current.classificationLabels.filter(
-              (val) => val !== changeEvent.currentTarget.value,
-            );
-          }
-          break;
-        case FIELD_NAMES.isBrandedContents:
-          if (changeEvent.currentTarget instanceof HTMLSelectElement) break;
-          refInput.current.isBrandedContent = changeEvent.currentTarget.checked;
-          break;
-      }
-      props.onChange(refInput.current);
-    },
-    [props.onChange],
-  );
-
-  const handleSubmit = () => {
-    props.onCommit && props.onCommit(refInput.current);
+  const handleSubmit = (value: Partial<DBBroadcast>) => {
+    const result = DBBroadcastSchema.parse(value);
+    console.log(result);
+    props.onCommit && props.onCommit(result);
   };
-
   return (
-    <div className="w-full">
-      <div className="flex flex-col gap-5 py-4 px-10">
-        {/* section title */}
-        <div className="flex">
-          <p className="w-48">配信タイトル</p>
-          <input
-            className="input input-bordered w-full max-w-xs"
-            type="text"
-            onChange={onChangeState}
-            name={FIELD_NAMES.title}
-            value={props.value.broadcastTitle}
-          />
-        </div>
-
-        {/* section game */}
-        <div className="flex">
-          <p className="w-48">配信ゲーム</p>
-          <Game.Input
-            name={FIELD_NAMES.gameId}
-            value={props.value.gameId}
-            onChange={onChangeState}
-          />
-        </div>
-
-        {/* 開始通知 */}
-        {/* <div className="flex">
-          <p className="w-48">開始通知</p>
-          <input className="input input-bordered w-full max-w-xs" type="text" name="hoge" />
-        </div> */}
-
-        {/* 配信言語 */}
-        <div className="flex">
-          <p className="w-48">配信言語</p>
-          <Select bordered name={FIELD_NAMES.language} onChange={onChangeState}>
-            <option disabled>選択言語</option>
-            {BROADCAST_LANGUAGE.map((val) => (
-              <option key={val.id} value={val.id}>
-                {val.name}
-              </option>
-            ))}
-          </Select>
-        </div>
-
-        {/* オーディエンス 使えない人もいるっぽい */}
-
-        {/* タグ */}
-        <div className="flex">
-          <p className="w-48">配信タグ</p>
-          <MultiTag
-            value={props.value.tags.join(",")}
-            name={FIELD_NAMES.tags}
-            onChange={onChangeState}
-          />
-        </div>
-
-        {/* コンテンツ分類 */}
-        <div className="flex">
-          <p className="w-48">コンテンツ分類</p>
-          <div className="flex flex-col gap-4">
-            {CLASSIFICATION_LABELS.map((val) => (
-              <Checkbox
-                key={val.id}
-                value={val.id}
-                label={val.name}
-                name={FIELD_NAMES.classificationLabels}
-                color="info"
-                onChange={onChangeState}
-                defaultChecked={props.value.classificationLabels.includes(val.id)}
-              />
-            ))}
+    <Broadcast.Provider data={props.value}>
+      <Broadcast.editor.BroadcastFormProvider onSubmit={handleSubmit} className="w-full">
+        <div className="flex flex-col gap-5 py-4 px-10">
+          <div className="flex">
+            <p className="w-48">配信タイトル</p>
+            <Broadcast.editor.Title />
           </div>
-        </div>
-
-        {/* 再配信 */}
-        {/* <div className="flex">
-          <p className="w-48">再配信</p>
-          <div className="flex flex-col gap-4">
-            <input type="checkbox" className="ios-toggle" name="" id="" />
+          <div className="flex">
+            <p className="w-48">対象ゲーム</p>
+            <Broadcast.editor.Game />
           </div>
-        </div> */}
-
-        {/* ブランドコンテンツ */}
-        <div className="flex">
-          <p className="w-48">ブランドコンテンツ</p>
-          <div className="flex flex-col gap-4">
-            <input
-              type="checkbox"
-              className="ios-toggle"
-              name={FIELD_NAMES.isBrandedContents}
-              defaultChecked={props.value.isBrandedContent}
-              onChange={onChangeState}
-            />
+          <div className="flex">
+            <p className="w-48">タグ</p>
+            <Broadcast.editor.Tags />
           </div>
-        </div>
 
-        <div className="flex gap-2 justify-end">
-          {props.onCancel != null ? (
-            <button className="btn btn-warning" onClick={props.onCancel}>
-              {props.canncelLabel == null ? "キャンセル" : props.canncelLabel}
+          <div className="flex">
+            <p className="w-48">配信言語</p>
+            <Broadcast.editor.Language />
+          </div>
+          {/* <Broadcast.editor.ClassificationLables /> */}
+          <div className="flex">
+            <p className="w-48">ブランドコンテンツ</p>
+            <Broadcast.editor.BrandedContents />
+          </div>
+
+          <div className="flex gap-2">
+            <button className="btn btn-error" type="button" onClick={props.onCancel}>
+              {props.canncelLabel || "キャンセル"}
             </button>
-          ) : null}
-          <button className="btn btn-success" onClick={handleSubmit}>
-            {props.commmitLabel == null ? "編集完了" : props.commmitLabel}
-          </button>
+            <button className="btn btn-success">{props.commmitLabel || "完了"}</button>
+          </div>
         </div>
-      </div>
-    </div>
+      </Broadcast.editor.BroadcastFormProvider>
+    </Broadcast.Provider>
   );
 }

@@ -48,6 +48,7 @@ export default function GamePage() {
 
   const scroll2 = usePerfectScrollbar([]);
   const data = useSearchBroadcastTemplate(input);
+
   return (
     <div className="flex flex-col h-full grow w-full">
       <div className="flex items-center gap-2 p-2 bg-accent text-accent-content dropdown dropdown-bottom dropdown-hover">

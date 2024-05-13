@@ -59,10 +59,9 @@ const ProfileImage = createImg(
   },
   IMAGES.PROFILE_404,
   {
-    className: 'inline-block aspect-square select-none'
-  }
+    className: "inline-block aspect-square select-none",
+  },
 );
-
 
 const OfflineImage = createImg(
   useUser,
@@ -72,8 +71,8 @@ const OfflineImage = createImg(
   },
   IMAGES.NONE,
   {
-    className: 'inline-block aspect-square select-none'
-  }
+    className: "inline-block aspect-square select-none",
+  },
 );
 
 const useUpdateUser = () => {

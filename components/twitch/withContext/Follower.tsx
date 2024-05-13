@@ -4,12 +4,13 @@ import { useLiveQuery } from "dexie-react-hooks";
 
 import { db, DbFollowers } from "@resource/db";
 import { filter } from "@libs/types";
+
 import { ContextElements, createTime } from "./interface";
 
 const followerContext = createContext<DbFollowers | undefined>(undefined);
 const useFollowerContext = () => useContext(followerContext);
 
-const ListProvider = (props: ContextElements['Ul']) => {
+const ListProvider = (props: ContextElements["Ul"]) => {
   const { children, ...p } = props;
   const data = useLiveQuery(async () => {
     const me = await db.getMe();
@@ -27,7 +28,7 @@ const ListProvider = (props: ContextElements['Ul']) => {
     </ul>
   );
 };
-const RecordProvider = (props: ContextElements['TypeTableSelection']) => {
+const RecordProvider = (props: ContextElements["TypeTableSelection"]) => {
   const { children, ...p } = props;
   const data = useLiveQuery(async () => {
     const me = await db.getMe();
@@ -64,10 +65,10 @@ const Provider = ({ id, children }: { id: DBUser["id"]; children: ReactNode }) =
   }, [id]);
   return <followerContext.Provider value={follower}>{children}</followerContext.Provider>;
 };
-const ListItem = (props: ContextElements['Li']) => {
+const ListItem = (props: ContextElements["Li"]) => {
   return <li {...props} />;
 };
-const FollowedAt = createTime(useFollowerContext, ['followedAt'])
+const FollowedAt = createTime(useFollowerContext, ["followedAt"]);
 
 const Badge = (props: { type?: "icon" | "tag" }) => {
   const ctx = useFollowerContext();
@@ -79,8 +80,7 @@ const Badge = (props: { type?: "icon" | "tag" }) => {
       return <span className="badge badge-info badge-sm select-none">フォロワー</span>;
     }
     case "icon": {
-      if (ctx == null)
-        return <span className="opacity-0 select-none">♡</span>;
+      if (ctx == null) return <span className="opacity-0 select-none">♡</span>;
       return <span className=" text-accent select-none">♥</span>;
     }
   }

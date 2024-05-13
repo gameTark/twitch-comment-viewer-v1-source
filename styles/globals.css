@@ -221,3 +221,7 @@ body {
 .ps .ps__rail-y.ps--clicking {
   opacity: 1; /* default 0.9 */
 }
+
+.favorite {
+  @apply text-2xl text-warning before:content-['☆'] checked:before:content-['★'] cursor-pointer appearance-none;
+}

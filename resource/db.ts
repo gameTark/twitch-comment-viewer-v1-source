@@ -1,5 +1,6 @@
 import { DependencyList, useCallback, useEffect, useState } from "react";
 import { DBAction, DBActionIndex } from "@schemas/twitch/Actions";
+import { DBBroadcast, DBBroadcastIndex, DBBroadcastSchema } from "@schemas/twitch/Broadcast";
 import { DBGame, DBGameIndex } from "@schemas/twitch/Game";
 import { DBUser, DBUserIndex } from "@schemas/twitch/User";
 import Dexie, { Collection, IndexableType, Table } from "dexie";
@@ -29,7 +30,7 @@ export class MySubClassedDexie extends Dexie {
   games!: Table<DBGame>;
   actions!: Table<DBAction>;
 
-  broadcastTemplates!: Table<DbBroadcastTemplate>;
+  broadcastTemplates!: Table<DBBroadcast>;
   followers!: Table<DbFollowers>;
 
   channelHistories!: Table<DbChannelHistories>;
@@ -49,7 +50,7 @@ export class MySubClassedDexie extends Dexie {
       followers: "++id,channelId,userId,[channelId+userId],createdAt,[channelId+createdAt]",
       channelHistories: "++id,channelId,type,categoryId,timestamp,[channelId+timestamp]",
       listenerHistories: "++id,channelId,userId,[channelId+timestamp]",
-      broadcastTemplates: "++id,channelId,gameId,*tags,favorite",
+      broadcastTemplates: DBBroadcastIndex,
       parameters: "type",
       spam: "login",
       settings: "id",

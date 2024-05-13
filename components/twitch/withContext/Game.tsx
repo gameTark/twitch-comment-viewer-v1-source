@@ -25,7 +25,7 @@ import { ContextElements, createSpan, createTime } from "./interface";
 
 const gameContext = createContext<DbGame | undefined | null>(null);
 const useGame = () => useContext(gameContext);
-const Provider = (props: { id?: DbGame["id"]; children: ReactNode }) => {
+const Provider = (props: { id?: DbGame["id"]; children?: ReactNode }) => {
   const gameCtx = useGameContext();
   const data = useLiveQuery(async () => {
     if (props.id == null) return;
@@ -34,19 +34,22 @@ const Provider = (props: { id?: DbGame["id"]; children: ReactNode }) => {
 
   return <gameContext.Provider value={data}>{props.children}</gameContext.Provider>;
 };
-const Name = createSpan(useGame, ['name'])
-const UpdateAt = createTime(useGame, ['updateAt']);
-const CreatedAt = createTime(useGame, ['createdAt']);
+const Name = createSpan(useGame, ["name"]);
+const UpdateAt = createTime(useGame, ["updateAt"]);
+const CreatedAt = createTime(useGame, ["createdAt"]);
 
-const Image = (props: ContextElements['Image']) => {
+const Image = (props: ContextElements["Image"]) => {
   const game = useGame();
   const twitchImage = useMemo(() => {
-    return parser.twitchImage.parseImage(game?.box_art_url || 'https://static-cdn.jtvnw.net/ttv-static/404_boxart-{width}x{height}.jpg')({
+    return parser.twitchImage.parseImage(
+      game?.box_art_url ||
+        "https://static-cdn.jtvnw.net/ttv-static/404_boxart-{width}x{height}.jpg",
+    )({
       width: Number(props.width) || 300,
       height: Math.round(Number(((Number(props.width) || 300) / 3) * 4)),
     });
   }, [game]);
-  if (game == null) <img {...props} src={twitchImage} alt="404_box"  />;
+  if (game == null) <img {...props} src={twitchImage} alt="404_box" />;
   return <img {...props} src={twitchImage} alt={game?.name} />;
 };
 
@@ -168,9 +171,9 @@ const Input = (props: {
         <div className="modal-box h-min">
           <Game.Search onChange={onClickModal} />
         </div>
-        <form method="dialog" className="modal-backdrop">
+        <label className="modal-backdrop">
           <button>close</button>
-        </form>
+        </label>
       </dialog>
     </>
   );
