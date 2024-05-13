@@ -1,84 +1,81 @@
 import { useCallback } from "react";
-import { DBUser } from "@schemas/twitch/User";
 import clsx from "clsx";
 import { useLiveQuery } from "dexie-react-hooks";
 
 import { db } from "@resource/db";
-import { useTiwtchUpdateUserById, useTwitchFollowersGetById } from "@resource/twitchWithDb";
-import { useUserContext } from "@contexts/twitch/userContext";
-import { filter } from "@libs/types";
 
+import { useDialog } from "@components/commons/Dialog";
 import { Stat } from "@components/dasyui/Stat";
 import { ICONS } from "@components/icons";
 import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
-import { useUserInfoModal } from "./User";
+import { useUserInfoModal } from "./UserInfo";
+import { Follower } from "./withContext/Follower";
+import { User } from "./withContext/User";
 
 // https://daisyui.com/components/stat/
-const TypeListItem = (props: { userData: DBUser }) => {
-  const update = useTiwtchUpdateUserById(props.userData.id);
-  const me = useLiveQuery(() => db.getMe(), []);
-  const handleSpam = useCallback(() => {
-    const isSuccess = confirm("スパムとして認識させますか？");
-    if (!isSuccess) return;
-    update({ isSpam: true });
-  }, [props.userData]);
-  const openModal = useUserInfoModal(props.userData.id);
-  const followers = useTwitchFollowersGetById(me?.id);
-  if (followers == null) return;
+const TypeListItem = () => {
+  const open = useUserInfoModal();
+  const update = User.useUpdateUser();
+  const openDialog = useDialog();
+
+  const spam = useCallback(() => {
+    openDialog.open({
+      title: "スパムとして認識させますか？",
+      onSuccess: () => {
+        update({
+          isSpam: true,
+        });
+      },
+    });
+  }, []);
   return (
-    <li className="flex gap-2">
-      <div className="whitespace-nowrap w-full">
-        <a className="link" tabIndex={0} onClick={() => openModal()}>
-          {props.userData.displayName || props.userData.login}
-        </a>
-      </div>
-
-      <div>
-        <a className="cursor-pointer font-black	" onClick={handleSpam}>
-          x
-        </a>
-      </div>
-
-      <div className="w-4">
-        {followers.findIndex((val) => val.userId === props.userData.id) !== -1 ? "☑" : "☐"}
-      </div>
-    </li>
+    <div className="flex items-center justify-between gap-1">
+      <span className=" inline-block w-full whitespace-nowrap text-xs">
+        <User.Name className=" cursor-pointer" onClick={() => open()} />
+      </span>
+      <Follower.Badge type="icon" />
+      <span className="cursor-pointer" onClick={spam}>
+        {<ICONS.CROSS.SIZE size={16} />}
+      </span>
+    </div>
   );
 };
 export interface ChatUsersProps {
   type: "list" | "number" | "stat";
 }
 export const ChatUsers = (props: ChatUsersProps) => {
-  const me = useLiveQuery(() => db.getMe(), []);
-  const chatters = useLiveQuery(() => db.getChatters(), []);
-  const userContext = useUserContext();
-  const users = useLiveQuery(async () => {
+  const chatters = useLiveQuery(async () => {
+    const chatters = await db.getChatters();
+    const me = await db.getMe();
     if (me == null) return;
     if (chatters == null) return;
-    const result = await Promise.all(chatters.users.map((val) => userContext.fetchById(val)));
-    return result.filter(filter.notNull);
-  }, [me?.id, chatters]);
+    return chatters.users.filter((val) => val !== me.id);
+  }, []);
 
   const ps = usePerfectScrollbar([chatters]);
 
   switch (props.type) {
     case "number":
-      return <div>{users?.length}</div>;
+      return <div>{chatters?.length || 0}</div>;
     case "stat":
       return (
         <Stat
           title={<div className="flex gap-2">チャットユーザー数</div>}
-          value={`${users?.length}人`}
+          value={`${chatters?.length || 0}人`}
           icon={ICONS.COMMENT}
         />
       );
     case "list":
       return (
-        <div className={clsx("px-4 py-2 perfect-scrollbar")} ref={ps.ref}>
-          <ul>
-            {users
-              ?.filter((val) => val.id !== me?.id)
-              .map((val) => <TypeListItem key={val.id} userData={val} />)}
+        <div className={clsx("px-1 py-2 perfect-scrollbar")} ref={ps.ref}>
+          <ul className="flex flex-col gap-1">
+            {chatters?.map((val) => (
+              <Follower.Provider key={val} id={val}>
+                <User.Provider id={val}>
+                  <TypeListItem />
+                </User.Provider>
+              </Follower.Provider>
+            ))}
           </ul>
         </div>
       );

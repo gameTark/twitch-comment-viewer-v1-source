@@ -12,9 +12,6 @@ modal-bottom	Responsive	Moves the modal to bottom
 modal-middle	Responsive	Moves the modal to middle (default)
  */
 import { createContext, ReactNode, useCallback, useContext, useRef, useState } from "react";
-import { DBUser } from "@schemas/twitch/User";
-
-import { UserInformation } from "@components/twitch/User";
 import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 
 interface ModalProps {}
@@ -28,18 +25,7 @@ const modalContext = createContext<ModalProps & ModalAction>({
 });
 
 export const useModalContext = () => useContext(modalContext);
-export const useShowUserInfoModal = () => {
-  const modal = useModalContext();
-  const open = useCallback(
-    (userId: DBUser["id"]) => {
-      modal.open(<UserInformation userId={userId} />);
-    },
-    [modal],
-  );
-  return {
-    open,
-  };
-};
+
 
 export const ModalProvider = (props: { children: ReactNode }) => {
   const [node, setNode] = useState<ReactNode | null>(null);

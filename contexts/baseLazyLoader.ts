@@ -24,8 +24,8 @@ export const useBaseResourceLazyLoad = <
   timeout?: number;
 }) => {
   const log = logger("debug");
-  const _interval = interval || 300;
-  const _timeout = timeout || 600;
+  const _interval = interval || 500;
+  const _timeout = timeout || 800;
   const [machine, send] = useStateMachine({
     initial: "initialized",
     states: {

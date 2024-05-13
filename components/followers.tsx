@@ -6,10 +6,10 @@ import { User } from "./twitch/withContext/User";
 const Record = () => {
   const open = useUserInfoModal();
   return (
-    <tr className="h-16 cursor-pointer select-none" onClick={open} tabIndex={0}>
+    <tr className="h-16 cursor-pointer select-none" onClick={() => open()} tabIndex={0}>
       <td>
         <div className="flex justify-center items-center">
-          <User.ProfileImage className="rounded-full overflow-hidden w-10" />
+          <User.ProfileImage className="rounded-full overflow-hidden w-10 border-2" />
         </div>
       </td>
       <td>

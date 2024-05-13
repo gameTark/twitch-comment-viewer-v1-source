@@ -14,16 +14,17 @@ import { User } from "./withContext/User";
 const TypeBubble = () => {
   const openModal = useUserInfoModal();
   return (
-    <chats.ListItem className="w-full">
+    <chats.ListItem className="w-full px-2">
       {/* chat */}
       <chats.chat.ChatProvider>
         <ChatBubble
           type="chat-end"
-          imageNode={<User.ProfileImage onClick={openModal} tabIndex={0} />}
-          header={<User.Name onClick={openModal} tabIndex={0} />}
+          imageNode={<User.ProfileImage onClick={() => openModal()} tabIndex={0} />}
+          header={
+            <User.Name className="inline-block mb-1" onClick={() => openModal()} tabIndex={0} />
+          }
           message={<chats.chat.Fragment />}
-          footer={<chats.SendedAt format="hh:mm:ss" />}
-          // onClickAvater={() => openModal()}
+          footer={<chats.SendedAt className="inline-block mt-1" format="hh:mm:ss" />}
         />
       </chats.chat.ChatProvider>
 
@@ -34,11 +35,11 @@ const TypeBubble = () => {
             className="rounded-full w-10 border-2 overflow-hidden cursor-pointer"
             tabIndex={0}
           />
-          <div className="flex">
+          <div className="flex items-center gap-1">
             <User.Name className="font-bold" />
-            が
+            <span>が</span>
             <chats.reward.UserTitle className="font-bold" />
-            と交換しました。
+            <span>と交換しました。</span>
           </div>
         </div>
       </chats.reward.RewardProvider>
@@ -62,7 +63,7 @@ const TypeFlat = () => {
 };
 const TypeMini = () => {
   return (
-    <chats.ListItem className="w-full border-b-2 last:border-0 pb-2 flex items-center gap-3">
+    <chats.ListItem className="w-full border-b-2 px-2 last:border-0 pb-2 flex items-center gap-3">
       <User.Name className=" inline-block text-xs font-bold min-w-32" />
 
       {/* chat */}
@@ -73,10 +74,13 @@ const TypeMini = () => {
 
         {/* reward */}
         <chats.reward.RewardProvider>
-          <span className=" inline-block text-sm font-bold">リワード交換</span>
-          <chats.reward.UserTitle className=" text-info font-black" />
+          <span className="inline-flex gap-2 items-center">
+            <span className=" inline-block text-sm font-bold">リワード交換</span>
+            <chats.reward.UserTitle className=" text-info font-black" />
+          </span>
         </chats.reward.RewardProvider>
       </span>
+      <chats.SendedAt format="YYYY/MM/DD" className="text-xs opacity-70" />
 
       <chats.SendedAt format="hh:mm:ss" className="text-xs opacity-70" />
     </chats.ListItem>
@@ -102,7 +106,7 @@ export const ChatList = (props: { type: string; query: Parameters<typeof getActi
   }, [props.type]);
   return (
     <div className="h-full perfect-scrollbar" ref={scroll.ref}>
-      <chats.ListProvider data={data || []} className="flex flex-col gap-2 py-8 px-4">
+      <chats.ListProvider data={data || []} className="flex flex-col gap-2 py-8">
         <chats.UserProvider>{target}</chats.UserProvider>
       </chats.ListProvider>
     </div>

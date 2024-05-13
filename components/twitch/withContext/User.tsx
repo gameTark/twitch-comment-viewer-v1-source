@@ -7,7 +7,6 @@ import {
   useCallback,
   useContext,
   useEffect,
-  useMemo,
   useRef,
   useState,
 } from "react";
@@ -21,6 +20,7 @@ import { fetchChannelFollowers } from "@libs/twitch";
 import { useAsyncMemo } from "@libs/uses";
 
 import { ICONS } from "@components/icons";
+import clsx from "clsx";
 
 const userContext = createContext<DBUser | undefined | null>(null);
 const useUser = () => useContext(userContext);
@@ -37,16 +37,19 @@ const Provider = (props: { id?: DBUser["id"] | null; children: ReactNode }) => {
 
 const Name = (props: DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>) => {
   const user = useUser();
+  if (user == null) return <span {...props} className={clsx("skeleton w-28 inline-block", props.className)}>&nbsp;</span>
   return <span {...props}>{user?.displayName || user?.login}</span>;
 };
 const Id = (props: DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>) => {
   const user = useUser();
+  if (user == null) return <span {...props} className={clsx("skeleton w-16 inline-block", props.className)}>&nbsp;</span>
   return <span {...props}>{user?.id}</span>;
 };
 const Description = (
   props: DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>,
 ) => {
   const user = useUser();
+  if (user == null) return <span {...props} className={clsx("skeleton w-16 inline-block", props.className)}>&nbsp;</span>
   return <span {...props}>{user?.description}</span>;
 };
 const MetaComment = (
@@ -63,6 +66,7 @@ const ProfileImage = (
   >,
 ) => {
   const user = useUser();
+  if (user == null) return <img {...props} className={clsx("inline-block aspect-square select-none", props.className)}/>
   return <img {...props} src={user?.profileImageUrl} alt={user?.login} />;
 };
 const OfflineImage = (
@@ -98,6 +102,11 @@ const CreatedAt = (
 
 type TypeTextarea = DetailedHTMLProps<HTMLAttributes<HTMLTextAreaElement>, HTMLTextAreaElement>;
 
+const useUpdateUser = () => {
+  const user = useUser();
+  const update = useTiwtchUpdateUserById(user?.id);
+  return update;
+}
 const EditableMetaComment = (props: TypeTextarea) => {
   const user = useUser();
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -162,6 +171,7 @@ export const User = {
   Provider,
   Id,
   useUser,
+  useUpdateUser,
   Name,
   ProfileImage,
   Description,

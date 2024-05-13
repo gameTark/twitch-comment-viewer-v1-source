@@ -46,7 +46,7 @@ export const BroadcastContent = () => {
                 </select>
               </div>
             </div>
-            <ChatList type={state} query={{ type: "timestamp" }} />
+            <ChatList type={state} query={{ type: "timestamp", limit: 500 }} />
           </div>
         </div>
       </div>

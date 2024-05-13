@@ -51,15 +51,15 @@ export const getActions = (props: ActionType) => {
   switch (props.type) {
     case "timestamp": {
       const between = {
-        from: Number(props.from || dayjs(new Date()).subtract(2, "day").toDate()),
-        to: Number(props.to || dayjs(new Date()).add(2, "day").toDate()),
+        from: Number(props.from || dayjs(new Date()).subtract(10, "day").toDate()),
+        to: Number(props.to || dayjs(new Date()).add(10, "day").toDate()),
       };
       const query = {
         where: "timestamp",
         from: between.from,
         to: between.to,
       };
-      const result = db.actions.where(query.where).between(query.from, query.to).reverse();
+      const result = db.actions.where(query.where).between(query.from, query.to);
       if (props.limit == null) return result;
       return result.limit(props.limit);
     }

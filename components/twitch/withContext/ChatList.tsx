@@ -31,11 +31,11 @@ const ListProvider = (
     data: DBAction[];
   },
 ) => {
-  const { children, ...p } = props;
+  const { children, data, ...p } = props;
 
   return (
     <ul {...p}>
-      {p.data?.map((val) => (
+      {data?.map((val) => (
         <actionContext.Provider key={val.id} value={val}>
           {children}
         </actionContext.Provider>

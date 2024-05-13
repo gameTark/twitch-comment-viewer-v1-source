@@ -1,5 +1,4 @@
-import { DBAction, DBActionSchema } from "@schemas/twitch/Actions";
-import dayjs from "dayjs";
+import { dayjs } from "@libs/dayjs";
 
 import { db, DbFollowers } from "@resource/db";
 
@@ -111,11 +110,12 @@ const getChatters = async () => {
     moderator_id: userData.id,
   });
   users.data.sort((a, b) => Number(a.user_id) - Number(b.user_id));
+  const data = (await db.spam.bulkGet(users.data.map(val => val.user_login))).map(val => val?.login);
   db.parameters.put({
     type: "chatters",
     value: {
-      users: users.data.map((val) => val.user_id),
-      total: users.total,
+      users: users.data.filter(val => !data.includes(val.user_login)).map((val) => val.user_id),
+      total: users.total - data.length,
     },
   });
 };
@@ -196,15 +196,15 @@ type NotificationSocketEvent = EventListenerMap<SocketEventNotificationMap, Sock
 
 const createAddListener =
   (socket: WebSocket): SocketEvent =>
-  (type, cb) => {
-    const item = (ev: MessageEvent<string>) => {
-      const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
-      if (type !== value.metadata.message_type) return;
-      cb(value as any, ev);
+    (type, cb) => {
+      const item = (ev: MessageEvent<string>) => {
+        const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
+        if (type !== value.metadata.message_type) return;
+        cb(value as any, ev);
+      };
+      socket.addEventListener("message", item);
+      return item;
     };
-    socket.addEventListener("message", item);
-    return item;
-  };
 
 const createRemoveListener = (socket: WebSocket) => (item: SocketCallback) => {
   socket.removeEventListener("message", item);
@@ -212,16 +212,16 @@ const createRemoveListener = (socket: WebSocket) => (item: SocketCallback) => {
 
 const createAddNotificationListener =
   (socket: WebSocket): NotificationSocketEvent =>
-  (t, cb) => {
-    const item = (ev: MessageEvent<string>) => {
-      const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
-      if (value.metadata.message_type !== "notification") return;
-      if (value.metadata.subscription_type !== t) return;
-      cb(value as any, ev);
+    (t, cb) => {
+      const item = (ev: MessageEvent<string>) => {
+        const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
+        if (value.metadata.message_type !== "notification") return;
+        if (value.metadata.subscription_type !== t) return;
+        cb(value as any, ev);
+      };
+      socket.addEventListener("message", item);
+      return item;
     };
-    socket.addEventListener("message", item);
-    return item;
-  };
 
 const createSocket = () => {
   let socketInstance: WebSocket | null = null;
@@ -261,53 +261,50 @@ const createSocket = () => {
       });
 
       notice("channel.chat.message", (event) => {
-        db.actions.add(
-          DBActionSchema.parse({
-            id: event.payload.event.message_id,
-            userId: event.payload.event.chatter_user_id,
-            channel: userData.login,
-            message: event.payload.event.message.text,
-            messageType: "chat",
-            fragments: event.payload.event.message.fragments,
-            timestamp: Date.now(),
-            rowdata: JSON.stringify(event),
-            updateAt: new Date(),
-            createdAt: new Date(),
-          } as DBAction),
+        db.actions.add({
+          id: event.payload.event.message_id,
+          userId: event.payload.event.chatter_user_id,
+          channel: userData.login,
+          message: event.payload.event.message.text,
+          messageType: "chat",
+          fragments: event.payload.event.message.fragments,
+          timestamp: Date.now(),
+          rowdata: JSON.stringify(event),
+          updateAt: new Date(),
+          createdAt: new Date(),
+        },
         );
       });
       notice("channel.channel_points_automatic_reward_redemption.add", (event) => {
-        db.actions.add(
-          DBActionSchema.parse({
-            id: event.payload.event.id,
-            userId: event.payload.event.user_id,
-            channel: userData.login,
-            userTitle: event.payload.event.reward.type,
-            userInput: event.payload.event.user_input,
-            rewardId: event.payload.event.reward.type,
-            messageType: "atutomatic-reward",
-            timestamp: Date.now(),
-            rowdata: JSON.stringify(event),
-            updateAt: new Date(),
-            createdAt: new Date(),
-          } as DBAction),
+        db.actions.add({
+          id: event.payload.event.id,
+          userId: event.payload.event.user_id,
+          channel: userData.login,
+          userTitle: event.payload.event.reward.type,
+          userInput: event.payload.event.user_input,
+          rewardId: event.payload.event.reward.type,
+          messageType: "atutomatic-reward",
+          timestamp: Date.now(),
+          rowdata: JSON.stringify(event),
+          updateAt: new Date(),
+          createdAt: new Date(),
+        },
         );
       });
       notice("channel.channel_points_custom_reward_redemption.add", (event) => {
-        db.actions.add(
-          DBActionSchema.parse({
-            id: event.payload.event.id,
-            userId: event.payload.event.user_id,
-            channel: userData.login,
-            userTitle: event.payload.event.reward.title,
-            userInput: event.payload.event.user_input,
-            rewardId: event.payload.event.reward.id,
-            messageType: "reward",
-            timestamp: Date.now(),
-            rowdata: JSON.stringify(event),
-            updateAt: new Date(),
-            createdAt: new Date(),
-          } as DBAction),
+        db.actions.add({
+          id: event.payload.event.id,
+          userId: event.payload.event.user_id,
+          channel: userData.login,
+          userTitle: event.payload.event.reward.title,
+          userInput: event.payload.event.user_input,
+          rewardId: event.payload.event.reward.id,
+          messageType: "reward",
+          timestamp: Date.now(),
+          rowdata: JSON.stringify(event),
+          updateAt: new Date(),
+          createdAt: new Date(),
+        },
         );
       });
 

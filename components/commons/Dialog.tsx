@@ -12,7 +12,7 @@ export interface UseDialogProps {
 
 const DialogContent = (props: UseDialogProps) => {
   return (
-    <div className="flex flex-col gap-10 px-8 py-4">
+    <div className="flex flex-col gap-10 px-8 py-4 select-none">
       <p className="text-large text-center">{props.title}</p>
       <div className="flex gap-2 justify-center">
         <button className="btn btn-error text-base-content" onClick={props.onFail}>

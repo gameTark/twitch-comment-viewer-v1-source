@@ -89,10 +89,21 @@ const FollowedAt = (props: TypeTime) => {
     <time {...props}>{dayjs(ctx?.followedAt).format(props.format || "YYYY/MM/DD hh:mm:ss")}</time>
   );
 };
-const Badge = () => {
+const Badge = (props: { type?: "icon" | "tag" }) => {
   const ctx = useFollowerContext();
-  if (ctx == null) return <span className="badge badge-info badge-sm opacity-30">フォロワー</span>;
-  return <span className="badge badge-info badge-sm">フォロワー</span>;
+  const type = props.type || "tag";
+  switch (type) {
+    case "tag": {
+      if (ctx == null)
+        return <span className="badge badge-info badge-sm opacity-30 select-none">フォロワー</span>;
+      return <span className="badge badge-info badge-sm select-none">フォロワー</span>;
+    }
+    case "icon": {
+      if (ctx == null)
+        return <span className="opacity-0 select-none">♡</span>;
+      return <span className=" text-accent select-none">♥</span>;
+    }
+  }
 };
 
 type Provider = (props: { id?: string; children: ReactNode }) => ReactNode;
