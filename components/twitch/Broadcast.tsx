@@ -18,7 +18,8 @@ import { MultiTag } from "@components/commons/multiTag";
 import { DasyBadge } from "@components/dasyui/Badge";
 import { Checkbox } from "@components/dasyui/Checkbox";
 import { Select } from "@components/dasyui/Select";
-import { GameInput, GameViewer } from "@components/twitch/Game";
+import { GameViewer } from "@components/twitch/Game";
+import { Game } from "./withContext/Game";
 
 // DbBroadcastTemplate
 export type HandleBroadcastViewerEvents = (event: DbBroadcastTemplate) => void;
@@ -369,7 +370,7 @@ export default function BroadcastEditor(props: BroadcastProps) {
         {/* section game */}
         <div className="flex">
           <p className="w-48">配信ゲーム</p>
-          <GameInput
+          <Game.Input
             name={FIELD_NAMES.gameId}
             value={props.value.gameId}
             onChange={onChangeState}

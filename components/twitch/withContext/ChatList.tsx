@@ -1,33 +1,18 @@
-import { createContext, DetailedHTMLProps, HTMLAttributes, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext } from "react";
 import { DBAction, DBComment, DBReward } from "@schemas/twitch/Actions";
-import { Collection, Table } from "dexie";
-import { useLiveQuery } from "dexie-react-hooks";
 import * as escaper from "html-escaper";
 
-import { dayjs } from "@libs/dayjs";
 import { urlLinkTagReplacement } from "@libs/regex";
 import { getEmoteImage, twitchLinks } from "@libs/twitch";
 
+import { ContextElements, createSpan, createTime } from "./interface";
 import { User } from "./User";
 
-const actionContext = createContext<DBAction | undefined>(undefined);
-const useActionContext = () => useContext(actionContext);
-
-const rewardContext = createContext<DBReward | undefined>(undefined);
-const useRewardContext = () => useContext(rewardContext);
-type TypeSpan = DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>;
-type TypeLi = DetailedHTMLProps<HTMLAttributes<HTMLLIElement>, HTMLLIElement>;
-type TypeUl = DetailedHTMLProps<HTMLAttributes<HTMLUListElement>, HTMLUListElement>;
-type TypeTime = DetailedHTMLProps<HTMLAttributes<HTMLTimeElement>, HTMLTimeElement> & {
-  format?: string;
-};
-// type TypeImage = Omit<
-//   Omit<DetailedHTMLProps<HTMLAttributes<HTMLImageElement>, HTMLImageElement>, "src">,
-//   "alt"
-// >;
-
+/**
+ * action list
+ */
 const ListProvider = (
-  props: TypeUl & {
+  props: ContextElements['Ul'] & {
     data: DBAction[];
   },
 ) => {
@@ -43,28 +28,26 @@ const ListProvider = (
     </ul>
   );
 };
-
-const ListItem = (props: TypeLi) => {
+const ListItem = (props: ContextElements['Li']) => {
   return <li {...props} />;
 };
 
-const SendedAt = (props: TypeTime) => {
-  const ctx = useActionContext();
-  return (
-    <time {...props}>{dayjs(ctx?.timestamp).format(props.format || "YYYY/MM/DD hh:mm:ss")}</time>
-  );
+/**
+ * action
+ */
+const actionContext = createContext<DBAction | undefined>(undefined);
+const useActionContext = () => useContext(actionContext);
+const ActonProvider = (props: { children?: ReactNode; data: DBAction }) => {
+  return <actionContext.Provider value={props.data}>{props.children}</actionContext.Provider>;
 };
+const SendedAt = createTime(useActionContext, ["timestamp"]);
+const Bits = createSpan(useActionContext, ["bits"]);
 
-const Bits = (props: TypeSpan) => {
-  const ctx = useActionContext();
-  return <span {...props}>{ctx?.bits}</span>;
-};
-
-const UserProvider = (props: { children?: ReactNode }) => {
-  const ctx = useActionContext();
-  return <User.Provider id={ctx?.userId}>{props.children}</User.Provider>;
-};
-
+/**
+ * reward
+ */
+const rewardContext = createContext<DBReward | undefined>(undefined);
+const useRewardContext = () => useContext(rewardContext);
 const RewardProvider = (props: { children?: ReactNode }) => {
   const action = useActionContext();
   if (action?.messageType === "reward") {
@@ -72,15 +55,12 @@ const RewardProvider = (props: { children?: ReactNode }) => {
   }
   return null;
 };
-const UserInput = (props: TypeSpan) => {
-  const reward = useRewardContext();
-  return <span {...props}>{reward?.userInput}</span>;
-};
-const UserTitle = (props: TypeSpan) => {
-  const reward = useRewardContext();
-  return <span {...props}>{reward?.userTitle}</span>;
-};
+const UserInput = createSpan(useRewardContext, ["userInput"]);
+const UserTitle = createSpan(useRewardContext, ["userTitle"]);
 
+/**
+ * caht
+ */
 const chatContext = createContext<DBComment | undefined>(undefined);
 const useChatContext = () => useContext(chatContext);
 const ChatProvider = (props: { children?: ReactNode }) => {
@@ -90,7 +70,7 @@ const ChatProvider = (props: { children?: ReactNode }) => {
   }
   return null;
 };
-const Fragment = (props: TypeSpan) => {
+const Fragment = (props: ContextElements['Span']) => {
   const chat = useChatContext();
   return (
     <span {...props}>
@@ -131,10 +111,18 @@ const Fragment = (props: TypeSpan) => {
   );
 };
 
+/**
+ * connection
+ */
+const UserProvider = (props: { children?: ReactNode }) => {
+  const ctx = useActionContext();
+  return <User.Provider id={ctx?.userId}>{props.children}</User.Provider>;
+};
+
 export const chats = {
   ListProvider,
   ListItem,
-  Provider: actionContext.Provider,
+  Provider: ActonProvider,
   SendedAt,
   UserProvider,
   Bits,

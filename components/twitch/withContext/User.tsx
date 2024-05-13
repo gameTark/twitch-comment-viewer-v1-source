@@ -1,8 +1,6 @@
 import {
   ChangeEventHandler,
   createContext,
-  DetailedHTMLProps,
-  HTMLAttributes,
   ReactNode,
   useCallback,
   useContext,
@@ -13,14 +11,14 @@ import {
 import { DBUser } from "@schemas/twitch/User";
 import { useLiveQuery } from "dexie-react-hooks";
 
+import { IMAGES } from "@resource/constants";
 import { useTiwtchUpdateUserById } from "@resource/twitchWithDb";
 import { useUserContext } from "@contexts/twitch/userContext";
-import { dayjs } from "@libs/dayjs";
 import { fetchChannelFollowers } from "@libs/twitch";
 import { useAsyncMemo } from "@libs/uses";
 
 import { ICONS } from "@components/icons";
-import clsx from "clsx";
+import { ContextElements, createImg, createSpan, createTime } from "./interface";
 
 const userContext = createContext<DBUser | undefined | null>(null);
 const useUser = () => useContext(userContext);
@@ -35,79 +33,56 @@ const Provider = (props: { id?: DBUser["id"] | null; children: ReactNode }) => {
   return <userContext.Provider value={data}>{props.children}</userContext.Provider>;
 };
 
-const Name = (props: DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>) => {
-  const user = useUser();
-  if (user == null) return <span {...props} className={clsx("skeleton w-28 inline-block", props.className)}>&nbsp;</span>
-  return <span {...props}>{user?.displayName || user?.login}</span>;
-};
-const Id = (props: DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>) => {
-  const user = useUser();
-  if (user == null) return <span {...props} className={clsx("skeleton w-16 inline-block", props.className)}>&nbsp;</span>
-  return <span {...props}>{user?.id}</span>;
-};
-const Description = (
-  props: DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>,
-) => {
-  const user = useUser();
-  if (user == null) return <span {...props} className={clsx("skeleton w-16 inline-block", props.className)}>&nbsp;</span>
-  return <span {...props}>{user?.description}</span>;
-};
-const MetaComment = (
-  props: DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>,
-) => {
-  const user = useUser();
-  return <span {...props}>{user?.metaComment}</span>;
-};
-
-const ProfileImage = (
-  props: Omit<
-    Omit<DetailedHTMLProps<HTMLAttributes<HTMLImageElement>, HTMLImageElement>, "src">,
-    "alt"
-  >,
-) => {
-  const user = useUser();
-  if (user == null) return <img {...props} className={clsx("inline-block aspect-square select-none", props.className)}/>
-  return <img {...props} src={user?.profileImageUrl} alt={user?.login} />;
-};
-const OfflineImage = (
-  props: Omit<
-    Omit<DetailedHTMLProps<HTMLAttributes<HTMLImageElement>, HTMLImageElement>, "src">,
-    "alt"
-  >,
-) => {
-  const user = useUser();
-  return <img {...props} src={user?.offlineImageUrl} alt={user?.login} />;
-};
-
-const UpdateAt = (
-  props: DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement> & {
-    format?: string;
+const Name = createSpan(useUser, ["displayName", "login"], {
+  children: ".........",
+});
+const Id = createSpan(useUser, ["id"], {
+  children: ".........",
+});
+const Description = createSpan(useUser, ["description"], {
+  children: ".........",
+});
+const MetaComment = createSpan(useUser, ["metaComment"], {
+  children: ".........",
+});
+const CreatedAt = createTime(useUser, ["createdAt"], {
+  children: "....",
+});
+const UpdateAt = createTime(useUser, ["updateAt"], {
+  children: "....",
+});
+const ProfileImage = createImg(
+  useUser,
+  {
+    src: ["profileImageUrl"],
+    alt: ["login"],
   },
-) => {
-  const game = useUser();
-  return (
-    <span {...props}>{dayjs(game?.updateAt).format(props.format || "YYYY/MM/DD hh:mm:ss")}</span>
-  );
-};
-const CreatedAt = (
-  props: DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement> & {
-    format?: string;
-  },
-) => {
-  const game = useUser();
-  return (
-    <span {...props}>{dayjs(game?.createdAt).format(props.format || "YYYY/MM/DD hh:mm:ss")}</span>
-  );
-};
+  IMAGES.PROFILE_404,
+  {
+    className: 'inline-block aspect-square select-none'
+  }
+);
 
-type TypeTextarea = DetailedHTMLProps<HTMLAttributes<HTMLTextAreaElement>, HTMLTextAreaElement>;
+
+const OfflineImage = createImg(
+  useUser,
+  {
+    src: ["offlineImageUrl"],
+    alt: ["login"],
+  },
+  IMAGES.NONE,
+  {
+    className: 'inline-block aspect-square select-none'
+  }
+);
 
 const useUpdateUser = () => {
   const user = useUser();
   const update = useTiwtchUpdateUserById(user?.id);
   return update;
-}
-const EditableMetaComment = (props: TypeTextarea) => {
+};
+
+const EditableMetaComment = (props: ContextElements["TextArea"]) => {
   const user = useUser();
   const ref = useRef<HTMLTextAreaElement>(null);
   const [bio, setBio] = useState<string>("");
@@ -115,7 +90,6 @@ const EditableMetaComment = (props: TypeTextarea) => {
 
   useEffect(() => {
     if (user == null || ref.current == null) return;
-    console.log(user.metaComment);
     setBio(user.metaComment);
     ref.current.value = user.metaComment || "";
   }, [user?.id]);
@@ -146,14 +120,12 @@ const FollowerCount = () => {
     const result = await fetchChannelFollowers({
       broadcaster_id: user.id,
     });
-    return result.total;
-  }, []);
-  return <span>{counts || "..."}</span>;
+    return result.total || 0;
+  }, [user?.id]);
+  return <span>{counts ?? "..."}</span>;
 };
 
-type TypeAnchor = DetailedHTMLProps<HTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>;
-
-const TwitchLink = (props: TypeAnchor) => {
+const TwitchLink = (props: ContextElements["Anchor"]) => {
   const user = useUser();
   if (user == null) return;
   return (

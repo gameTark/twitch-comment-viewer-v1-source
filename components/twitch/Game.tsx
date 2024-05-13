@@ -1,26 +1,10 @@
 "use client";
 
-import {
-  ChangeEventHandler,
-  MouseEventHandler,
-  ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import clsx from "clsx";
+import { ReactNode, useMemo } from "react";
 
-import { DbGame } from "@resource/db";
 import { useGameContext } from "@contexts/twitch/gameContext";
 import { parser } from "@libs/parser";
-import { fetchSearchCategories } from "@libs/twitch";
-import { useAsyncMemo, useDebounce, useInput } from "@libs/uses";
-
-import { useModalContext } from "@components/dasyui/Modal";
-import { ICONS } from "@components/icons";
-import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
+import { useAsyncMemo } from "@libs/uses";
 
 interface Item {
   id?: string;
@@ -101,107 +85,4 @@ export const GameViewer = (props: Item | Card) => {
         </div>
       );
   }
-};
-
-export const GameInput = (props: {
-  value?: DbGame["id"];
-  name?: string;
-  onChange?: ChangeEventHandler<HTMLInputElement>;
-}) => {
-  const refInput = useRef<HTMLInputElement>(null);
-  const modal = useModalContext();
-
-  const onClickModal = useCallback(
-    (gameId: DbGame["id"]) => {
-      modal.close();
-      if (props.onChange == null) return;
-      if (refInput.current == null) return;
-      refInput.current.value = gameId;
-      refInput.current.dispatchEvent(new Event("input", { bubbles: true }));
-    },
-    [modal, props.onChange],
-  );
-
-  const openSearchModal = useCallback(() => {
-    modal.open(<Search onClick={onClickModal} />);
-  }, [modal]);
-
-  return (
-    <div
-      className="
-        inline-flex
-        cursor-pointer
-        items-center
-        gap-4
-        border
-        dasy-rounded
-        p-2
-      "
-      onClick={openSearchModal}>
-      <input type="hidden" onInput={props.onChange} ref={refInput} name={props.name} />
-      <GameViewer id={props.value} type="item" />
-      <div className="text-info">{ICONS.SEARCH}</div>
-    </div>
-  );
-};
-
-export const Search = (props: { onClick?: (id: DbGame["id"]) => void }) => {
-  const [search, changeSearchHandler] = useInput();
-  const [result, setResult] = useState<Awaited<ReturnType<typeof fetchSearchCategories>> | null>(
-    null,
-  );
-  const onClick: MouseEventHandler<HTMLLIElement> = useCallback(
-    (e) => {
-      if (props.onClick == null) return;
-      if (e.currentTarget.dataset.game == null) throw new Error("not found game");
-      props.onClick(e.currentTarget.dataset.game);
-    },
-    [props.onClick],
-  );
-
-  const event = useDebounce(
-    500,
-    async (text: string) => {
-      if (text === "" || text == null) return null;
-      const item = await fetchSearchCategories({
-        query: text,
-      });
-      setResult(item);
-    },
-    [],
-  );
-
-  useEffect(() => {
-    event(search);
-  }, [search]);
-
-  const ps = usePerfectScrollbar([result]);
-  return (
-    <div className="h-96">
-      <div className="flex flex-col gap-5">
-        <input
-          type="text"
-          placeholder="Type here"
-          className="input input-bordered w-full max-w-xs"
-          value={search}
-          onChange={changeSearchHandler}
-        />
-        <div
-          className={clsx("w-full border dasy-rounded h-80 perfect-scrollbar bg-base-100")}
-          ref={ps.ref}>
-          {result != null ? (
-            <ul className="flex flex-col gap-2 menu">
-              {result.map((value) => {
-                return (
-                  <li key={value.id} data-game={value.id} onClick={onClick} tabIndex={0}>
-                    <GameViewer id={value.id} type="item" />
-                  </li>
-                );
-              })}
-            </ul>
-          ) : null}
-        </div>
-      </div>
-    </div>
-  );
 };

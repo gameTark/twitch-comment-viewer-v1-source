@@ -43,6 +43,12 @@ body {
   .dasy-rounded {
     border-radius: var(--rounded-btn);
   }
+  .modal-box {
+    transform: none !important;
+  }
+  .dropdown-content {
+    transform: none !important;
+  }
   h1,
   h2,
   h3,
@@ -148,7 +154,7 @@ body {
   width: 7px;
 }
 .ps__rail-y {
-  margin: 0.3em 0;
+  margin: 2px 0;
 }
 .ps__thumb-y,
 .ps__rail-y {

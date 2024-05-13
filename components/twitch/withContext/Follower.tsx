@@ -1,31 +1,15 @@
-import { createContext, DetailedHTMLProps, HTMLAttributes, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext } from "react";
 import { DBUser } from "@schemas/twitch/User";
 import { useLiveQuery } from "dexie-react-hooks";
 
 import { db, DbFollowers } from "@resource/db";
-import { dayjs } from "@libs/dayjs";
 import { filter } from "@libs/types";
+import { ContextElements, createTime } from "./interface";
 
 const followerContext = createContext<DbFollowers | undefined>(undefined);
 const useFollowerContext = () => useContext(followerContext);
 
-// type TypeSpan = DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>;
-type TypeLi = DetailedHTMLProps<HTMLAttributes<HTMLLIElement>, HTMLLIElement>;
-type TypeUl = DetailedHTMLProps<HTMLAttributes<HTMLUListElement>, HTMLUListElement>;
-type TypeTableSelection = DetailedHTMLProps<
-  HTMLAttributes<HTMLTableSectionElement>,
-  HTMLTableSectionElement
->;
-
-type TypeTime = DetailedHTMLProps<HTMLAttributes<HTMLTimeElement>, HTMLTimeElement> & {
-  format?: string;
-};
-// type TypeImage = Omit<
-//   Omit<DetailedHTMLProps<HTMLAttributes<HTMLImageElement>, HTMLImageElement>, "src">,
-//   "alt"
-// >;
-
-const ListProvider = (props: TypeUl) => {
+const ListProvider = (props: ContextElements['Ul']) => {
   const { children, ...p } = props;
   const data = useLiveQuery(async () => {
     const me = await db.getMe();
@@ -43,7 +27,7 @@ const ListProvider = (props: TypeUl) => {
     </ul>
   );
 };
-const RecordProvider = (props: TypeTableSelection) => {
+const RecordProvider = (props: ContextElements['TypeTableSelection']) => {
   const { children, ...p } = props;
   const data = useLiveQuery(async () => {
     const me = await db.getMe();
@@ -80,15 +64,11 @@ const Provider = ({ id, children }: { id: DBUser["id"]; children: ReactNode }) =
   }, [id]);
   return <followerContext.Provider value={follower}>{children}</followerContext.Provider>;
 };
-const ListItem = (props: TypeLi) => {
+const ListItem = (props: ContextElements['Li']) => {
   return <li {...props} />;
 };
-const FollowedAt = (props: TypeTime) => {
-  const ctx = useFollowerContext();
-  return (
-    <time {...props}>{dayjs(ctx?.followedAt).format(props.format || "YYYY/MM/DD hh:mm:ss")}</time>
-  );
-};
+const FollowedAt = createTime(useFollowerContext, ['followedAt'])
+
 const Badge = (props: { type?: "icon" | "tag" }) => {
   const ctx = useFollowerContext();
   const type = props.type || "tag";

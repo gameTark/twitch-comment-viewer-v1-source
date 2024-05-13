@@ -8,6 +8,7 @@
       "@libs/*": ["./libs/*"],
       "@resource/*": ["./resource/*"],
       "@uses/*": ["./uses/*"],
+      "@assets/*": ["./assets/*"],
       "@schemas/*": ["./schemas/*"]
     },
     "lib": ["dom", "dom.iterable", "esnext"],

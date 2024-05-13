@@ -80,8 +80,6 @@ const TypeMini = () => {
           </span>
         </chats.reward.RewardProvider>
       </span>
-      <chats.SendedAt format="YYYY/MM/DD" className="text-xs opacity-70" />
-
       <chats.SendedAt format="hh:mm:ss" className="text-xs opacity-70" />
     </chats.ListItem>
   );

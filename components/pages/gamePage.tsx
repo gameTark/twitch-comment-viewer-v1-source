@@ -59,15 +59,17 @@ export default function GamePage() {
         />
 
         <div
-          className=" dropdown-content z-10 bg-base-100 border-3 rounded-b-box shadow-2xl w-9/12 h-80 perfect-scrollbar"
+          className=" dropdown-content z-10 bg-base-100 border-3 shadow-2xl w-9/12 h-max max-h-96 perfect-scrollbar"
           ref={scroll2.ref}>
-          <div className="flex flex-wrap gap-2 m-5 rounded-box bg-base-100">
-            {data?.map((val) => (
-              <div key={val.id} className=" w-3/12">
-                <BroadcastViewer {...val} />
-              </div>
-            ))}
-          </div>
+          {data == null || data.length == 0 ? null : (
+            <div className="flex flex-wrap gap-2 m-5  bg-base-100">
+              {data?.map((val) => (
+                <div key={val.id} className=" w-3/12">
+                  <BroadcastViewer {...val} />
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       <div className="flex grow perfect-scrollbar z-0" ref={scroll.ref}>

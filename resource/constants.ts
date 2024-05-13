@@ -1,3 +1,5 @@
+import Profile404 from '@assets/images/404Profile.png';
+import None from '@assets/images/None.png';
 const isProd = process.env.NODE_ENV == "production";
 export const CONFIG = {
   API_KEY: "of40zatnkd1ftcaqnf92ahqznkg1vn",
@@ -17,6 +19,17 @@ export const isServer = typeof window !== "object";
 
 export const MAX_TIMESTAMP = 8640000000000000;
 export const MIN_TIMESTAMP = 0;
+
+export const IMAGES = {
+  PROFILE_404: {
+    src: Profile404.src,
+    alt: 'Profile404',
+  },
+  NONE: {
+    src: None.src,
+    alt: 'None',
+  }
+};
 
 export const KEYBOARD = {
   ENTER: "Enter",
