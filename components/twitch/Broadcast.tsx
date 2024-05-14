@@ -27,8 +27,8 @@ const Card = () => {
   // bg-opacity-50
   //  rounded-box overflow-hidden
   return (
-    <div className="relative z-0 w-full">
-      <div className="absolute top-0 right-0 z-20 mt-2 mr-3">
+    <div className="relative z-0 w-full indicator">
+      <div className="indicator-item z-20">
         <Broadcast.Favorite />
       </div>
 

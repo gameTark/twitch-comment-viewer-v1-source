@@ -7,14 +7,14 @@ export const DBUserId = z.string();
 export const DBUserSchema = z
   .object({
     id: DBUserId,
-    displayName: z.string(),
+    displayName: z.string().optional(),
     login: z.string(),
-    type: z.string(),
-    broadcasterType: z.string(),
-    description: z.string(),
-    profileImageUrl: z.string().url(),
-    offlineImageUrl: z.string().url(),
-    metaComment: z.string(),
+    type: z.string().optional(),
+    broadcasterType: z.string().optional(),
+    description: z.string().optional(),
+    profileImageUrl: z.string().optional(),
+    offlineImageUrl: z.string().optional(),
+    metaComment: z.string().optional(),
     isSpam: z.boolean().optional().default(false),
     rowData: z.string().optional(),
   })

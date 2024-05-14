@@ -3,9 +3,8 @@
 import Fuse from "fuse.js";
 import queryString from "query-string";
 
-import { db } from "@resource/db";
-
 import { isServer } from "@resource/constants";
+import { db } from "@resource/db";
 
 const API_KEY = "of40zatnkd1ftcaqnf92ahqznkg1vn";
 // https://dev.twitch.tv/docs/api/reference/

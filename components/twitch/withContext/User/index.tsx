@@ -89,7 +89,7 @@ const EditableMetaComment = (props: ContextElements["TextArea"]) => {
 
   useEffect(() => {
     if (user == null || ref.current == null) return;
-    setBio(user.metaComment);
+    setBio(user.metaComment || "");
     ref.current.value = user.metaComment || "";
   }, [user?.id]);
 

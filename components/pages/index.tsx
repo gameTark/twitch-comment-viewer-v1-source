@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 
-import { FollowerTable } from "@components/followers";
-import { LiveWatchUsers } from "@components/liveWatchUsers";
 import { ChatList } from "@components/twitch/Chats";
 import { ChatUsers } from "@components/twitch/Chatters";
+import { FollowerTable } from "@components/twitch/followers";
+import { LiveWatchUsers } from "@components/twitch/liveWatchUsers";
 
 export const BroadcastContent = () => {
   const [state, setState] = useState("viewewr");
