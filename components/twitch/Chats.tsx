@@ -2,11 +2,11 @@ import { useMemo } from "react";
 import { DBUser } from "@schemas/twitch/User";
 import { useLiveQuery } from "dexie-react-hooks";
 
-import { useDbPagination } from "@resource/db";
+import { db, useDbPagination } from "@resource/db";
+import { dayjs } from "@libs/dayjs";
 
 import { ChatBubble } from "@components/dasyui/ChatBubble";
 import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
-import { getActions } from "../../watcher/useCommentWatcher";
 import { useUserInfoModal } from "./UserInfo";
 import { chats } from "./withContext/ChatList";
 import { User } from "./withContext/User";
@@ -34,9 +34,14 @@ const TypeBubble = () => {
           <User.ProfileImage
             className="rounded-full w-10 border-2 overflow-hidden cursor-pointer"
             tabIndex={0}
+            onClick={() => openModal()}
           />
           <div className="flex items-center gap-1">
-            <User.Name className="font-bold" />
+            <User.Name
+              className="font-bold cursor-pointer"
+              tabIndex={0}
+              onClick={() => openModal()}
+            />
             <span>が</span>
             <chats.reward.UserTitle className="font-bold" />
             <span>と交換しました。</span>
@@ -154,4 +159,43 @@ export const ChatTable = (props: { userId: DBUser["id"] }) => {
       </div>
     </div>
   );
+};
+
+type ActionType =
+  | {
+      type: "timestamp";
+      from?: Date;
+      to?: Date;
+      limit?: number;
+    }
+  | {
+      type: "userId";
+      userId: DBUser["id"];
+      limit?: number;
+    };
+
+export const getActions = (props: ActionType) => {
+  switch (props.type) {
+    case "timestamp": {
+      const between = {
+        from: Number(props.from || dayjs(new Date()).subtract(10, "day").toDate()),
+        to: Number(props.to || dayjs(new Date()).add(10, "day").toDate()),
+      };
+      const query = {
+        where: "timestamp",
+        from: between.from,
+        to: between.to,
+      };
+      const result = db.actions.where(query.where).between(query.from, query.to);
+      if (props.limit == null) return result;
+      return result.limit(props.limit);
+    }
+    case "userId": {
+      const result = db.actions.where("userId").equals(props.userId).reverse();
+      if (props.limit == null) return result;
+      return result.limit(props.limit);
+    }
+    default:
+      throw new Error("");
+  }
 };

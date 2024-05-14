@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import Link from "next/link";
 import clsx from "clsx";
 import { useLiveQuery } from "dexie-react-hooks";
 
@@ -9,7 +8,6 @@ import { deleteTwitchToken, twitchLinks } from "@libs/twitch";
 import { useAsyncMemo } from "@libs/uses";
 
 import { ICONS } from "@components/icons";
-import ExternalIcon from "@components/icons/external";
 
 export const Me = () => {
   const meInstance = useLiveQuery(() => db.getMe(), []);

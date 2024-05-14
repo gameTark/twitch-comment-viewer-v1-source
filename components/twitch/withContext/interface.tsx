@@ -89,9 +89,7 @@ export const createTime = <T extends Object, K extends keyof T>(
       case "number":
       case "string":
       case "object":
-        if (!(target instanceof Date)) return;
-        if (!dayjs.isDayjs(target)) return;
-
+        if (!(target instanceof Date) && !dayjs.isDayjs(target)) return;
         return (
           <time {...defaultValues} {...timeProps}>
             {dayjs(target).format(timeProps.format || "YYYY/MM/DD hh:mm:ss")}

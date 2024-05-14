@@ -16,7 +16,7 @@ const Record = () => {
         <User.Name />
       </td>
       <td>
-        <Follower.FollowedAt format="YYYY/MM/DD hh:mm:ss" className=" whitespace-nowrap" />
+        <Follower.FollowedAt format="YYYY/MM/DD hh:mm:ss" className="whitespace-nowrap" />
       </td>
     </tr>
   );
