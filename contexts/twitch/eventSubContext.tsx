@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 
 import { db } from "@resource/db";
 import { fetchByMe, hasLoginToken, initialTwitchToken, isLoginned } from "@libs/twitch";
@@ -17,7 +17,6 @@ const isProd = process.env.NODE_ENV == "production";
 export const EventSubContext = (props: EventSubContextProps) => {
   useTheme();
   const loginPage = useLogin();
-  const [initialized, setInitialized] = useState(false);
 
   const main = useCallback(async () => {
     const isLogin = await isLoginned();

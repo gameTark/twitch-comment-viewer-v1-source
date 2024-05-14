@@ -5,7 +5,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db, DbFollowers } from "@resource/db";
 import { filter } from "@libs/types";
 
-import { ContextElements, createTime } from "./interface";
+import { ContextElements, createTime } from "../interface";
 
 const followerContext = createContext<DbFollowers | undefined>(undefined);
 const useFollowerContext = () => useContext(followerContext);

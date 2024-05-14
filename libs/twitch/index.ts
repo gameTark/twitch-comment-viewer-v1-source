@@ -5,7 +5,7 @@ import queryString from "query-string";
 
 import { db } from "@resource/db";
 
-import { isServer } from "../resource/constants";
+import { isServer } from "@resource/constants";
 
 const API_KEY = "of40zatnkd1ftcaqnf92ahqznkg1vn";
 // https://dev.twitch.tv/docs/api/reference/

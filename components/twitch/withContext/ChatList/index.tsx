@@ -5,8 +5,8 @@ import * as escaper from "html-escaper";
 import { urlLinkTagReplacement } from "@libs/regex";
 import { getEmoteImage, twitchLinks } from "@libs/twitch";
 
-import { ContextElements, createSpan, createTime } from "./interface";
-import { User } from "./User";
+import { ContextElements, createSpan, createTime } from "../interface";
+import { User } from "../User";
 
 /**
  * action list

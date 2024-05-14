@@ -34,6 +34,7 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.51.4",
     "react-syntax-highlighter": "^15.5.0",
+    "sharp": "^0.33.3",
     "throttle-debounce": "^5.0.0",
     "typescript-lru-cache": "^2.0.0",
     "uuid": "^9.0.1",

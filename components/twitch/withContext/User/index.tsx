@@ -18,7 +18,7 @@ import { fetchChannelFollowers } from "@libs/twitch";
 import { useAsyncMemo } from "@libs/uses";
 
 import { ICONS } from "@components/icons";
-import { ContextElements, createImg, createSpan, createTime } from "./interface";
+import { ContextElements, createImg, createSpan, createTime } from "../interface";
 
 const userContext = createContext<DBUser | undefined | null>(null);
 const useUser = () => useContext(userContext);

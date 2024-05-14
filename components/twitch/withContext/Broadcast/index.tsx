@@ -15,8 +15,8 @@ import { BROADCAST_LANGUAGE, CLASSIFICATION_LABELS, fetchChannelInfoPatch } from
 import { useDialog } from "@components/commons/Dialog";
 import { DasyBadge } from "@components/dasyui/Badge";
 import { MultiTag } from "@components/hookForm/MultiTag";
-import { Game } from "./Game";
-import { ContextElements, createSpan, createTime } from "./interface";
+import { Game } from "../Game";
+import { ContextElements, createSpan, createTime } from "../interface";
 
 
 /**

@@ -21,7 +21,7 @@ import { useDebounce, useInput } from "@libs/uses";
 
 import { ICONS } from "@components/icons";
 import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
-import { ContextElements, createSpan, createTime } from "./interface";
+import { ContextElements, createSpan, createTime } from "../interface";
 
 const gameContext = createContext<DbGame | undefined | null>(null);
 const useGame = () => useContext(gameContext);
