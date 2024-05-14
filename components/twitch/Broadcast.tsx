@@ -1,316 +1,97 @@
 "use client";
 
-import React, { ChangeEventHandler, useCallback, useRef, useState } from "react";
+import React, { useState } from "react";
 import { DBBroadcast, DBBroadcastSchema } from "@schemas/twitch/Broadcast";
+import clsx from "clsx";
 import { useLiveQuery } from "dexie-react-hooks";
 
-import { db, DbBroadcastTemplate } from "@resource/db";
-import {
-  deleteBroadcastTemplate,
-  getBroadcastTemplates,
-  putBroadcastTemplate,
-  updateBroadcastTemplate,
-} from "@resource/twitchWithDb";
-import { fetchChannelInfoPatch } from "@libs/twitch";
+import { getBroadcastTemplates } from "@resource/twitchWithDb";
 import { filter } from "@libs/types";
+import { useInput } from "@libs/uses";
 
-import { AddCard } from "@components/commons/addCard";
-import { useDialog } from "@components/commons/Dialog";
-import { DasyBadge } from "@components/dasyui/Badge";
-import { GameViewer } from "@components/twitch/Game";
+import { useSearchBroadcastTemplate } from "@components/pages/gamePage";
+import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 import { Broadcast } from "./withContext/Broadcast";
+import { Game } from "./withContext/Game";
 
-// DbBroadcastTemplate
-export type HandleBroadcastViewerEvents = (event: DbBroadcastTemplate) => void;
-export interface BroadcastViewerEvents {
-  onEdit?: HandleBroadcastViewerEvents;
-  onApply?: HandleBroadcastViewerEvents;
-  onDelete?: HandleBroadcastViewerEvents;
-}
+const Card = () => {
+  return (
+    <div className="relative z-0 w-full">
+      <div className="absolute top-0 right-0 z-20 mt-2 mr-3">
+        <Broadcast.Favorite />
+      </div>
+      <div className="z-10 absolute top-0 w-full h-full bg-neutral text-neutral-content bg-opacity-80 opacity-0 hover:opacity-100 transition-opacity rounded-box overflow-hidden">
+        <div className="flex flex-col items-center justify-center gap-5 h-full w-full p-10">
+          <Broadcast.Apply />
+          <Broadcast.Copy />
+          <Broadcast.Edit />
+          <Broadcast.Delete />
+        </div>
+      </div>
+      <div className="card w-full bg-base-100 shadow-xl image-full z-0 aspect-square h-full">
+        <figure>
+          <Game.Image className=" object-cover" width={500} />
+        </figure>
+        <div className="card-body">
+          <h2 className="card-title w-full">
+            <Game.Name className=" break-all line-clamp-2 w-full" />
+          </h2>
+          <p>
+            <Broadcast.Title />
+          </p>
+          <Broadcast.TagBadge className="flex justify-end gap-2 flex-wrap" />
+        </div>
+      </div>
+    </div>
+  );
+};
 
-export function BroadcastViewer(_props: DbBroadcastTemplate & BroadcastViewerEvents) {
-  const { onEdit, onApply, onDelete, ...props } = _props;
-
-  const handleEdit = useCallback(() => {
-    if (onEdit == null) return;
-    onEdit({ ...props });
+export function BroadcastInformation() {
+  const allItems = useLiveQuery(async () => {
+    return (await getBroadcastTemplates()).filter(filter.notNull);
   }, []);
-
-  const handleApply = useCallback(() => {
-    if (onApply == null) return;
-    onApply({ ...props });
-  }, []);
-
-  const handleDelete = useCallback(() => {
-    if (onDelete == null) return;
-    onDelete({ ...props });
-  }, []);
-
-  const handleFavorite: ChangeEventHandler<HTMLInputElement> = useCallback((e) => {
-    if (props.id == null) throw new Error("not found props id");
-    updateBroadcastTemplate(props.id, {
-      favorite: e.currentTarget.checked,
-    });
+  const favoriteItems = useLiveQuery(async () => {
+    return (await getBroadcastTemplates({ type: "favorite", value: true })).filter(filter.notNull);
   }, []);
   return (
-    <div className="relative z-0 h-full w-full">
-      <div
-        className="
-        absolute
-        flex
-        flex-col
-        gap-4
-        justify-center
-        items-center
-        px-10
-        cursor-pointer
-        rounded-box
-        
-        top-0
-        left-0
-        
-        w-full
-        h-full
-        
-        bg-base-content
-        bg-opacity-70
-        opacity-0
-        hover:opacity-100
-        transition
-        
-        z-40
-      ">
-        <button className="btn btn-success w-full btn-xs" onClick={handleApply}>
-          配信に適用
-        </button>
-        <button className="btn btn-info w-full btn-xs" onClick={handleApply}>
-          コピーして作成
-        </button>
-        <button className="btn btn-info w-full btn-xs" onClick={handleEdit}>
-          編集
-        </button>
-        <button className="btn btn-error w-full btn-xs" onClick={handleDelete}>
-          削除
-        </button>
+    <div className="p-10 h-fit flex flex-col gap-5 w-full">
+      <h2 className="heading-2">お気に入り</h2>
+      <div className="flex items-stretch flex-wrap -m-3">
+        {favoriteItems?.map((val) => {
+          return (
+            <div className=" w-1/4 flex p-3 min-w-60 max-w-96" key={val.id}>
+              <Broadcast.Provider data={val}>
+                <Game.Provider id={val.gameId}>
+                  <Card />
+                </Game.Provider>
+              </Broadcast.Provider>
+            </div>
+          );
+        })}
       </div>
-      <GameViewer
-        id={props.gameId}
-        type="card"
-        body={
-          <div className="flex flex-col gap-4 h-full">
-            <div className="flex flex-col gap-2">
-              <p className="text-caption">配信タイトル</p>
-              <p>{props.broadcastTitle}</p>
+      <h2 className="heading-2">全件</h2>
+      <div className="flex items-stretch flex-wrap -m-3">
+        {allItems?.map((val) => {
+          return (
+            <div className=" w-1/5 flex p-3 min-w-60 max-w-96" key={val.id}>
+              <Broadcast.Provider data={val}>
+                <Game.Provider id={val.gameId}>
+                  <Card />
+                </Game.Provider>
+              </Broadcast.Provider>
             </div>
-            <p className="grow h-full">{props.isBrandedContent ? "ブランドコンテンツ" : null}</p>
-            <div className="flex gap-2 flex-wrap justify-end">
-              {props.tags.map((val) => (
-                <DasyBadge size="badge-sm" key={val}>
-                  {val}
-                </DasyBadge>
-              ))}
-            </div>
-          </div>
-        }
-      />
-
-      <div
-        className="
-          absolute
-          top-0
-          right-0
-          z-50
-          bg-red
-          pt-1
-          pr-2
-          opacity-100
-          select-none
-        ">
-        <input
-          type="checkbox"
-          defaultChecked={props.favorite}
-          className="
-          text-2xl
-          text-warning
-          before:content-['☆']
-          checked:before:content-['★']
-          cursor-pointer
-          appearance-none	
-        "
-          onInput={handleFavorite}
-        />
+          );
+        })}
       </div>
     </div>
   );
 }
 
-export function BroadcastInformation() {
-  const [state, setState] = useState<DbBroadcastTemplate>(INITIAL_BROADCAST_STATE);
-  const me = useLiveQuery(() => db.getMe(), []);
-
-  const [type, setType] = useState("viewer");
-  const dialog = useDialog();
-  const handleBroadcastContent: HandleBroadcastContent = useCallback((ev) => {
-    setState({
-      ...ev,
-    });
-  }, []);
-
-  const handleEdit = useCallback((event?: DbBroadcastTemplate) => {
-    setState(event || { ...INITIAL_BROADCAST_STATE });
-    setType("edit");
-  }, []);
-
-  const handleCancel = useCallback(() => {
-    setState({ ...INITIAL_BROADCAST_STATE });
-    setType("viewer");
-  }, []);
-
-  const handleAdd: HandleBroadcastContent = (e) => {
-    if (e.gameId == null) return;
-    if (me == null) return;
-    if (e.id == null) {
-      putBroadcastTemplate({
-        channelId: me.id,
-        gameId: e.gameId,
-        broadcastTitle: e.broadcastTitle,
-        language: e.language,
-        tags: e.tags,
-        classificationLabels: e.classificationLabels,
-        isBrandedContent: e.isBrandedContent,
-      });
-      setType("viewer");
-      return;
-    }
-    updateBroadcastTemplate(e.id, {
-      channelId: me.id,
-      gameId: e.gameId,
-      broadcastTitle: e.broadcastTitle,
-      language: e.language,
-      tags: e.tags,
-      classificationLabels: e.classificationLabels,
-      isBrandedContent: e.isBrandedContent,
-    });
-    setState({ ...INITIAL_BROADCAST_STATE });
-    setType("viewer");
-  };
-  const handleDelete: HandleBroadcastViewerEvents = useCallback((ev) => {
-    dialog.open({
-      title: "削除しますか？",
-      onSuccess: () => {
-        if (ev.id == null) return;
-        deleteBroadcastTemplate([ev.id]);
-      },
-    });
-  }, []);
-  const handleApply: HandleBroadcastViewerEvents = useCallback(
-    (ev) => {
-      const id = me?.id;
-      if (id == null) return;
-      dialog.open({
-        title: "配信に適用しますか？",
-        onSuccess: () => {
-          return fetchChannelInfoPatch({
-            id: {
-              broadcaster_id: id,
-            },
-            patch: {
-              game_id: ev.gameId,
-              broadcaster_language: ev.language,
-              title: ev.broadcastTitle,
-              tags: ev.tags,
-              content_classification_labels: ev.classificationLabels,
-              is_branded_content: ev.isBrandedContent,
-            },
-          }).then(() => {
-            dialog.close();
-          });
-        },
-      });
-    },
-    [me],
-  );
-
-  const allItems = useLiveQuery(async () => {
-    return (await getBroadcastTemplates()).filter(filter.notNull);
-  }, []);
-
-  const favoriteItems = useLiveQuery(async () => {
-    return (await getBroadcastTemplates({ type: "favorite", value: true })).filter(filter.notNull);
-  }, []);
-
-  if (type === "edit") {
-    return (
-      <div className="flex justify-center px-20 pt-10">
-        <BroadcastEditor
-          value={state}
-          onChange={handleBroadcastContent}
-          onCommit={handleAdd}
-          commmitLabel="確定"
-          onCancel={handleCancel}
-        />
-      </div>
-    );
-  }
-  if (type === "viewer") {
-    return (
-      <div className="p-10 h-fit flex flex-col gap-5 w-full">
-        <h2 className="heading-2">お気に入り</h2>
-        <div className="flex gap-y-7 gap-x-2 items-stretch flex-wrap">
-          {favoriteItems?.map((val) => {
-            if (val.id == null) return;
-            return (
-              <div className=" w-3/12 flex" key={val.id}>
-                <BroadcastViewer
-                  {...val}
-                  onEdit={handleEdit}
-                  onApply={handleApply}
-                  onDelete={handleDelete}
-                />
-              </div>
-            );
-          })}
-        </div>
-        <h2 className="heading-2">全件</h2>
-        <div className="flex gap-y-7 gap-x-2 items-stretch flex-wrap">
-          {allItems?.map((val) => {
-            if (val.id == null) return;
-            return (
-              <div className=" w-2/12 flex" key={val.id}>
-                <BroadcastViewer
-                  {...val}
-                  onEdit={handleEdit}
-                  onApply={handleApply}
-                  onDelete={handleDelete}
-                />
-              </div>
-            );
-          })}
-        </div>
-        <div className="fixed bottom-0 right-0 w-20 h-20 mb-24 mr-10">
-          <AddCard onClick={handleEdit} />
-        </div>
-      </div>
-    );
-  }
-  return null;
-}
-
-export const INITIAL_BROADCAST_STATE: DbBroadcastTemplate = {
-  broadcastTitle: "",
-  language: "",
-  tags: [],
-  classificationLabels: [],
-  isBrandedContent: false,
-  favorite: false,
-};
-export type HandleBroadcastContent = (ev: DbBroadcastTemplate) => void;
 export type BroadcastProps = {
-  value: DbBroadcastTemplate;
+  value?: DBBroadcast;
   commmitLabel?: string;
   canncelLabel?: string;
-  onChange?: HandleBroadcastContent;
-  onCommit?: HandleBroadcastContent;
+  onCommit?: (e: DBBroadcast) => void;
   onCancel?: () => void;
 };
 export default function BroadcastEditor(props: BroadcastProps) {
@@ -339,12 +120,10 @@ export default function BroadcastEditor(props: BroadcastProps) {
             <p className="w-48">配信言語</p>
             <Broadcast.editor.Language />
           </div>
-          {/* <Broadcast.editor.ClassificationLables /> */}
           <div className="flex">
             <p className="w-48">ブランドコンテンツ</p>
             <Broadcast.editor.BrandedContents />
           </div>
-
           <div className="flex gap-2">
             <button className="btn btn-error" type="button" onClick={props.onCancel}>
               {props.canncelLabel || "キャンセル"}
@@ -356,3 +135,90 @@ export default function BroadcastEditor(props: BroadcastProps) {
     </Broadcast.Provider>
   );
 }
+
+const SearchItem = () => {
+  const [clicked, handleClick] = useState("close");
+  return (
+    <>
+      {clicked === "open" ? (
+        <dialog className="modal modal-open">
+          <div className=" modal-box">
+            <Broadcast.Apply />
+            <Broadcast.Copy />
+            <Broadcast.Edit />
+            <Broadcast.Delete />
+          </div>
+          <label className="modal-backdrop" onClick={() => handleClick("close")} />
+        </dialog>
+      ) : null}
+      <li
+        className="flex gap-2 items-center cursor-pointer px-5 py-4 hover:bg-base-200 rounded-box"
+        onClick={() => handleClick("open")}>
+        <div>
+          <Game.Image width={60} className=" rounded-box aspect-square object-cover" />
+        </div>
+        <div className="flex flex-col grow">
+          <Game.Name className="text-md font-extralight" />
+          <Broadcast.Title className="text-lg" />
+        </div>
+        <div>
+          <Broadcast.TagBadge />
+        </div>
+      </li>
+    </>
+  );
+};
+export const Events = () => {
+  const createNewTemplate = Broadcast.uses.useCreate({ isNew: true });
+  return (
+    <div className="inline-flex items-center gap-3">
+      {/* <button className="btn btn-outline btn-success btn-xs">過去の配信から追加</button> */}
+      <button className="btn btn-outline btn-success btn-xs" onClick={createNewTemplate}>
+        新規追加
+      </button>
+    </div>
+  );
+};
+// TODO: editのページ化
+export const Search = () => {
+  const [input, onChange] = useInput("");
+  const scroll = usePerfectScrollbar([]);
+  const data = useSearchBroadcastTemplate(input);
+  return (
+    <div
+      className={clsx("flex items-center dropdown dropdown-bottom dropdown-hover w-full", {
+        "[&>input]:hover:rounded-b-none": !(data == null || data.length == 0),
+      })}>
+      <input
+        className={clsx(
+          "input input-bordered input-sm input-ghost grow bg-base-100 text-base-content rounded-lg",
+          {
+            "focus:rounded-b-none": !(data == null || data.length == 0),
+          },
+        )}
+        value={input}
+        onChange={onChange}
+        placeholder="検索"
+      />
+
+      <div
+        className={clsx(
+          "dropdown-content z-10 bg-base-100 shadow-2xl w-full h-max max-h-96 perfect-scrollbar border-x rounded-b-lg",
+          { "border-b": !(data == null || data.length == 0) },
+        )}
+        ref={scroll.ref}>
+        {data == null || data.length == 0 ? null : (
+          <ul className="flex flex-wrap gap-2 flex-col p-2">
+            {data.map((val) => (
+              <Broadcast.Provider data={val} key={val.id}>
+                <Game.Provider id={val.gameId}>
+                  <SearchItem />
+                </Game.Provider>
+              </Broadcast.Provider>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+};

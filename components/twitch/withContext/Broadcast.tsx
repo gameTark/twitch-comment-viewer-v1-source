@@ -6,13 +6,15 @@ import {
   useContext,
   useState,
 } from "react";
+import { useRouter } from "next/navigation";
 import { DBBroadcast } from "@schemas/twitch/Broadcast";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 
-import { DbBroadcastTemplate, DbGame } from "@resource/db";
-import { updateBroadcastTemplate } from "@resource/twitchWithDb";
-import { BROADCAST_LANGUAGE, CLASSIFICATION_LABELS } from "@libs/twitch";
+import { db, DbBroadcastTemplate, DbGame } from "@resource/db";
+import { deleteBroadcastTemplate, updateBroadcastTemplate } from "@resource/twitchWithDb";
+import { BROADCAST_LANGUAGE, CLASSIFICATION_LABELS, fetchChannelInfoPatch } from "@libs/twitch";
 
+import { useDialog } from "@components/commons/Dialog";
 import { DasyBadge } from "@components/dasyui/Badge";
 import { MultiTag } from "@components/hookForm/MultiTag";
 import { Game } from "./Game";
@@ -62,10 +64,10 @@ const Favorite = (props: ContextElements["Input"]) => {
   );
 };
 
-const TagBadge = () => {
+const TagBadge = (props: ContextElements["Ul"]) => {
   const template = useBroadcastTemplate();
   return (
-    <ul className="inline-flex gap-2">
+    <ul {...props}>
       {template?.tags.map((val) => (
         <DasyBadge size="badge-sm" key={val}>
           {val}
@@ -75,6 +77,114 @@ const TagBadge = () => {
   );
 };
 
+const Apply = (props: ContextElements["Button"]) => {
+  const apply = useApply();
+  return (
+    <button className="btn btn-sm btn-accent" onClick={apply} {...props} type="button">
+      適用
+    </button>
+  );
+};
+const Delete = (props: ContextElements["Button"]) => {
+  const deleteTemplate = useDelete();
+  return (
+    <button className="btn btn-sm btn-ghost" onClick={deleteTemplate} {...props} type="button">
+      削除
+    </button>
+  );
+};
+const Edit = (props: ContextElements["Button"]) => {
+  const edit = useEdit();
+  return (
+    <button className="btn btn-sm" onClick={edit} {...props} type="button">
+      編集
+    </button>
+  );
+};
+const Create = (props: ContextElements["Button"]) => {
+  const create = useCreate({ isNew: true });
+  return (
+    <button className="btn btn-sm" onClick={create} {...props} type="button">
+      作成
+    </button>
+  );
+};
+const Copy = (props: ContextElements["Button"]) => {
+  const create = useCreate();
+  return (
+    <button className="btn btn-sm" onClick={create} {...props} type="button">
+      複製
+    </button>
+  );
+};
+/**
+ * dialogとか挟んだほうが吉
+ */
+const useApply = () => {
+  const template = useBroadcastTemplate();
+  const dialog = useDialog();
+  return useCallback(async () => {
+    dialog.open({
+      title: "配信に適用しますか？",
+      onSuccess: async () => {
+        const me = await db.getMe();
+        if (template == null || me?.id == null) return;
+        await fetchChannelInfoPatch({
+          id: {
+            broadcaster_id: me.id,
+          },
+          patch: {
+            game_id: template.gameId,
+            broadcaster_language: template.language,
+            title: template.broadcastTitle,
+            tags: template.tags,
+            content_classification_labels: template.classificationLabels,
+            is_branded_content: template.isBrandedContent,
+          },
+        });
+      },
+    });
+  }, [template]);
+};
+const useDelete = () => {
+  const template = useBroadcastTemplate();
+  const dialog = useDialog();
+
+  return useCallback(async () => {
+    dialog.open({
+      title: "このテンプレートを削除しますか？",
+      onSuccess: async () => {
+        if (template?.id == null) return;
+        await deleteBroadcastTemplate([template.id]);
+      },
+    });
+  }, [template]);
+};
+const useEdit = () => {
+  const template = useBroadcastTemplate();
+  const router = useRouter();
+  return useCallback(() => {
+    // qsで置き換え
+    router.push(`/games/edit?templateId=${template?.id}`);
+  }, [template, router]);
+};
+
+const useCreate = (
+  props: {
+    isNew?: boolean;
+  } = {},
+) => {
+  const template = useBroadcastTemplate();
+  const router = useRouter();
+  return useCallback(() => {
+    if (props.isNew) {
+      router.push("/games/create");
+      return;
+    }
+    // qsで置き換え
+    router.push(`/games/create?templateId=${template?.id}`);
+  }, [template, router]);
+};
 /**
  * edit
  */
@@ -184,6 +294,17 @@ export const Broadcast = {
   CreatedAt,
   UpdatedAt,
   Favorite,
+  Apply,
+  Edit,
+  Create,
+  Delete,
+  Copy,
+  uses: {
+    useApply,
+    useDelete,
+    useEdit,
+    useCreate,
+  },
   ApplyGameProvider,
   editor: {
     BroadcastFormProvider,

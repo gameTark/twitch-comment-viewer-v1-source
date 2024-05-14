@@ -12,6 +12,7 @@ export type ContextElements = {
     "alt"
   >;
   Span: React.DetailedHTMLProps<React.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>;
+  Button: React.DetailedHTMLProps<React.HTMLAttributes<HTMLButtonElement>, HTMLButtonElement>;
   Input: React.DetailedHTMLProps<React.HTMLAttributes<HTMLInputElement>, HTMLInputElement>;
   Li: React.DetailedHTMLProps<React.HTMLAttributes<HTMLLIElement>, HTMLLIElement>;
   Ul: React.DetailedHTMLProps<React.HTMLAttributes<HTMLUListElement>, HTMLUListElement>;
@@ -45,6 +46,30 @@ export const createSpan = <T extends Object, K extends keyof T>(
           <span {...defaultValues} {...spanProps}>
             {target.toString()}
           </span>
+        );
+      default:
+        throw new Error("");
+    }
+  };
+};
+export const createButton = <T extends Object, K extends keyof T>(
+  use: () => T | undefined | null,
+  key: K[],
+  defaultValues?: ContextElements["Button"],
+) => {
+  return (spanProps: ContextElements["Button"]) => {
+    const item = use();
+    if (item == null) return <span {...defaultValues} {...spanProps} />;
+    const target = key.map((val) => item[val]).find((val) => val != null);
+    switch (typeof target) {
+      case "bigint":
+      case "boolean":
+      case "number":
+      case "string":
+        return (
+          <button {...defaultValues} {...spanProps}>
+            {target.toString()}
+          </button>
         );
       default:
         throw new Error("");

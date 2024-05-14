@@ -38,6 +38,7 @@ const Name = createSpan(useGame, ["name"]);
 const UpdateAt = createTime(useGame, ["updateAt"]);
 const CreatedAt = createTime(useGame, ["createdAt"]);
 
+// SRC SETを付与する
 const Image = (props: ContextElements["Image"]) => {
   const game = useGame();
   const twitchImage = useMemo(() => {

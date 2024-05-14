@@ -63,7 +63,7 @@ export const GameViewer = (props: Item | Card) => {
     case "card":
       if (props.id == null) return <div></div>;
       return (
-        <div className="card w-full h-full bg-base-100 shadow-xl image-full select-none cursor-pointer">
+        <div className="card w-full h-full bg-base-100 shadow-xl image-full select-none cursor-pointer rounded-none">
           {isLoading ? (
             <div className="f-hull w-full aspect-square" />
           ) : (

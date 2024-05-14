@@ -149,15 +149,6 @@ export const useSpamCheck = (login?: string) => {
 ==========================================================================
  */
 
-export const putBroadcastTemplate = (
-  props: Omit<Omit<DbBroadcastTemplate, "updateAt">, "createdAt">,
-) => {
-  return db.broadcastTemplates.put({
-    ...props,
-    updateAt: new Date(),
-    createdAt: new Date(),
-  });
-};
 export const updateBroadcastTemplate = (
   id: Required<DbBroadcastTemplate>["id"],
   props: Partial<Omit<DbBroadcastTemplate, "id">>,
