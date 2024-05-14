@@ -331,6 +331,7 @@ export const fetchSearchCategories = async (params: FetchSearchCategoriesProps) 
   );
   const req = await data.json() as FetchSearchCategoriesResult;
 
+  // TODO: 検索精度が良くないが、煩雑になりそうなため一旦保留 
   const result = new Fuse(req.data, { keys: ["name"] }).search(params.query).map(val => val.item.id);
   return req.data.sort((a, b) => result.includes(a.id) ? 1 : -1);
 };
