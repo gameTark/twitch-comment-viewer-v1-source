@@ -7,7 +7,8 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
-import { DBBroadcast } from "@schemas/twitch/Broadcast";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { DBBroadcast, DBBroadcastSchema } from "@schemas/twitch/Broadcast";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 
 import { db, DbBroadcastTemplate, DbGame } from "@resource/db";
@@ -197,9 +198,11 @@ const BroadcastFormProvider = (
   const { children, onSubmit } = props;
   const template = useBroadcastTemplate();
   const methods = useForm<DBBroadcast>({
+    mode: "onChange",
     defaultValues: {
       ...template,
     },
+    resolver: zodResolver(DBBroadcastSchema),
   });
   return (
     <FormProvider {...methods}>
@@ -212,13 +215,19 @@ const BroadcastFormProvider = (
 
 const useBroadcastFormContext = () => useFormContext<DBBroadcast>();
 const EditTitle = () => {
-  const { register } = useBroadcastFormContext();
+  const context = useBroadcastFormContext();
+
   return (
-    <input
-      className="input input-bordered w-full max-w-xs"
-      type="text"
-      {...register("broadcastTitle")}
-    />
+    <div className="inline-flex flex-col">
+      <input
+        className="input input-bordered w-full max-w-xs"
+        type="text"
+        {...context.register("broadcastTitle")}
+      />
+      <p className="text-error select-none">
+        {context.formState.errors.broadcastTitle?.message} &nbsp;
+      </p>
+    </div>
   );
 };
 const EditLanguage = () => {
@@ -239,8 +248,13 @@ const EditBrandedContents = () => {
   return <input type="checkbox" className="ios-toggle" {...register("isBrandedContent")} />;
 };
 const EditTags = () => {
-  const { control } = useBroadcastFormContext();
-  return <MultiTag control={control} name="tags" />;
+  const context = useBroadcastFormContext();
+  return (
+    <div className="inline-flex flex-col">
+      <MultiTag control={context.control} name="tags" />
+      <p className="text-error select-none">{context.formState.errors.tags?.message} &nbsp;</p>
+    </div>
+  );
 };
 const EditClassificationLabels = () => {
   const { register } = useBroadcastFormContext();

@@ -15,19 +15,38 @@ import { Broadcast } from "./withContext/Broadcast";
 import { Game } from "./withContext/Game";
 
 const Card = () => {
+  const baseClass = clsx(
+    "inline-block h-full w-full font-black border-[2vw] border-neutral blur-3xl",
+  );
+  const textBaseClass = clsx(
+    "opacity-40 hover:opacity-100 transition-opacity drop-shadow-sm text-outline",
+  );
+  // blur-3xl
+  // blur-3xl
+  //  mix-blend-color
+  // bg-opacity-50
+  //  rounded-box overflow-hidden
   return (
     <div className="relative z-0 w-full">
       <div className="absolute top-0 right-0 z-20 mt-2 mr-3">
         <Broadcast.Favorite />
       </div>
-      <div className="z-10 absolute top-0 w-full h-full bg-neutral text-neutral-content bg-opacity-80 opacity-0 hover:opacity-100 transition-opacity rounded-box overflow-hidden">
-        <div className="flex flex-col items-center justify-center gap-5 h-full w-full p-10">
-          <Broadcast.Apply />
-          <Broadcast.Copy />
-          <Broadcast.Edit />
-          <Broadcast.Delete />
+
+      <div className="z-10 absolute top-0 w-full h-full opacity-0 hover:opacity-100 transition-opacity overflow-hidden rounded-box backdrop-blur-sm">
+        <div className="w-full h-full grid grid-cols-2 grid-rows-2 font-bold absolute top-0">
+          <div className={clsx("bg-success", baseClass)} />
+          <div className={clsx("bg-accent", baseClass)} />
+          <div className={clsx("bg-info", baseClass)} />
+          <div className={clsx("bg-error", baseClass)} />
+        </div>
+        <div className="z-20 absolute top-0 w-full h-full grid grid-cols-2 grid-rows-2 font-bold text-2xl">
+          <Broadcast.Apply className={clsx("text-success", textBaseClass)} />
+          <Broadcast.Copy className={clsx("text-accent", textBaseClass)} />
+          <Broadcast.Edit className={clsx("text-info", textBaseClass)} />
+          <Broadcast.Delete className={clsx("text-error", textBaseClass)} />
         </div>
       </div>
+
       <div className="card w-full bg-base-100 shadow-xl image-full z-0 aspect-square h-full">
         <figure>
           <Game.Image className=" object-cover" width={500} />

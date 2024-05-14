@@ -4,6 +4,7 @@
  */
 const themes = require("./resource/theme.json");
 
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
@@ -20,17 +21,16 @@ module.exports = {
         "noto-serif": ["Noto Serif JP"],
       },
       animation: {
-        "fade-in": "fade-in 0.1s ease-out both",
+        "fade-in": "fade-in 0.3s ease-out both",
       },
       keyframes: {
         "fade-in": {
           "0%": {
-            opacity: "0",
-          },
-          "20%": {
+            // scale: "0.9",
             opacity: "0",
           },
           "to": {
+            // scale: "1",
             opacity: "1",
           },
         },

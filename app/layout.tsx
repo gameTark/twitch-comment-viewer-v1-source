@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <div className="max-h-screen h-screen w-full max-w-screen oveflow-hidden flex flex-col border-base-content/20">
                 <ModalProvider>
                   <Drawer>
-                    <div className="h-96 grow">{children}</div>
+                    <div className="h-96 grow test">{children}</div>
                     <div className="h-fit">
                       <Footer />
                     </div>

@@ -1,5 +1,7 @@
-import { ChangeEventHandler, useCallback, useRef, useState } from "react";
+import { ChangeEventHandler, KeyboardEventHandler, useCallback, useRef, useState } from "react";
 import { FieldValues, useController, UseControllerProps, useFieldArray } from "react-hook-form";
+
+import { KEYBOARD } from "@resource/constants";
 
 import { DasyBadge } from "@components/dasyui/Badge";
 import { ICONS } from "@components/icons";
@@ -33,7 +35,19 @@ export const MultiTag = <TFieldValues extends FieldValues>(
   const handleChangeInput: ChangeEventHandler<HTMLInputElement> = (e) => {
     setInput(e.currentTarget.value);
   };
-
+  const handleKeyboard: KeyboardEventHandler<HTMLInputElement> = useCallback(
+    (e) => {
+      switch (e.key) {
+        case KEYBOARD.ENTER:
+          e.preventDefault();
+          e.stopPropagation();
+          console.log("add enter");
+          addTag();
+          return;
+      }
+    },
+    [addTag],
+  );
   return (
     <div className="inline-flex flex-col gap-2">
       <span className="inline-flex gap-2">
@@ -42,6 +56,7 @@ export const MultiTag = <TFieldValues extends FieldValues>(
           type="text"
           value={input}
           onChange={handleChangeInput}
+          onKeyDown={handleKeyboard}
           disabled={props.disabled}
         />
         <button type="button" className="btn" onClick={addTag}>

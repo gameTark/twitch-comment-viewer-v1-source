@@ -8,6 +8,10 @@ html:has(.drawer-toggle:checked) {
   scrollbar-gutter: auto !important;
 }
 
+html {
+  @apply font-noto-sans;
+  letter-spacing: 0.1em;
+}
 .drawer-toggle:checked ~ .drawer-side > .drawer-overlay {
   background-color: transparent;
   cursor: auto !important;
@@ -110,6 +114,18 @@ html:has(.drawer-toggle:checked) {
   }
   .children-borader > * {
     @apply border-l-2 border-t-2 border-base-content/20;
+  }
+
+  .text-outline {
+    text-shadow:
+      1px 1px 0px rgba(0, 0, 0, 0.5),
+      -1px -1px 0px rgba(0, 0, 0, 0.5),
+      -1px 1px 0px rgba(0, 0, 0, 0.5),
+      1px -1px 0px rgba(0, 0, 0, 0.5),
+      1px 0px 0px rgba(0, 0, 0, 0.5),
+      -1px 0px 0px rgba(0, 0, 0, 0.5),
+      0px 1px 0px rgba(0, 0, 0, 0.5),
+      0px -1px 0px rgba(0, 0, 0, 0.5);
   }
 }
 
