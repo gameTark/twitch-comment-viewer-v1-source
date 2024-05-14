@@ -175,11 +175,11 @@ const twitchFetch = async <T extends object, Result extends unknown>(
       const result = await response.json();
       throw new Error(`fetch error
     ${JSON.stringify({
-      status: response.status,
-      endpoint: c.ENDPOINT,
-      params,
-      response: result,
-    })}`);
+        status: response.status,
+        endpoint: c.ENDPOINT,
+        params,
+        response: result,
+      })}`);
     }
   };
   const getResponse = async () => {
@@ -225,7 +225,7 @@ const getTwitchToken = async () => {
 // ログインしている状態か判断する。
 export const isLoginned = async () => {
   if (isServer) return false;
-  const token = await getTwitchToken().catch(() => {});
+  const token = await getTwitchToken().catch(() => { });
   return token != null;
 };
 // URLにtokenが含まれている場合ローカルストレージにセットし元のURLに戻る
@@ -324,12 +324,15 @@ export interface FetchSearchCategoriesResult {
   };
 }
 export const fetchSearchCategories = async (params: FetchSearchCategoriesProps) => {
-  const req = await twitchFetch<FetchSearchCategoriesProps, FetchSearchCategoriesResult>(
-    API_LIST.SEARCH.CATEGORIES,
-    params,
+  const token = await getTwitchToken();
+  const fetcher = baseFetch(token);
+  const data = await fetcher(
+    `${API_LIST.SEARCH.CATEGORIES.ENDPOINT}?query=${params.query}`,
   );
-  const result = new Fuse(req.data, { keys: ["name"] });
-  return result.search(params.query).map((val) => val.item);
+  const req = await data.json() as FetchSearchCategoriesResult;
+
+  const result = new Fuse(req.data, { keys: ["name"] }).search(params.query).map(val => val.item.id);
+  return req.data.sort((a, b) => result.includes(a.id) ? 1 : -1);
 };
 export interface FetchChannelInfoProps {
   broadcaster_id: string;
