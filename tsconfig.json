@@ -9,7 +9,8 @@
       "@resource/*": ["./resource/*"],
       "@uses/*": ["./uses/*"],
       "@assets/*": ["./assets/*"],
-      "@schemas/*": ["./schemas/*"]
+      "@schemas/*": ["./schemas/*"],
+      "@constants/*": ["./constants/*"]
     },
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,

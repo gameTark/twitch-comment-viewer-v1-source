@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Table as DexieTable } from "dexie";
 
 import { db, useDbPagination } from "@resource/db";

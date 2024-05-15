@@ -8,8 +8,7 @@ import {
   useRef,
   useState,
 } from "react";
-
-import { KEYBOARD } from "@resource/constants";
+import { KEYBOARD } from "@constants/keyboard";
 
 import { DasyBadge } from "@components/dasyui/Badge";
 import { ICONS } from "@components/icons";

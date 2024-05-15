@@ -7,13 +7,14 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
+import { TWITCH_CONSTANTS } from "@constants/twitch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DBBroadcast, DBBroadcastSchema } from "@schemas/twitch/Broadcast";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 
 import { db, DbBroadcastTemplate, DbGame } from "@resource/db";
 import { deleteBroadcastTemplate, updateBroadcastTemplate } from "@resource/twitchWithDb";
-import { BROADCAST_LANGUAGE, CLASSIFICATION_LABELS, fetchChannelInfoPatch } from "@libs/twitch";
+import { fetchChannelInfoPatch } from "@libs/twitch";
 
 import { useDialog } from "@components/commons/Dialog";
 import { DasyBadge } from "@components/dasyui/Badge";
@@ -24,6 +25,8 @@ import { ContextElements, createSpan, createTime } from "../interface";
 /**
  * viewer
  */
+const { BROADCAST_LANGUAGE, CLASSIFICATION_LABELS } = TWITCH_CONSTANTS;
+
 const boroadcastContext = createContext<DbBroadcastTemplate | undefined | null>(null);
 const useBroadcastTemplate = () => useContext(boroadcastContext);
 const Provider = (props: { data?: DbBroadcastTemplate; children: ReactNode }) => {

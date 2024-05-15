@@ -31,8 +31,3 @@ export const IMAGES = {
     alt: "None",
   },
 };
-
-export const KEYBOARD = {
-  ENTER: "Enter",
-  BACKSPACE: "Backspace",
-};

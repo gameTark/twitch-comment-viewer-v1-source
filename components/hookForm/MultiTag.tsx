@@ -1,7 +1,6 @@
 import { ChangeEventHandler, KeyboardEventHandler, useCallback, useRef, useState } from "react";
+import { KEYBOARD } from "@constants/keyboard";
 import { FieldValues, useController, UseControllerProps, useFieldArray } from "react-hook-form";
-
-import { KEYBOARD } from "@resource/constants";
 
 import { DasyBadge } from "@components/dasyui/Badge";
 import { ICONS } from "@components/icons";
