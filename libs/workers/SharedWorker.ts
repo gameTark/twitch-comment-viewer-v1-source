@@ -1,4 +1,4 @@
-import { db, DbFollowers } from "@resource/db";
+import { db } from "@resource/db";
 import { dayjs } from "@libs/dayjs";
 
 import { createType } from "../eventSubConstants";
@@ -12,10 +12,12 @@ import {
   getChatUsers,
 } from "../twitch";
 import { EventListenerMap, filter, valueOf } from "../types";
+import { DBFollowerSchema } from "@schemas/twitch/Followers";
+import { ChattersShema } from "@schemas/twitch/Parameters";
+import { isTargetDateAgo } from "@libs/utils";
 
 export default null; //TypeScript警告避け
 
-const INTERVAL_TIME = 10000;
 const getUserData = async () => {
   const dataMe = await db.getMe();
   if (dataMe == null) {
@@ -57,7 +59,12 @@ const getSpamList = async () => {
   const updateAt = await db.settings.get(DB_SPAM_SETTING);
   if (updateAt?.value != null) {
     // 今日より7日後より前の場合は更新しない
-    if (dayjs(updateAt.value).isSameOrBefore(dayjs(new Date()).add(7, "day"))) return;
+    const isPast = isTargetDateAgo({
+      target: updateAt.value,
+      num: 7,
+      ago: 'day',
+    })
+    if (!isPast) return;
   }
 
   const data = await fetchBotList();
@@ -68,10 +75,6 @@ const getSpamList = async () => {
   db.spam.bulkPut(data.bots.map((val) => ({ login: val[0] })));
 };
 
-getSpamList();
-setInterval(() => {
-  getSpamList();
-}, INTERVAL_TIME);
 /* streams */
 const getStreams = async () => {
   const userData = await getUserData();
@@ -100,53 +103,53 @@ const getStreams = async () => {
   });
 };
 
-getStreams();
-setInterval(() => {
-  getStreams();
-}, INTERVAL_TIME);
 /* chatters */
 const getChatters = async () => {
   const userData = await getUserData();
   if (userData == null) return;
-  const users = await getChatUsers({
-    broadcaster_id: userData.id,
-    moderator_id: userData.id,
+
+  const [users, dbData] = await Promise.all([
+    getChatUsers({
+      broadcaster_id: userData.id,
+      moderator_id: userData.id,
+    }),
+
+    db.getChatters()
+  ] as const)
+
+  const data = await db.spam.bulkGet(users.data.map((val) => val.user_login)).then(res => {
+    return res.map(
+      (val) => val?.login,
+    );
   });
-  users.data.sort((a, b) => Number(a.user_id) - Number(b.user_id));
-  const data = (await db.spam.bulkGet(users.data.map((val) => val.user_login))).map(
-    (val) => val?.login,
-  );
-  db.parameters.put({
+
+  const chatters = users.data.sort((a, b) => Number(a.user_id) - Number(b.user_id)).filter((val) => !data.includes(val.user_login));
+
+  const needsUpdate = chatters.length !== dbData.users.length
+    || chatters.filter(val => !dbData.users.includes(val.user_id)).length !== 0
+    || dbData.users.filter(val => !chatters.map(val => val.user_id).includes(val)).length !== 0;
+
+  if (!needsUpdate) return;
+
+  db.parameters.put(ChattersShema.parse({
     type: "chatters",
     value: {
-      users: users.data.filter((val) => !data.includes(val.user_login)).map((val) => val.user_id),
-      total: users.total - data.length,
+      users: chatters.map(val => val.user_id),
+      total: chatters.length,
     },
-  });
+  }));
 };
-getChatters();
-setInterval(() => {
-  getChatters();
-}, INTERVAL_TIME);
 
 /* follower */
-const getTodayFollowers = async (userId: string) => {
-  const exists = await db.followers.where("channelId").equals(userId).sortBy("followedAt");
-  return exists
-    .reverse()
-    .filter(filter.notDeleted)
-    .filter((val) => val.deletedAt == null);
-};
-
 const updateFollowers = async () => {
   const userData = await getUserData();
-  const prevData = await getTodayFollowers(userData.id);
+  const dbData = (await db.followers.toArray()).filter(val => val.channelId === userData.id);
   const apiData = await fetchChannelFollowers({
     broadcaster_id: userData.id,
     first: "100",
   }).then((result) =>
     result.data.map(
-      (val): DbFollowers => ({
+      (val) => DBFollowerSchema.parse({
         channelId: userData.id,
         userId: val.user_id,
         followedAt: new Date(val.followed_at),
@@ -155,35 +158,22 @@ const updateFollowers = async () => {
       }),
     ),
   );
-  const insertData = apiData
-    // DBに存在しないが、APIに存在するデータは新規フォロワーとする。
-    .filter((val) => {
-      const item = prevData.find(
-        (fVal) => fVal.userId === val.userId && fVal.channelId === val.channelId,
-      );
-      return item == null;
-    });
 
-  const deleteData = prevData
-    // DBに存在していて、APIに存在しないフォロワーはdelete扱い
-    .filter((val) => {
-      const item = apiData.find(
-        (fVal) => fVal.userId === val.userId && fVal.channelId === val.channelId,
-      );
-      return item == null;
-    })
-    .map((val) => ({
-      ...val,
-      deletedAt: new Date(),
-    }));
-  if (insertData.length === 0 && deleteData.length === 0) return;
-  await Promise.all([db.followers.bulkAdd(insertData), db.followers.bulkPut(deleteData)]);
+  const dbUserId = dbData.map(val => val.userId);
+  const apiUserId = apiData.map(val => val.userId);
+
+  // APIに存在しないユーザー（リムの場合）
+  const unfollowUsers = dbData.filter(val => !apiUserId.includes(val.userId)).map((data) => data.id).filter(filter.notNull);
+
+  // DBに存在しないユーザー（フォローの場合）
+  const addedUser = apiData.filter(val => !dbUserId.includes(val.userId));
+  if (unfollowUsers.length !== 0) {
+    db.followers.bulkDelete(unfollowUsers);
+  }
+  if (addedUser.length !== 0) {
+    db.followers.bulkPut(addedUser);
+  }
 };
-
-updateFollowers();
-setInterval(() => {
-  updateFollowers();
-}, INTERVAL_TIME);
 
 /* web socket */
 
@@ -201,15 +191,15 @@ type NotificationSocketEvent = EventListenerMap<SocketEventNotificationMap, Sock
 
 const createAddListener =
   (socket: WebSocket): SocketEvent =>
-  (type, cb) => {
-    const item = (ev: MessageEvent<string>) => {
-      const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
-      if (type !== value.metadata.message_type) return;
-      cb(value as any, ev);
+    (type, cb) => {
+      const item = (ev: MessageEvent<string>) => {
+        const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
+        if (type !== value.metadata.message_type) return;
+        cb(value as any, ev);
+      };
+      socket.addEventListener("message", item);
+      return item;
     };
-    socket.addEventListener("message", item);
-    return item;
-  };
 
 const createRemoveListener = (socket: WebSocket) => (item: SocketCallback) => {
   socket.removeEventListener("message", item);
@@ -217,16 +207,16 @@ const createRemoveListener = (socket: WebSocket) => (item: SocketCallback) => {
 
 const createAddNotificationListener =
   (socket: WebSocket): NotificationSocketEvent =>
-  (t, cb) => {
-    const item = (ev: MessageEvent<string>) => {
-      const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
-      if (value.metadata.message_type !== "notification") return;
-      if (value.metadata.subscription_type !== t) return;
-      cb(value as any, ev);
+    (t, cb) => {
+      const item = (ev: MessageEvent<string>) => {
+        const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
+        if (value.metadata.message_type !== "notification") return;
+        if (value.metadata.subscription_type !== t) return;
+        cb(value as any, ev);
+      };
+      socket.addEventListener("message", item);
+      return item;
     };
-    socket.addEventListener("message", item);
-    return item;
-  };
 
 const createSocket = () => {
   let socketInstance: WebSocket | null = null;
@@ -313,7 +303,7 @@ const createSocket = () => {
       notice("channel.update", (e) => {
         db.channelHistories.put({
           channelId: userData.login,
-          type: "update",
+          tpye: 'update',
           broadcastTitle: e.payload.event.title,
           categoryId: e.payload.event.category_id,
           categoryName: e.payload.event.category_name,
@@ -324,6 +314,9 @@ const createSocket = () => {
           createdAt: new Date(),
         });
       });
+
+      notice("stream.offline", () => getStreams())
+      notice("stream.online", () => getStreams())
     },
 
     close: () => {
@@ -337,10 +330,14 @@ const createSocket = () => {
 const socket = createSocket();
 socket.connect();
 
-// let ports: any[] = [];
-// self.addEventListener("connect", (e) => {
-//     // const port = e.ports[0]
-//     // if (port == null) throw new Error('port not found');
-//     // ports.push(port);
-//     // port.postMessage('connected port');
-// });
+const INTERVAL_TIME = 10000;
+getChatters();
+getSpamList();
+updateFollowers();
+getStreams();
+setInterval(() => {
+  getChatters();
+  getSpamList();
+  updateFollowers();
+  getStreams();
+}, INTERVAL_TIME);

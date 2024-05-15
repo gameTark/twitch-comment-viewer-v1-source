@@ -1,11 +1,13 @@
-import { DependencyList, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { DBAction, DBActionIndex } from "@schemas/twitch/Actions";
-import { DBBroadcast, DBBroadcastIndex, DBBroadcastSchema } from "@schemas/twitch/Broadcast";
+import { DBBroadcast, DBBroadcastIndex } from "@schemas/twitch/Broadcast";
 import { DBGame, DBGameIndex } from "@schemas/twitch/Game";
 import { DBUser, DBUserIndex } from "@schemas/twitch/User";
 import Dexie, { Collection, IndexableType, Table } from "dexie";
 import { useLiveQuery } from "dexie-react-hooks";
 import { DBChatters, DBLive, DBMe, DBParameter, MeSchema } from "@schemas/twitch/Parameters";
+import { DBChannelHistory } from "@schemas/twitch/ChannelHistories";
+import { DBFollower, DBFollowerIndex } from "@schemas/twitch/Followers";
 
 const DB_VERSION = {
   "2024/04/03.1": 14, // followersのcreatedAtにindexを追加
@@ -32,9 +34,9 @@ export class MySubClassedDexie extends Dexie {
   actions!: Table<DBAction>;
 
   broadcastTemplates!: Table<DBBroadcast>;
-  followers!: Table<DbFollowers>;
+  followers!: Table<DBFollower>;
 
-  channelHistories!: Table<DbChannelHistories>;
+  channelHistories!: Table<DBChannelHistory>;
   listenerHistories!: Table<DbListenerHistories>;
 
   settings!: Table<Setting, Setting["id"]>;
@@ -49,7 +51,7 @@ export class MySubClassedDexie extends Dexie {
       users: DBUserIndex,
       games: DBGameIndex,
       actions: DBActionIndex,
-      followers: "++id,channelId,userId,[channelId+userId],createdAt,[channelId+createdAt]",
+      followers: DBFollowerIndex,
       channelHistories: "++id,channelId,type,categoryId,timestamp,[channelId+timestamp]",
       listenerHistories: "++id,channelId,userId,[channelId+timestamp]",
       broadcastTemplates: DBBroadcastIndex,
@@ -179,17 +181,6 @@ export interface DbListenerHistories {
   timestamp: Date;
   score: number; // 1 - 0
 }
-export interface DbChannelHistories extends BaseSchema {
-  id?: number;
-  channelId: DBUser["id"];
-  type: "update" | "online" | "offline";
-  broadcastTitle: string;
-  categoryId: string;
-  categoryName: string;
-  language: string;
-  timestamp: Date;
-  rowdata: any;
-}
 
 export interface Setting {
   id: string;
@@ -226,11 +217,5 @@ export interface DbGame extends BaseSchema {
   igdb_id: string;
 }
 
-export interface DbFollowers extends BaseSchema {
-  id?: number;
-  channelId: DBUser["id"];
-  userId: DBUser["id"];
-  followedAt: Date;
-}
 
 export const db = new MySubClassedDexie();

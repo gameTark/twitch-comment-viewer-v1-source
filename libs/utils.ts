@@ -1,4 +1,7 @@
 "use client";
+import type { ConfigType, ManipulateType } from "dayjs";
+import { dayjs } from '@libs/dayjs'
+
 export const getHtml = (): HTMLHtmlElement => {
   return document.getElementsByTagName("html")[0];
 };
@@ -25,3 +28,6 @@ export const loop = (process: () => void, interval: number) => {
     window.clearTimeout(id);
   };
 };
+
+export const isTargetDateAgo = (props: { target: ConfigType, current?: ConfigType, num: number, ago: ManipulateType }) =>
+  dayjs(props.target).isSameOrBefore(dayjs(props.current || new Date()).subtract(props.num, props.ago))

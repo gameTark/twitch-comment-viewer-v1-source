@@ -23,50 +23,9 @@ const { API_LIST, API_KEY } = TWITCH_CONSTANTS;
  *    アーカイブから分析できると良さそう。
  */
 
-const twitchFetch = async <T extends object, Result extends unknown>(
-  c: {
-    METHOD: string;
-    ENDPOINT: string;
-  },
-  params: T,
-): Promise<Result> => {
-  const token = await getTwitchToken();
-  const fetcher = baseFetch(token);
-
-  const validation = async (response: Response) => {
-    if (!response.ok) {
-      const result = await response.json();
-      throw new Error(`fetch error
-    ${JSON.stringify({
-        status: response.status,
-        endpoint: c.ENDPOINT,
-        params,
-        response: result,
-      })}`);
-    }
-  };
-  const getResponse = async () => {
-    if (c.METHOD === "GET") {
-      const response = await fetcher(`${c.ENDPOINT}?${queryString.stringify(params)}`, {
-        method: c.METHOD,
-      });
-      return response;
-    }
-    const response = await fetcher(c.ENDPOINT, {
-      method: c.METHOD,
-      body: JSON.stringify(params),
-    });
-    return response;
-  };
-
-  const response = await getResponse();
-  validation(response);
-  const result = await response.json().catch(() => {
-    return;
-  });
-  return result;
-};
-
+/**
+ * other
+ */
 export const getEmoteImage = (id: string) =>
   `https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/light/1.0`;
 
@@ -133,6 +92,53 @@ export const generateTwitchOAtuhURL = ({
   scope: string; // https://dev.twitch.tv/docs/authentication/scopes/
 }) => {
   return `https://id.twitch.tv/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}&scope=${scope}`;
+};
+
+/**
+ * fettchers
+ */
+const twitchFetch = async <T extends object, Result extends unknown>(
+  c: {
+    METHOD: string;
+    ENDPOINT: string;
+  },
+  params: T,
+): Promise<Result> => {
+  const token = await getTwitchToken();
+  const fetcher = baseFetch(token);
+
+  const validation = async (response: Response) => {
+    if (!response.ok) {
+      const result = await response.json();
+      throw new Error(`fetch error
+    ${JSON.stringify({
+        status: response.status,
+        endpoint: c.ENDPOINT,
+        params,
+        response: result,
+      })}`);
+    }
+  };
+  const getResponse = async () => {
+    if (c.METHOD === "GET") {
+      const response = await fetcher(`${c.ENDPOINT}?${queryString.stringify(params)}`, {
+        method: c.METHOD,
+      });
+      return response;
+    }
+    const response = await fetcher(c.ENDPOINT, {
+      method: c.METHOD,
+      body: JSON.stringify(params),
+    });
+    return response;
+  };
+
+  const response = await getResponse();
+  validation(response);
+  const result = await response.json().catch(() => {
+    return;
+  });
+  return result;
 };
 
 /**

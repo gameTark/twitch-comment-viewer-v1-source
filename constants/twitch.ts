@@ -29,7 +29,7 @@ const CLASSIFICATION_LABELS = [
         id: "ViolentGraphic",
         description: "リアルな暴力、流血、重傷、死のシミュレーションや描写。",
     },
-];
+] as const;
 
 const BROADCAST_LANGUAGE = [
     { id: "ja", name: "日本語" },
@@ -63,7 +63,7 @@ const BROADCAST_LANGUAGE = [
     { id: "ko", name: "한국어" },
     { id: "asl", name: "American Sign Language" },
     { id: "other", name: "その他" },
-];
+] as const;
 const API_LIST = {
     CONTENT_CLASSIFICATION_LABELS: {
         METHOD: "GET",
