@@ -1,5 +1,5 @@
-import { SocketEventNotificationMap } from "./twitch/notification";
-import { valueOf } from "./types";
+import { valueOf } from "../types";
+import { SocketEventNotificationMap } from "./notification";
 
 interface AbstractEventsubMessage<Type, Payload> {
   metadata: {

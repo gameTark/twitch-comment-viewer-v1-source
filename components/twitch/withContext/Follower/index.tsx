@@ -1,4 +1,5 @@
 import { createContext, ReactNode, useContext } from "react";
+import { DBFollower } from "@schemas/twitch/Followers";
 import { DBUser } from "@schemas/twitch/User";
 import { useLiveQuery } from "dexie-react-hooks";
 
@@ -6,7 +7,6 @@ import { db } from "@resource/db";
 import { filter } from "@libs/types";
 
 import { ContextElements, createTime } from "../interface";
-import { DBFollower } from "@schemas/twitch/Followers";
 
 const followerContext = createContext<DBFollower | undefined>(undefined);
 const useFollowerContext = () => useContext(followerContext);

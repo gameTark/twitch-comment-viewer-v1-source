@@ -16,13 +16,13 @@ declare let self: ServiceWorkerGlobalScope;
 
 // 結果的にまだ非対応で良い。　ただしかし生でAPI叩くより、データを扱う層としては有用そう。
 //   雑にAPI叩いて良い感じは楽そう。
+console.log("register worker");
+// self.addEventListener("install", async (ev) => {
+//   console.log("Service worker installed (cjs)");
+// });
 
-self.addEventListener("install", async (ev) => {
-  console.log("Service worker installed (cjs)");
-});
+// self.addEventListener("fetch", (evt) => {});
 
-self.addEventListener("fetch", (evt) => {});
-
-self.addEventListener("error", (err) => {
-  console.error("Service worker error", err);
-});
+// self.addEventListener("error", (err) => {
+//   console.error("Service worker error", err);
+// });

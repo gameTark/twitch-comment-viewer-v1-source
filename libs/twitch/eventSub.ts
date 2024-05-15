@@ -1,7 +1,7 @@
 import { createEventsub } from ".";
-import { EventsubMessageMap } from "../eventSubInterface";
 import { EventListenerMap, valueOf } from "../types";
 import { createType } from "./eventSubConstants";
+import { EventsubMessageMap } from "./eventSubInterface";
 import { SocketEventNotificationMap } from "./notification";
 
 /**

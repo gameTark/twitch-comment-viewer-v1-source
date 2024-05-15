@@ -3,7 +3,7 @@ import * as React from "react";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
 import "../styles/globals.css";
 
-import { EventSubContext } from "@contexts/twitch/eventSubContext";
+import { TwitchRouter } from "@contexts/twitch/eventSubContext";
 import { GameContextProvider } from "@contexts/twitch/gameContext";
 import { UserContextProvider } from "@contexts/twitch/userContext";
 
@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"></link>
       </head>
       <body>
-        <EventSubContext>
+        <TwitchRouter>
           <UserContextProvider>
             <GameContextProvider>
               <div className="max-h-screen h-screen w-full max-w-screen oveflow-hidden flex flex-col border-base-content/20">
@@ -40,7 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </div>
             </GameContextProvider>
           </UserContextProvider>
-        </EventSubContext>
+        </TwitchRouter>
       </body>
     </html>
   );

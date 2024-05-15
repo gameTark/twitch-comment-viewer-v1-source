@@ -13,7 +13,7 @@ const nextConfig = {
   publicRuntimeConfig: {
     basePath: isProd ? SUB_DIRECTORY : "",
   },
-  reactStrictMode: true, // <= trueからfalseに！！
+  reactStrictMode: false, // <= trueからfalseに！！
   experimental: {
     typedRoutes: true,
     clientRouterFilter: false,

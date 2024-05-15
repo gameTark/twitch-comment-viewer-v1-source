@@ -14,10 +14,11 @@ export interface EventSubContextProps {
 }
 const isProd = process.env.NODE_ENV == "production";
 
-export const EventSubContext = (props: EventSubContextProps) => {
+export const TwitchRouter = (props: EventSubContextProps) => {
   useTheme();
   const loginPage = useLogin();
 
+  useEffect(() => {}, []);
   const main = useCallback(async () => {
     const isLogin = await isLoginned();
     if (!isLogin) {
