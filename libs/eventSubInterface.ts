@@ -1,4 +1,4 @@
-import { SocketEventNotificationMap } from "./notification";
+import { SocketEventNotificationMap } from "./twitch/notification";
 import { valueOf } from "./types";
 
 interface AbstractEventsubMessage<Type, Payload> {

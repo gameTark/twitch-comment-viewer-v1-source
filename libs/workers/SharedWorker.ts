@@ -1,14 +1,12 @@
 import { DBAction } from "@schemas/twitch/Actions";
 import { DBChannelHistory, DBChannelHistorySchema } from "@schemas/twitch/ChannelHistories";
-import { DBFollower, DBFollowerSchema } from "@schemas/twitch/Followers";
+import { DBFollower } from "@schemas/twitch/Followers";
 import { ChattersShema } from "@schemas/twitch/Parameters";
 
 import { db } from "@resource/db";
 import { isTargetDateAgo } from "@libs/utils";
 
-import { createType } from "../eventSubConstants";
 import { EventsubMessageMap } from "../eventSubInterface";
-import { SocketEventNotificationMap } from "../notification";
 import {
   createEventsub,
   fetchByMe,
@@ -16,6 +14,8 @@ import {
   fetchStreams,
   getChatUsers,
 } from "../twitch";
+import { createType } from "../twitch/eventSubConstants";
+import { SocketEventNotificationMap } from "../twitch/notification";
 import { EventListenerMap, filter, valueOf } from "../types";
 
 export default null; //TypeScript警告避け

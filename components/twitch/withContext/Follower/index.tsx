@@ -2,12 +2,13 @@ import { createContext, ReactNode, useContext } from "react";
 import { DBUser } from "@schemas/twitch/User";
 import { useLiveQuery } from "dexie-react-hooks";
 
-import { db, DbFollowers } from "@resource/db";
+import { db } from "@resource/db";
 import { filter } from "@libs/types";
 
 import { ContextElements, createTime } from "../interface";
+import { DBFollower } from "@schemas/twitch/Followers";
 
-const followerContext = createContext<DbFollowers | undefined>(undefined);
+const followerContext = createContext<DBFollower | undefined>(undefined);
 const useFollowerContext = () => useContext(followerContext);
 
 const ListProvider = (props: ContextElements["Ul"]) => {
@@ -54,7 +55,7 @@ const FollowerProvider = ({
   value,
   children,
 }: {
-  value: DbFollowers | undefined;
+  value: DBFollower | undefined;
   children: ReactNode;
 }) => {
   return <followerContext.Provider value={value}>{children}</followerContext.Provider>;

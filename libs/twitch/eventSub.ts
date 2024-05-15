@@ -1,8 +1,8 @@
+import { createEventsub } from ".";
+import { EventsubMessageMap } from "../eventSubInterface";
+import { EventListenerMap, valueOf } from "../types";
 import { createType } from "./eventSubConstants";
-import { EventsubMessageMap } from "./eventSubInterface";
 import { SocketEventNotificationMap } from "./notification";
-import { createEventsub } from "./twitch";
-import { EventListenerMap, valueOf } from "./types";
 
 /**
  * 複雑なので 手順メモ
