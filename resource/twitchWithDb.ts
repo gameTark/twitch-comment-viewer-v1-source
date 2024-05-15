@@ -148,7 +148,6 @@ export const useSpamCheck = (login?: string) => {
                           Broadcast Template
 ==========================================================================
  */
-
 export const updateBroadcastTemplate = (
   id: Required<DbBroadcastTemplate>["id"],
   props: Partial<Omit<DbBroadcastTemplate, "id">>,

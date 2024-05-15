@@ -1,6 +1,6 @@
 import { DBAction } from "@schemas/twitch/Actions";
 import { DBChannelHistory, DBChannelHistorySchema } from "@schemas/twitch/ChannelHistories";
-import { DBFollowerSchema } from "@schemas/twitch/Followers";
+import { DBFollower, DBFollowerSchema } from "@schemas/twitch/Followers";
 import { ChattersShema } from "@schemas/twitch/Parameters";
 
 import { db } from "@resource/db";
@@ -157,14 +157,15 @@ const updateFollowers = async () => {
     broadcaster_id: userData.id,
     first: "100",
   }).then((result) =>
-    result.data.map((val) =>
-      DBFollowerSchema.parse({
-        channelId: userData.id,
-        userId: val.user_id,
-        followedAt: new Date(val.followed_at),
-        updateAt: new Date(),
-        createdAt: new Date(),
-      }),
+    result.data.map(
+      (val) =>
+        ({
+          channelId: userData.id,
+          userId: val.user_id,
+          followedAt: new Date(val.followed_at),
+          updateAt: new Date(),
+          createdAt: new Date(),
+        }) as DBFollower,
     ),
   );
 
