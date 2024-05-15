@@ -5,6 +5,7 @@ import { DBGame, DBGameIndex } from "@schemas/twitch/Game";
 import { DBUser, DBUserIndex } from "@schemas/twitch/User";
 import Dexie, { Collection, IndexableType, Table } from "dexie";
 import { useLiveQuery } from "dexie-react-hooks";
+import { DBChatters, DBLive, DBMe, DBParameter, MeSchema } from "@schemas/twitch/Parameters";
 
 const DB_VERSION = {
   "2024/04/03.1": 14, // followersのcreatedAtにindexを追加
@@ -37,7 +38,8 @@ export class MySubClassedDexie extends Dexie {
   listenerHistories!: Table<DbListenerHistories>;
 
   settings!: Table<Setting, Setting["id"]>;
-  parameters!: Table<DbParametes, DbParametes["type"]>;
+
+  parameters!: Table<DBParameter, DBParameter["type"]>;
 
   spam!: Table<Spam, Spam["login"]>;
 
@@ -56,20 +58,27 @@ export class MySubClassedDexie extends Dexie {
       settings: "id",
     });
   }
-  async getMe() {
+  async getMe(): Promise<DBMe['value']> {
     const typeValue = await this.parameters.get("me");
-    if (typeValue?.type !== "me") return null;
-    return typeValue.value || null;
+    if (typeValue?.type == null || typeValue.type !== 'me' || typeValue.value == null) return;
+    return typeValue.value;
   }
-  async getLive() {
+  async getLive(): Promise<DBLive['value']> {
     const typeValue = await this.parameters.get("live");
-    if (typeValue?.type !== "live") return null;
-    return typeValue.value || null;
+    if (typeValue?.type == null || typeValue.type !== 'live' || typeValue.value == null) return {
+      isLive: false,
+      viewCount: 0,
+      startedAt: null,
+    };
+    return typeValue.value;
   }
-  async getChatters() {
+  async getChatters(): Promise<DBChatters['value']> {
     const typeValue = await this.parameters.get("chatters");
-    if (typeValue?.type !== "chatters") return null;
-    return typeValue.value || null;
+    if (typeValue?.type == null || typeValue.type !== 'chatters' || typeValue.value == null) return {
+      users: [],
+      total: 0,
+    };
+    return typeValue.value;
   }
 }
 export const dbPagination = async <Type>(
@@ -141,27 +150,27 @@ interface AbstractParameter<Type, Value> {
 }
 export type DbParametes =
   | AbstractParameter<
-      "me",
-      {
-        id: DBUser["id"];
-        login: DBUser["login"];
-      }
-    >
+    "me",
+    {
+      id: DBUser["id"];
+      login: DBUser["login"];
+    }
+  >
   | AbstractParameter<
-      "live",
-      {
-        isLive: boolean;
-        viewCount: number;
-        startedAt: Date;
-      } | null
-    >
+    "live",
+    {
+      isLive: boolean;
+      viewCount: number;
+      startedAt: Date;
+    } | null
+  >
   | AbstractParameter<
-      "chatters",
-      {
-        users: DBUser["id"][];
-        total: number;
-      }
-    >;
+    "chatters",
+    {
+      users: DBUser["id"][];
+      total: number;
+    }
+  >;
 
 export interface DbListenerHistories {
   id?: number;

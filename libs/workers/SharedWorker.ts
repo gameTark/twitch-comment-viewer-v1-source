@@ -82,7 +82,11 @@ const getStreams = async () => {
   if (data == null) {
     db.parameters.put({
       type: "live",
-      value: null,
+      value: {
+        isLive: false,
+        startedAt: null,
+        viewCount: 0,
+      },
     });
     return;
   }
