@@ -1,11 +1,12 @@
 "use client";
 
+import { TWITCH_CONSTANTS } from "@constants/twitch";
 import Fuse from "fuse.js";
 import queryString from "query-string";
 
 import { isServer } from "@resource/constants";
 import { db } from "@resource/db";
-import { TWITCH_CONSTANTS } from "@constants/twitch";
+
 const { API_LIST, API_KEY } = TWITCH_CONSTANTS;
 
 /**
@@ -47,7 +48,7 @@ const getTwitchToken = async () => {
 // ログインしている状態か判断する。
 export const isLoginned = async () => {
   if (isServer) return false;
-  const token = await getTwitchToken().catch(() => { });
+  const token = await getTwitchToken().catch(() => {});
   return token != null;
 };
 // URLにtokenが含まれている場合ローカルストレージにセットし元のURLに戻る
@@ -112,11 +113,11 @@ const twitchFetch = async <T extends object, Result extends unknown>(
       const result = await response.json();
       throw new Error(`fetch error
     ${JSON.stringify({
-        status: response.status,
-        endpoint: c.ENDPOINT,
-        params,
-        response: result,
-      })}`);
+      status: response.status,
+      endpoint: c.ENDPOINT,
+      params,
+      response: result,
+    })}`);
     }
   };
   const getResponse = async () => {
@@ -195,14 +196,14 @@ export interface FetchSearchCategoriesResult {
 export const fetchSearchCategories = async (params: FetchSearchCategoriesProps) => {
   const token = await getTwitchToken();
   const fetcher = baseFetch(token);
-  const data = await fetcher(
-    `${API_LIST.SEARCH.CATEGORIES.ENDPOINT}?query=${params.query}`,
-  );
-  const req = await data.json() as FetchSearchCategoriesResult;
+  const data = await fetcher(`${API_LIST.SEARCH.CATEGORIES.ENDPOINT}?query=${params.query}`);
+  const req = (await data.json()) as FetchSearchCategoriesResult;
 
-  // TODO: 検索精度が良くないが、煩雑になりそうなため一旦保留 
-  const result = new Fuse(req.data, { keys: ["name"] }).search(params.query).map(val => val.item.id);
-  return req.data.sort((a, b) => result.includes(a.id) ? 1 : -1);
+  // TODO: 検索精度が良くないが、煩雑になりそうなため一旦保留
+  const result = new Fuse(req.data, { keys: ["name"] })
+    .search(params.query)
+    .map((val) => val.item.id);
+  return req.data.sort((a, b) => (result.includes(a.id) ? 1 : -1));
 };
 export interface FetchChannelInfoProps {
   broadcaster_id: string;

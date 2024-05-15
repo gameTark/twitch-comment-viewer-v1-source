@@ -1,5 +1,10 @@
+import { DBAction } from "@schemas/twitch/Actions";
+import { DBChannelHistory, DBChannelHistorySchema } from "@schemas/twitch/ChannelHistories";
+import { DBFollowerSchema } from "@schemas/twitch/Followers";
+import { ChattersShema } from "@schemas/twitch/Parameters";
+
 import { db } from "@resource/db";
-import { dayjs } from "@libs/dayjs";
+import { isTargetDateAgo } from "@libs/utils";
 
 import { createType } from "../eventSubConstants";
 import { EventsubMessageMap } from "../eventSubInterface";
@@ -12,11 +17,12 @@ import {
   getChatUsers,
 } from "../twitch";
 import { EventListenerMap, filter, valueOf } from "../types";
-import { DBFollowerSchema } from "@schemas/twitch/Followers";
-import { ChattersShema } from "@schemas/twitch/Parameters";
-import { isTargetDateAgo } from "@libs/utils";
 
 export default null; //TypeScript警告避け
+
+/**
+ * 起動しっぱなしの場合、バグ出た時ちょっと厄介
+ */
 
 const getUserData = async () => {
   const dataMe = await db.getMe();
@@ -62,8 +68,8 @@ const getSpamList = async () => {
     const isPast = isTargetDateAgo({
       target: updateAt.value,
       num: 7,
-      ago: 'day',
-    })
+      ago: "day",
+    });
     if (!isPast) return;
   }
 
@@ -114,42 +120,45 @@ const getChatters = async () => {
       moderator_id: userData.id,
     }),
 
-    db.getChatters()
-  ] as const)
+    db.getChatters(),
+  ] as const);
 
-  const data = await db.spam.bulkGet(users.data.map((val) => val.user_login)).then(res => {
-    return res.map(
-      (val) => val?.login,
-    );
+  const data = await db.spam.bulkGet(users.data.map((val) => val.user_login)).then((res) => {
+    return res.map((val) => val?.login);
   });
 
-  const chatters = users.data.sort((a, b) => Number(a.user_id) - Number(b.user_id)).filter((val) => !data.includes(val.user_login));
+  const chatters = users.data
+    .sort((a, b) => Number(a.user_id) - Number(b.user_id))
+    .filter((val) => !data.includes(val.user_login));
 
-  const needsUpdate = chatters.length !== dbData.users.length
-    || chatters.filter(val => !dbData.users.includes(val.user_id)).length !== 0
-    || dbData.users.filter(val => !chatters.map(val => val.user_id).includes(val)).length !== 0;
+  const needsUpdate =
+    chatters.length !== dbData.users.length ||
+    chatters.filter((val) => !dbData.users.includes(val.user_id)).length !== 0 ||
+    dbData.users.filter((val) => !chatters.map((val) => val.user_id).includes(val)).length !== 0;
 
   if (!needsUpdate) return;
 
-  db.parameters.put(ChattersShema.parse({
-    type: "chatters",
-    value: {
-      users: chatters.map(val => val.user_id),
-      total: chatters.length,
-    },
-  }));
+  db.parameters.put(
+    ChattersShema.parse({
+      type: "chatters",
+      value: {
+        users: chatters.map((val) => val.user_id),
+        total: chatters.length,
+      },
+    }),
+  );
 };
 
 /* follower */
 const updateFollowers = async () => {
   const userData = await getUserData();
-  const dbData = (await db.followers.toArray()).filter(val => val.channelId === userData.id);
+  const dbData = (await db.followers.toArray()).filter((val) => val.channelId === userData.id);
   const apiData = await fetchChannelFollowers({
     broadcaster_id: userData.id,
     first: "100",
   }).then((result) =>
-    result.data.map(
-      (val) => DBFollowerSchema.parse({
+    result.data.map((val) =>
+      DBFollowerSchema.parse({
         channelId: userData.id,
         userId: val.user_id,
         followedAt: new Date(val.followed_at),
@@ -159,14 +168,17 @@ const updateFollowers = async () => {
     ),
   );
 
-  const dbUserId = dbData.map(val => val.userId);
-  const apiUserId = apiData.map(val => val.userId);
+  const dbUserId = dbData.map((val) => val.userId);
+  const apiUserId = apiData.map((val) => val.userId);
 
   // APIに存在しないユーザー（リムの場合）
-  const unfollowUsers = dbData.filter(val => !apiUserId.includes(val.userId)).map((data) => data.id).filter(filter.notNull);
+  const unfollowUsers = dbData
+    .filter((val) => !apiUserId.includes(val.userId))
+    .map((data) => data.id)
+    .filter(filter.notNull);
 
   // DBに存在しないユーザー（フォローの場合）
-  const addedUser = apiData.filter(val => !dbUserId.includes(val.userId));
+  const addedUser = apiData.filter((val) => !dbUserId.includes(val.userId));
   if (unfollowUsers.length !== 0) {
     db.followers.bulkDelete(unfollowUsers);
   }
@@ -191,15 +203,15 @@ type NotificationSocketEvent = EventListenerMap<SocketEventNotificationMap, Sock
 
 const createAddListener =
   (socket: WebSocket): SocketEvent =>
-    (type, cb) => {
-      const item = (ev: MessageEvent<string>) => {
-        const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
-        if (type !== value.metadata.message_type) return;
-        cb(value as any, ev);
-      };
-      socket.addEventListener("message", item);
-      return item;
+  (type, cb) => {
+    const item = (ev: MessageEvent<string>) => {
+      const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
+      if (type !== value.metadata.message_type) return;
+      cb(value as any, ev);
     };
+    socket.addEventListener("message", item);
+    return item;
+  };
 
 const createRemoveListener = (socket: WebSocket) => (item: SocketCallback) => {
   socket.removeEventListener("message", item);
@@ -207,16 +219,16 @@ const createRemoveListener = (socket: WebSocket) => (item: SocketCallback) => {
 
 const createAddNotificationListener =
   (socket: WebSocket): NotificationSocketEvent =>
-    (t, cb) => {
-      const item = (ev: MessageEvent<string>) => {
-        const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
-        if (value.metadata.message_type !== "notification") return;
-        if (value.metadata.subscription_type !== t) return;
-        cb(value as any, ev);
-      };
-      socket.addEventListener("message", item);
-      return item;
+  (t, cb) => {
+    const item = (ev: MessageEvent<string>) => {
+      const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
+      if (value.metadata.message_type !== "notification") return;
+      if (value.metadata.subscription_type !== t) return;
+      cb(value as any, ev);
     };
+    socket.addEventListener("message", item);
+    return item;
+  };
 
 const createSocket = () => {
   let socketInstance: WebSocket | null = null;
@@ -256,7 +268,7 @@ const createSocket = () => {
       });
 
       notice("channel.chat.message", (event) => {
-        db.actions.add({
+        const action: DBAction = {
           id: event.payload.event.message_id,
           userId: event.payload.event.chatter_user_id,
           channel: userData.login,
@@ -267,10 +279,11 @@ const createSocket = () => {
           rowdata: JSON.stringify(event),
           updateAt: new Date(),
           createdAt: new Date(),
-        });
+        };
+        db.actions.add(action);
       });
       notice("channel.channel_points_automatic_reward_redemption.add", (event) => {
-        db.actions.add({
+        const action: DBAction = {
           id: event.payload.event.id,
           userId: event.payload.event.user_id,
           channel: userData.login,
@@ -282,10 +295,11 @@ const createSocket = () => {
           rowdata: JSON.stringify(event),
           updateAt: new Date(),
           createdAt: new Date(),
-        });
+        };
+        db.actions.add(action);
       });
       notice("channel.channel_points_custom_reward_redemption.add", (event) => {
-        db.actions.add({
+        const action: DBAction = {
           id: event.payload.event.id,
           userId: event.payload.event.user_id,
           channel: userData.login,
@@ -297,13 +311,14 @@ const createSocket = () => {
           rowdata: JSON.stringify(event),
           updateAt: new Date(),
           createdAt: new Date(),
-        });
+        };
+        db.actions.add(action);
       });
 
       notice("channel.update", (e) => {
-        db.channelHistories.put({
+        const channelHistory: DBChannelHistory = {
           channelId: userData.login,
-          tpye: 'update',
+          tpye: "update",
           broadcastTitle: e.payload.event.title,
           categoryId: e.payload.event.category_id,
           categoryName: e.payload.event.category_name,
@@ -312,11 +327,12 @@ const createSocket = () => {
           rowdata: JSON.stringify(e),
           updateAt: new Date(),
           createdAt: new Date(),
-        });
+        };
+        db.channelHistories.put(DBChannelHistorySchema.parse(channelHistory));
       });
 
-      notice("stream.offline", () => getStreams())
-      notice("stream.online", () => getStreams())
+      notice("stream.offline", () => getStreams());
+      notice("stream.online", () => getStreams());
     },
 
     close: () => {

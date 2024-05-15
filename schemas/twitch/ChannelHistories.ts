@@ -3,7 +3,8 @@ import * as z from "zod";
 import { DBBaseSchema } from "./BaseSchema";
 import { DBUserId } from "./User";
 
-export const DBChannelHistoryIndex = "++id,channelId,type,categoryId,timestamp,[channelId+timestamp]";
+export const DBChannelHistoryIndex =
+  "++id,channelId,type,categoryId,timestamp,[channelId+timestamp]";
 export const DBChannelHistorySchema = z
   .object({
     id: z.number().optional(),
@@ -13,7 +14,7 @@ export const DBChannelHistorySchema = z
     categoryId: z.string(), // gameId
     categoryName: z.string(),
     language: z.string(),
-    timestamp: z.date().default(new Date),
+    timestamp: z.date().default(new Date()),
     rowdata: z.string().optional(),
   })
   .and(DBBaseSchema);

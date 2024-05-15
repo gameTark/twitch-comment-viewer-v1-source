@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { DBAction, DBActionIndex } from "@schemas/twitch/Actions";
 import { DBBroadcast, DBBroadcastIndex } from "@schemas/twitch/Broadcast";
+import { DBChannelHistory } from "@schemas/twitch/ChannelHistories";
+import { DBFollower, DBFollowerIndex } from "@schemas/twitch/Followers";
 import { DBGame, DBGameIndex } from "@schemas/twitch/Game";
+import { DBChatters, DBLive, DBMe, DBParameter, MeSchema } from "@schemas/twitch/Parameters";
 import { DBUser, DBUserIndex } from "@schemas/twitch/User";
 import Dexie, { Collection, IndexableType, Table } from "dexie";
 import { useLiveQuery } from "dexie-react-hooks";
-import { DBChatters, DBLive, DBMe, DBParameter, MeSchema } from "@schemas/twitch/Parameters";
-import { DBChannelHistory } from "@schemas/twitch/ChannelHistories";
-import { DBFollower, DBFollowerIndex } from "@schemas/twitch/Followers";
 
 const DB_VERSION = {
   "2024/04/03.1": 14, // followersのcreatedAtにindexを追加
@@ -60,26 +60,28 @@ export class MySubClassedDexie extends Dexie {
       settings: "id",
     });
   }
-  async getMe(): Promise<DBMe['value']> {
+  async getMe(): Promise<DBMe["value"]> {
     const typeValue = await this.parameters.get("me");
-    if (typeValue?.type == null || typeValue.type !== 'me' || typeValue.value == null) return;
+    if (typeValue?.type == null || typeValue.type !== "me" || typeValue.value == null) return;
     return typeValue.value;
   }
-  async getLive(): Promise<DBLive['value']> {
+  async getLive(): Promise<DBLive["value"]> {
     const typeValue = await this.parameters.get("live");
-    if (typeValue?.type == null || typeValue.type !== 'live' || typeValue.value == null) return {
-      isLive: false,
-      viewCount: 0,
-      startedAt: null,
-    };
+    if (typeValue?.type == null || typeValue.type !== "live" || typeValue.value == null)
+      return {
+        isLive: false,
+        viewCount: 0,
+        startedAt: null,
+      };
     return typeValue.value;
   }
-  async getChatters(): Promise<DBChatters['value']> {
+  async getChatters(): Promise<DBChatters["value"]> {
     const typeValue = await this.parameters.get("chatters");
-    if (typeValue?.type == null || typeValue.type !== 'chatters' || typeValue.value == null) return {
-      users: [],
-      total: 0,
-    };
+    if (typeValue?.type == null || typeValue.type !== "chatters" || typeValue.value == null)
+      return {
+        users: [],
+        total: 0,
+      };
     return typeValue.value;
   }
 }
@@ -152,27 +154,27 @@ interface AbstractParameter<Type, Value> {
 }
 export type DbParametes =
   | AbstractParameter<
-    "me",
-    {
-      id: DBUser["id"];
-      login: DBUser["login"];
-    }
-  >
+      "me",
+      {
+        id: DBUser["id"];
+        login: DBUser["login"];
+      }
+    >
   | AbstractParameter<
-    "live",
-    {
-      isLive: boolean;
-      viewCount: number;
-      startedAt: Date;
-    } | null
-  >
+      "live",
+      {
+        isLive: boolean;
+        viewCount: number;
+        startedAt: Date;
+      } | null
+    >
   | AbstractParameter<
-    "chatters",
-    {
-      users: DBUser["id"][];
-      total: number;
-    }
-  >;
+      "chatters",
+      {
+        users: DBUser["id"][];
+        total: number;
+      }
+    >;
 
 export interface DbListenerHistories {
   id?: number;
@@ -216,6 +218,5 @@ export interface DbGame extends BaseSchema {
   box_art_url: string;
   igdb_id: string;
 }
-
 
 export const db = new MySubClassedDexie();

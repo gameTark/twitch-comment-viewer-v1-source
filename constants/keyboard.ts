@@ -1,6 +1,4 @@
-
 export const KEYBOARD = {
-    ENTER: "Enter",
-    BACKSPACE: "Backspace",
-  };
-  
+  ENTER: "Enter",
+  BACKSPACE: "Backspace",
+};
