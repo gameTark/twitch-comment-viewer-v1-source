@@ -5,11 +5,11 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db, useDbPagination } from "@resource/db";
 import { dayjs } from "@libs/dayjs";
 
+import { Scroll } from "@components/commons/PerfectScrollbar";
 import { ChatBubble } from "@components/dasyui/ChatBubble";
 import { useUserInfoModal } from "./UserInfo";
 import { chats } from "./withContext/ChatList";
 import { User } from "./withContext/User";
-import { Scroll } from "@components/commons/PerfectScrollbar";
 
 const TypeBubble = () => {
   const openModal = useUserInfoModal();

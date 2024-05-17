@@ -4,10 +4,10 @@ import dayjs from "dayjs";
 
 import { isJsonString, isUrl } from "@libs/regex";
 
+import { Scroll } from "@components/commons/PerfectScrollbar";
 import { CodeJavascript } from "@components/commons/SyntaxHightlight";
 import { ClipboardCopy } from "./ClipboardCopy";
 import { useModalContext } from "./Modal";
-import { Scroll } from "@components/commons/PerfectScrollbar";
 
 interface DateType {
   type: "date";

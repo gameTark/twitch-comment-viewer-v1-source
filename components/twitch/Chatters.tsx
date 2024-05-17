@@ -5,12 +5,12 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "@resource/db";
 
 import { useDialog } from "@components/commons/Dialog";
+import { Scroll } from "@components/commons/PerfectScrollbar";
 import { Stat } from "@components/dasyui/Stat";
 import { ICONS } from "@components/icons";
 import { useUserInfoModal } from "./UserInfo";
 import { Follower } from "./withContext/Follower";
 import { User } from "./withContext/User";
-import { Scroll } from "@components/commons/PerfectScrollbar";
 
 // https://daisyui.com/components/stat/
 const TypeListItem = () => {

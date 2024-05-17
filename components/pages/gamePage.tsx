@@ -8,8 +8,8 @@ import { db } from "@resource/db";
 import { useGameContext } from "@contexts/twitch/gameContext";
 import { useAsyncMemo } from "@libs/uses";
 
-import { BroadcastInformation, Events, Search } from "@components/twitch/Broadcast";
 import { Scroll } from "@components/commons/PerfectScrollbar";
+import { BroadcastInformation, Events, Search } from "@components/twitch/Broadcast";
 
 export const useSearchBroadcastTemplate = (query: string) => {
   const gameContext = useGameContext();
@@ -42,7 +42,6 @@ export const useSearchBroadcastTemplate = (query: string) => {
 };
 
 export default function GamePage() {
-
   return (
     <div className="flex flex-col h-full grow w-full">
       <div className="flex w-full justify-center mx-auto pt-6 pb-4 border-b items-center">

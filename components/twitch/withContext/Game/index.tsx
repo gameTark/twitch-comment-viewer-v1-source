@@ -19,9 +19,9 @@ import { parser } from "@libs/parser";
 import { fetchSearchCategories } from "@libs/twitch";
 import { useDebounce, useInput } from "@libs/uses";
 
+import { Scroll } from "@components/commons/PerfectScrollbar";
 import { ICONS } from "@components/icons";
 import { ContextElements, createSpan, createTime } from "../interface";
-import { Scroll } from "@components/commons/PerfectScrollbar";
 
 const gameContext = createContext<DbGame | undefined | null>(null);
 const useGame = () => useContext(gameContext);

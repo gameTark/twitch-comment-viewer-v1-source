@@ -34,9 +34,9 @@ export const FollowerStat = () => {
     />
   );
 };
-export const FollowerTable = () => {
+export function FollowerTable() {
   return (
-    <Scroll>
+    <Scroll className="w-full h-full">
       <table className=" table table-pin-rows z-0 table-xs">
         <thead>
           <tr>
@@ -53,4 +53,4 @@ export const FollowerTable = () => {
       </table>
     </Scroll>
   );
-};
+}

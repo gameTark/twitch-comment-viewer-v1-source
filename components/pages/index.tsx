@@ -1,8 +1,11 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import clsx from "clsx";
+
+import { db } from "@resource/db";
+import { useAsyncMemo } from "@libs/uses";
 
 import { Scroll } from "@components/commons/PerfectScrollbar";
 import BroadcastEditor, { FaboriteBroadcastItemList } from "@components/twitch/Broadcast";
@@ -31,6 +34,14 @@ const Chat = () => {
     </div>
   );
 };
+const CurrentBroadcastEdit = () => {
+  const broadcast = useAsyncMemo(async () => {
+    const me = await db.getMe();
+    if (me == null) return null;
+  }, []);
+  if (broadcast == null) return null;
+  return <BroadcastEditor />;
+};
 const Tabs = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   return (
@@ -38,7 +49,7 @@ const Tabs = () => {
       className="flex flex-col h-full gap-4"
       selectedIndex={selectedIndex}
       onChange={setSelectedIndex}>
-      <TabList className="tablist tabs-bordered w-full select-none">
+      <TabList className=" grow-0 tablist tabs-bordered w-full select-none">
         <Tab as="a" className={(btn) => clsx("tab", { ["tab-active"]: btn.selected })}>
           フォロワ一覧
         </Tab>
@@ -49,14 +60,14 @@ const Tabs = () => {
           配信テンプレート
         </Tab>
       </TabList>
-      <TabPanels className="grow h-0">
-        <TabPanel as={Fragment}>
+      <TabPanels className="relative grow overflow-hidden">
+        <TabPanel className="flex w-full h-full">
           <FollowerTable />
         </TabPanel>
-        <TabPanel as={Fragment}>
-          <BroadcastEditor />
+        <TabPanel className="flex w-full h-full">
+          <CurrentBroadcastEdit />
         </TabPanel>
-        <TabPanel as={Fragment}>
+        <TabPanel className="flex w-full h-full">
           <Scroll>
             <FaboriteBroadcastItemList />
           </Scroll>

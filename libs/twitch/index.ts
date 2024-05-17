@@ -155,29 +155,6 @@ export const fetchContentClassificationLabels = async (
   return await twitchFetch(API_LIST.CONTENT_CLASSIFICATION_LABELS, params);
 };
 
-export interface FetchSearchChannelsProps {
-  broadcaster_id: string;
-}
-export interface FetchSearchChannelsResult {
-  data: {
-    broadcaster_language: string;
-    broadcaster_login: string;
-    display_name: string;
-    game_id: string;
-    game_name: string;
-    id: string;
-    tag_ids: any[];
-    tags: string[];
-    thumbnail_url: string;
-    title: string;
-    is_live: boolean; // ライブ開始かどうか
-    started_at: string; // ライブ放送時間
-  }[];
-  pagination: {
-    cursor?: string;
-  };
-}
-
 export interface FetchSearchCategoriesProps {
   query: string; //  URI-encoded search string
   first?: number;

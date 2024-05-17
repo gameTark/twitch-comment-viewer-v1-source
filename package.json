@@ -30,6 +30,7 @@
     "dexie": "^3.2.6",
     "dexie-react-hooks": "^1.1.7",
     "fuse.js": "^7.0.0",
+    "graphql": "^16.8.1",
     "html-escaper": "^3.0.3",
     "next": "^14.1.0",
     "perfect-scrollbar": "^1.5.5",

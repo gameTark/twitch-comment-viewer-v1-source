@@ -22,7 +22,7 @@ const useCommentQuery = () => {
       .filter((val) => val.deletedAt == null);
   }, []);
   return data;
-}
+};
 
 const ListProvider = (props: ContextElements["Ul"]) => {
   const { children, ...p } = props;
@@ -42,7 +42,7 @@ const ListProvider = (props: ContextElements["Ul"]) => {
     </ul>
   );
 };
-const FollowerCount = (props: ContextElements['Span']) => {
+const FollowerCount = (props: ContextElements["Span"]) => {
   const data = useCommentQuery();
   return <span {...props}>{data?.length || 0}</span>;
 };
