@@ -1,4 +1,5 @@
-import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
+import { Scroll } from "@components/commons/PerfectScrollbar";
+import { Stat } from "@components/dasyui/Stat";
 import { useUserInfoModal } from "./UserInfo";
 import { Follower } from "./withContext/Follower";
 import { User } from "./withContext/User";
@@ -21,10 +22,21 @@ const Record = () => {
     </tr>
   );
 };
-export const FollowerTable = () => {
-  const ps = usePerfectScrollbar([]);
+export const FollowerStat = () => {
   return (
-    <div className=" perfect-scrollbar" ref={ps.ref}>
+    <Stat
+      title="フォロワー数 "
+      value={
+        <span>
+          <Follower.FollowerCount />人
+        </span>
+      }
+    />
+  );
+};
+export const FollowerTable = () => {
+  return (
+    <Scroll>
       <table className=" table table-pin-rows z-0 table-xs">
         <thead>
           <tr>
@@ -39,6 +51,6 @@ export const FollowerTable = () => {
           </Follower.UserProvider>
         </Follower.RecordProvider>
       </table>
-    </div>
+    </Scroll>
   );
 };

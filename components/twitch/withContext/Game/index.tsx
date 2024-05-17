@@ -20,8 +20,8 @@ import { fetchSearchCategories } from "@libs/twitch";
 import { useDebounce, useInput } from "@libs/uses";
 
 import { ICONS } from "@components/icons";
-import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 import { ContextElements, createSpan, createTime } from "../interface";
+import { Scroll } from "@components/commons/PerfectScrollbar";
 
 const gameContext = createContext<DbGame | undefined | null>(null);
 const useGame = () => useContext(gameContext);
@@ -84,7 +84,6 @@ const Search = (props: { onChange?: (id: DbGame["id"]) => void }) => {
     event(search);
   }, [search]);
 
-  const ps = usePerfectScrollbar([result]);
   return (
     <div className="h-96">
       <div className="flex flex-col gap-5">
@@ -95,7 +94,7 @@ const Search = (props: { onChange?: (id: DbGame["id"]) => void }) => {
           value={search}
           onChange={changeSearchHandler}
         />
-        <div className={clsx("w-full border h-80 perfect-scrollbar bg-base-100")} ref={ps.ref}>
+        <Scroll className={clsx("w-full border h-80 bg-base-100")}>
           {result != null ? (
             <ul className="flex flex-col gap-2 menu">
               {result.map((value) => {
@@ -115,7 +114,7 @@ const Search = (props: { onChange?: (id: DbGame["id"]) => void }) => {
               })}
             </ul>
           ) : null}
-        </div>
+        </Scroll>
       </div>
     </div>
   );
@@ -131,6 +130,10 @@ const Input = (props: {
 
   const modalOpen = useCallback(() => {
     refModal.current?.showModal();
+  }, [refModal.current]);
+
+  const modalClose = useCallback(() => {
+    refModal.current?.close();
   }, [refModal.current]);
 
   const onClickModal = useCallback(
@@ -149,6 +152,7 @@ const Input = (props: {
       <div
         className="
         inline-flex
+        max-w-xs
         cursor-pointer
         items-center
         gap-4
@@ -160,9 +164,9 @@ const Input = (props: {
         onClick={modalOpen}>
         <input type="hidden" onInput={props.onChange} ref={refInput} name={props.name} />
         <Provider id={props.value}>
-          <div className="flex justify-center items-center gap-2">
+          <div className="flex justify-center items-center gap-2 w-full">
             <Image className="w-12 h-12 object-cover overflow-hidden rounded-btn border-2" />
-            <Name className="font-bold">ゲーム未選択</Name>
+            <Name className="font-bold grow">ゲーム未選択</Name>
             <div className="text-info">{ICONS.SEARCH}</div>
           </div>
         </Provider>
@@ -173,7 +177,7 @@ const Input = (props: {
           <Game.Search onChange={onClickModal} />
         </div>
         <label className="modal-backdrop">
-          <button>close</button>
+          <button onClick={modalClose}>close</button>
         </label>
       </dialog>
     </>

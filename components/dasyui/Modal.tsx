@@ -13,7 +13,7 @@ modal-middle	Responsive	Moves the modal to middle (default)
  */
 import { createContext, ReactNode, useCallback, useContext, useRef, useState } from "react";
 
-import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
+import { Scroll } from "@components/commons/PerfectScrollbar";
 
 interface ModalProps {}
 interface ModalAction {
@@ -30,14 +30,10 @@ export const useModalContext = () => useContext(modalContext);
 export const ModalProvider = (props: { children: ReactNode }) => {
   const [node, setNode] = useState<ReactNode | null>(null);
   const refDialog = useRef<HTMLDialogElement>(null);
-  const scroll = usePerfectScrollbar([], {
-    suppressScrollX: true,
-  });
 
   const open = useCallback((node: ReactNode) => {
     setNode(node);
     refDialog.current?.showModal();
-    scroll.refScroll.current?.update();
   }, []);
   const close = useCallback(() => {
     refDialog.current?.close();
@@ -47,9 +43,9 @@ export const ModalProvider = (props: { children: ReactNode }) => {
     <>
       <modalContext.Provider value={{ open, close }}>{props.children}</modalContext.Provider>
       <dialog ref={refDialog} className="modal">
-        <div className="modal-box perfect-scrollbar-nopadding h-min" ref={scroll.ref}>
+        <Scroll className="modal-box perfect-scrollbar-nopadding h-min">
           <div>{node}</div>
-        </div>
+        </Scroll>
 
         <form method="dialog" className="modal-backdrop">
           <button>close</button>

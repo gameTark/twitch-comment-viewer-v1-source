@@ -8,7 +8,7 @@ import { db } from "@resource/db";
 import THEME from "@resource/theme.json";
 import { getHtml } from "@libs/utils";
 
-import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
+import { Scroll } from "@components/commons/PerfectScrollbar";
 
 const defaultTheme = "lemonade";
 const themeStorage = "theme-application-001";
@@ -60,10 +60,6 @@ export const Theme = () => {
     htmlElement.dataset.theme = theme;
   }, [theme]);
 
-  const scroll = usePerfectScrollbar([], {
-    suppressScrollX: true,
-  });
-
   const Content = (props: { type: string }) => (
     <div className={`w-2 rounded-badge h-6 flex items-center justify-center ${props.type}`}></div>
   );
@@ -85,7 +81,7 @@ export const Theme = () => {
           w-64
           h-96
         ">
-        <div ref={scroll.ref} className={clsx("w-full perfect-scrollbar")}>
+        <Scroll className={clsx("w-full")}>
           <ul
             className="
             flex
@@ -126,7 +122,7 @@ export const Theme = () => {
               );
             })}
           </ul>
-        </div>
+        </Scroll>
       </div>
     </div>
   );

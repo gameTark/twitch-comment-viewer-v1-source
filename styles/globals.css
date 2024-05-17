@@ -106,7 +106,7 @@ html {
     @apply text-xs;
   }
   .ios-toggle {
-    @apply toggle [--tglbg:#D9DADC] checked:[--tglbg:#4ed164] bg-base-100 hover:bg-base-100 border-neutral-content;
+    @apply toggle [--tglbg:#D9DADC] checked:[--tglbg:#4ed164] bg-base-100 hover:bg-base-100;
   }
 
   .children-borader {

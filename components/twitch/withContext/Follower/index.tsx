@@ -11,6 +11,19 @@ import { ContextElements, createTime } from "../interface";
 const followerContext = createContext<DBFollower | undefined>(undefined);
 const useFollowerContext = () => useContext(followerContext);
 
+const useCommentQuery = () => {
+  const data = useLiveQuery(async () => {
+    const me = await db.getMe();
+    if (me == null) return [];
+    const exists = await db.followers.where("channelId").equals(me.id).sortBy("followedAt");
+    return exists
+      .reverse()
+      .filter(filter.notDeleted)
+      .filter((val) => val.deletedAt == null);
+  }, []);
+  return data;
+}
+
 const ListProvider = (props: ContextElements["Ul"]) => {
   const { children, ...p } = props;
   const data = useLiveQuery(async () => {
@@ -29,18 +42,14 @@ const ListProvider = (props: ContextElements["Ul"]) => {
     </ul>
   );
 };
+const FollowerCount = (props: ContextElements['Span']) => {
+  const data = useCommentQuery();
+  return <span {...props}>{data?.length || 0}</span>;
+};
+
 const RecordProvider = (props: ContextElements["TypeTableSelection"]) => {
   const { children, ...p } = props;
-  const data = useLiveQuery(async () => {
-    const me = await db.getMe();
-    if (me == null) return [];
-    const exists = await db.followers.where("channelId").equals(me.id).sortBy("followedAt");
-    return exists
-      .reverse()
-      .filter(filter.notDeleted)
-      .filter((val) => val.deletedAt == null);
-  }, []);
-
+  const data = useCommentQuery();
   return (
     <tbody {...p}>
       {data?.map((val) => (
@@ -102,4 +111,5 @@ export const Follower = {
   FollowedAt,
   UserProvider,
   Badge,
+  FollowerCount,
 };

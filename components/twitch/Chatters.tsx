@@ -7,10 +7,10 @@ import { db } from "@resource/db";
 import { useDialog } from "@components/commons/Dialog";
 import { Stat } from "@components/dasyui/Stat";
 import { ICONS } from "@components/icons";
-import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 import { useUserInfoModal } from "./UserInfo";
 import { Follower } from "./withContext/Follower";
 import { User } from "./withContext/User";
+import { Scroll } from "@components/commons/PerfectScrollbar";
 
 // https://daisyui.com/components/stat/
 const TypeListItem = () => {
@@ -52,8 +52,6 @@ export const ChatUsers = (props: ChatUsersProps) => {
     return chatters.users.filter((val) => val !== me.id);
   }, []);
 
-  const ps = usePerfectScrollbar([chatters]);
-
   switch (props.type) {
     case "number":
       return <div>{chatters?.length || 0}</div>;
@@ -62,12 +60,11 @@ export const ChatUsers = (props: ChatUsersProps) => {
         <Stat
           title={<div className="flex gap-2">チャットユーザー数</div>}
           value={`${chatters?.length || 0}人`}
-          icon={ICONS.COMMENT}
         />
       );
     case "list":
       return (
-        <div className={clsx("px-1 py-2 perfect-scrollbar")} ref={ps.ref}>
+        <Scroll className={clsx("px-1 py-2")}>
           <ul className="flex flex-col gap-1">
             {chatters?.map((val) => (
               <Follower.Provider key={val} id={val}>
@@ -77,7 +74,7 @@ export const ChatUsers = (props: ChatUsersProps) => {
               </Follower.Provider>
             ))}
           </ul>
-        </div>
+        </Scroll>
       );
   }
 };

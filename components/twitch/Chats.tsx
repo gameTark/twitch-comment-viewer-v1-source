@@ -6,10 +6,10 @@ import { db, useDbPagination } from "@resource/db";
 import { dayjs } from "@libs/dayjs";
 
 import { ChatBubble } from "@components/dasyui/ChatBubble";
-import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 import { useUserInfoModal } from "./UserInfo";
 import { chats } from "./withContext/ChatList";
 import { User } from "./withContext/User";
+import { Scroll } from "@components/commons/PerfectScrollbar";
 
 const TypeBubble = () => {
   const openModal = useUserInfoModal();
@@ -94,7 +94,6 @@ export const ChatList = (props: { type: string; query: Parameters<typeof getActi
   const data = useLiveQuery(async () => {
     return await getActions(props.query).reverse().sortBy("timestamp");
   }, [props.query]);
-  const scroll = usePerfectScrollbar([data]);
 
   const target = useMemo(() => {
     switch (props.type) {
@@ -108,13 +107,20 @@ export const ChatList = (props: { type: string; query: Parameters<typeof getActi
     return <TypeBubble />;
   }, [props.type]);
   return (
-    <div className="h-full perfect-scrollbar" ref={scroll.ref}>
+    <Scroll className="h-full">
       <chats.ListProvider data={data || []} className="flex flex-col gap-2 py-8">
         <chats.UserProvider>{target}</chats.UserProvider>
       </chats.ListProvider>
-    </div>
+    </Scroll>
   );
 };
+
+// export const ChatStat = () => {
+//   const data = useLiveQuery(async () => {
+//     return await getActions(props.query).reverse().sortBy("timestamp");
+//   }, [props.query]);
+//   return ();
+// }
 
 export const ChatTable = (props: { userId: DBUser["id"] }) => {
   const data = useDbPagination(
@@ -129,16 +135,15 @@ export const ChatTable = (props: { userId: DBUser["id"] }) => {
     [props.userId],
   );
 
-  const scroll = usePerfectScrollbar([props.userId]);
   return (
     <div className="h-full flex flex-col">
-      <div ref={scroll.ref} className="perfect-scrollbar">
+      <Scroll>
         <chats.ListProvider
           data={data.value?.target || []}
           className="flex flex-col gap-2 py-6 px-2">
           <TypeFlat />
         </chats.ListProvider>
-      </div>
+      </Scroll>
       <div className="flex justify-between border-t-2 items-center select-none">
         <div className="flex">
           <button

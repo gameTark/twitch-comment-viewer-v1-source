@@ -18,7 +18,6 @@ export const TwitchRouter = (props: EventSubContextProps) => {
   useTheme();
   const loginPage = useLogin();
 
-  useEffect(() => {}, []);
   const main = useCallback(async () => {
     const isLogin = await isLoginned();
     if (!isLogin) {

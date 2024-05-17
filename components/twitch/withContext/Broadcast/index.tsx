@@ -73,7 +73,7 @@ const TagBadge = (props: ContextElements["Ul"]) => {
   return (
     <ul {...props}>
       {template?.tags.map((val) => (
-        <DasyBadge size="badge-sm" key={val}>
+        <DasyBadge size="badge-sm" outline key={val}>
           {val}
         </DasyBadge>
       ))}
@@ -203,6 +203,7 @@ const BroadcastFormProvider = (
   const methods = useForm<DBBroadcast>({
     mode: "onChange",
     defaultValues: {
+      tags: [],
       ...template,
     },
     resolver: zodResolver(DBBroadcastSchema),
@@ -236,7 +237,7 @@ const EditTitle = () => {
 const EditLanguage = () => {
   const { register } = useBroadcastFormContext();
   return (
-    <select className=" select select-bordered" {...register("language")}>
+    <select className="select select-bordered max-w-xs" {...register("language")}>
       <option disabled>選択言語</option>
       {BROADCAST_LANGUAGE.map((val) => (
         <option key={val.id} value={val.id}>

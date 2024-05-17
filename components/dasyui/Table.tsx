@@ -5,9 +5,9 @@ import dayjs from "dayjs";
 import { isJsonString, isUrl } from "@libs/regex";
 
 import { CodeJavascript } from "@components/commons/SyntaxHightlight";
-import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 import { ClipboardCopy } from "./ClipboardCopy";
 import { useModalContext } from "./Modal";
+import { Scroll } from "@components/commons/PerfectScrollbar";
 
 interface DateType {
   type: "date";
@@ -69,15 +69,13 @@ export type TableProps<Type extends object> = (
 const Cel = (props: { children: ReactNode }) => <td>{props.children}</td>;
 
 export const TableSkeleton = (props: { bordered?: boolean }) => {
-  const ps = usePerfectScrollbar([props]);
   return (
-    <div
-      className={clsx("w-full px-2 perfect-scrollbar py-2 z-0", {
+    <Scroll
+      className={clsx("w-full px-2 py-2 z-0", {
         ["border"]: props.bordered,
-      })}
-      ref={ps.ref}>
+      })}>
       <div className=" skeleton h-full w-full animate-fade-in"></div>
-    </div>
+    </Scroll>
   );
 };
 export const Table = <T extends object>(props: TableProps<T>) => {
@@ -163,15 +161,13 @@ export const Table = <T extends object>(props: TableProps<T>) => {
     }
     return null;
   }, [props]);
-  const ps = usePerfectScrollbar([props]);
 
   if (tableInfo == null) return;
   return (
-    <div
-      className={clsx("w-full px-2 perfect-scrollbar z-0", {
+    <Scroll
+      className={clsx("w-full px-2 z-0", {
         ["border"]: props.bordered,
-      })}
-      ref={ps.ref}>
+      })}>
       <table className="table table-pin-rows">
         <thead>
           <tr>
@@ -196,6 +192,6 @@ export const Table = <T extends object>(props: TableProps<T>) => {
           })}
         </tbody>
       </table>
-    </div>
+    </Scroll>
   );
 };

@@ -9,7 +9,7 @@ import { useGameContext } from "@contexts/twitch/gameContext";
 import { useAsyncMemo } from "@libs/uses";
 
 import { BroadcastInformation, Events, Search } from "@components/twitch/Broadcast";
-import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
+import { Scroll } from "@components/commons/PerfectScrollbar";
 
 export const useSearchBroadcastTemplate = (query: string) => {
   const gameContext = useGameContext();
@@ -42,7 +42,6 @@ export const useSearchBroadcastTemplate = (query: string) => {
 };
 
 export default function GamePage() {
-  const scroll = usePerfectScrollbar([], {});
 
   return (
     <div className="flex flex-col h-full grow w-full">
@@ -55,9 +54,9 @@ export default function GamePage() {
           <Events />
         </div>
       </div>
-      <div className="flex grow perfect-scrollbar z-0" ref={scroll.ref}>
+      <Scroll className="flex grow z-0">
         <BroadcastInformation />
-      </div>
+      </Scroll>
     </div>
   );
 }
