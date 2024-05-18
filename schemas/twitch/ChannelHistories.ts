@@ -16,6 +16,7 @@ export const DBChannelHistorySchema = z
     language: z.string(),
     timestamp: z.date().default(new Date()),
     rowdata: z.string().optional(),
+    // content_classification_labels
   })
   .and(DBBaseSchema);
 export type DBChannelHistory = z.infer<typeof DBChannelHistorySchema>;

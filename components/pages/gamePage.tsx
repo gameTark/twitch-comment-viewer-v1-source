@@ -43,11 +43,11 @@ export default function GamePage() {
   return (
     <div className="flex flex-col h-full grow w-full">
       <div className="flex w-full justify-center mx-auto pt-6 pb-4 border-b items-center">
-        <div className="w-3/12 flex"></div>
-        <div className="w-5/12">
+        <div className="w-2/12 flex"></div>
+        <div className="w-6/12">
           <Search />
         </div>
-        <div className="w-3/12 flex justify-end">
+        <div className="w-2/12 flex justify-end">
           <Events />
         </div>
       </div>

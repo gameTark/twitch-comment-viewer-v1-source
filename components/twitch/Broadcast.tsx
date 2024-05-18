@@ -1,15 +1,17 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { DBBroadcast, DBBroadcastSchema } from "@schemas/twitch/Broadcast";
 import clsx from "clsx";
 import { useLiveQuery } from "dexie-react-hooks";
 
+import { db, useDbPagination } from "@resource/db";
 import { getBroadcastTemplates } from "@resource/twitchWithDb";
 import { filter } from "@libs/types";
 import { useInput } from "@libs/uses";
 
 import { Scroll } from "@components/commons/PerfectScrollbar";
+import { ICONS } from "@components/icons";
 import { useSearchBroadcastTemplate } from "@components/pages/gamePage";
 import { Broadcast } from "./withContext/Broadcast";
 import { Game } from "./withContext/Game";
@@ -127,34 +129,38 @@ export default function BroadcastEditor(props: BroadcastProps) {
   return (
     <Broadcast.Provider data={props.value}>
       <Broadcast.editor.BroadcastFormProvider onSubmit={handleSubmit} className="w-full h-full">
-        <Scroll className="@container relative flex flex-col gap-4 px-4 h-full">
-          <div className="inline-flex flex-col @[600px]:flex-row gap-4">
-            <p className="w-48">配信タイトル</p>
-            <Broadcast.editor.Title />
-          </div>
-          <div className="inline-flex flex-col @[600px]:flex-row gap-4">
-            <p className="w-48">対象ゲーム</p>
-            <Broadcast.editor.Game />
-          </div>
-          <div className="inline-flex flex-col @[600px]:flex-row gap-4">
-            <p className="w-48">タグ</p>
-            <Broadcast.editor.Tags />
-          </div>
+        <Scroll className="@container relative">
+          <div className="flex flex-col gap-4 px-4 h-full">
+            <div className="inline-flex flex-col @[600px]:flex-row gap-4">
+              <p className="w-48 font-bold">配信タイトル</p>
+              <Broadcast.editor.Title />
+            </div>
+            <div className="inline-flex flex-col @[600px]:flex-row gap-4">
+              <p className="w-48 font-bold">対象ゲーム</p>
+              <Broadcast.editor.Game />
+            </div>
+            <div className="inline-flex flex-col @[600px]:flex-row gap-4">
+              <p className="w-48 font-bold">タグ</p>
+              <Broadcast.editor.Tags />
+            </div>
 
-          <div className="inline-flex flex-col @[600px]:flex-row gap-4">
-            <p className="w-48">配信言語</p>
-            <Broadcast.editor.Language />
-          </div>
-          <div className="inline-flex gap-4 my-4 @[600px]:my-0">
-            <p className="w-48">ブランドコンテンツ</p>
-            <Broadcast.editor.BrandedContents />
-          </div>
+            <div className="inline-flex flex-col @[600px]:flex-row gap-4">
+              <p className="w-48 font-bold">配信言語</p>
+              <Broadcast.editor.Language />
+            </div>
+            <div className="inline-flex gap-4 my-4 @[600px]:my-0">
+              <p className="w-48 font-bold">ブランドコンテンツ</p>
+              <Broadcast.editor.BrandedContents />
+            </div>
 
-          <div className="inline-flex gap-2 items-end justify-end sticky bottom-0 bg-base-100 py-4 grow">
-            <button className="btn btn-error btn-outline" type="button" onClick={props.onCancel}>
-              {props.canncelLabel || "キャンセル"}
-            </button>
-            <button className="btn btn-success btn-outline">{props.commmitLabel || "完了"}</button>
+            <div className="inline-flex gap-2 items-end justify-end sticky bottom-0 bg-base-100 py-4 grow">
+              <button className="btn btn-error btn-outline" type="button" onClick={props.onCancel}>
+                {props.canncelLabel || "キャンセル"}
+              </button>
+              <button className="btn btn-success btn-outline">
+                {props.commmitLabel || "完了"}
+              </button>
+            </div>
           </div>
         </Scroll>
       </Broadcast.editor.BroadcastFormProvider>
@@ -171,10 +177,10 @@ const SearchItem = () => {
           <div className=" modal-box w-full h-max">
             <div className="flex flex-col gap-4">
               <div className="flex gap-6">
-                <Game.Image width={150} className=" rounded-box aspect-square object-cover" />
+                <Game.Image width={150} className="rounded-box aspect-square object-cover" />
                 <div className="flex flex-col gap-4">
                   <h2>
-                    <Game.Name className="text-md font-extralight" />
+                    <Game.Name className="text-md font-extralight line-clamp-1" />
                   </h2>
                   <Broadcast.Title className="text-lg" />
                   <Broadcast.Language />
@@ -196,13 +202,12 @@ const SearchItem = () => {
         </dialog>
       ) : null}
       <li
-        className="flex gap-2 items-center cursor-pointer px-5 py-4 hover:bg-base-200 rounded-box"
+        className="flex gap-2 items-center cursor-pointer p-2 hover:bg-base-200 rounded-box"
         onClick={() => handleClick("open")}>
-        <div>
-          <Game.Image width={60} className=" rounded-box aspect-square object-cover" />
-        </div>
+        <Game.Image width={60} className=" rounded-box aspect-square object-cover" />
+
         <div className="flex flex-col grow">
-          <Game.Name className="text-md font-extralight" />
+          <Game.Name className="text-md font-extralight line-clamp-1" />
           <Broadcast.Title className="text-lg" />
         </div>
         <div>
@@ -212,20 +217,85 @@ const SearchItem = () => {
     </>
   );
 };
+const OldBroadcast = () => {
+  // const create = Broadcast.uses.useCreate();
+  return (
+    <div className="grid grid-cols-[max-content_minmax(0,1fr)] grid-rows-3 gap-y-2 gap-x-5 cursor-pointer hover:bg-base-300 py-2 px-2 rounded-box select-none">
+      <p className="col-start-2">
+        <Game.Name className="break-all line-clamp-1 w-full " />
+      </p>
+      <div className=" row-span-3 col-start-1 row-start-1">
+        <Game.Image width={100} className="aspect-square rounded-box object-cover" />
+      </div>
+      <p className="col-start-2">
+        <Broadcast.Title />
+      </p>
+      <p className="col-start-2 text-right text-caption opacity-60">
+        配信日 <Broadcast.CreatedAt format="YYYY/MM/DD" />
+      </p>
+    </div>
+  );
+};
 export const Events = () => {
   const createNewTemplate = Broadcast.uses.useCreate({ isNew: true });
+  const refModal = useRef<HTMLDialogElement>(null);
+  const channelHistories = useDbPagination(
+    db.channelHistories,
+    {
+      pageNo: 0,
+      pageSize: 10,
+    },
+    [],
+  );
   return (
     <div className="inline-flex items-center gap-3">
-      <button className="btn btn-outline btn-success btn-xs" onClick={createNewTemplate}>
+      <button
+        className="btn btn-outline btn-success btn-xs"
+        onClick={() => refModal.current?.showModal()}>
         過去の配信から作成
       </button>
       <button className="btn btn-outline btn-success btn-xs" onClick={createNewTemplate}>
         新規追加
       </button>
+
+      <dialog className="modal" ref={refModal}>
+        <div className="modal-box relative h-full flex flex-col gap-5">
+          <button
+            className=" btn btn-circle btn-sm btn-ghost absolute right-0 top-0 m-3 select-none cursor-pointer"
+            onClick={() => refModal.current?.close()}>
+            {ICONS.CROSS.MD}
+          </button>
+          <h3>テンプレートを作成</h3>
+          <Scroll className="border pl-1 pr-1 rounded-box rounded-r-none" noPadding>
+            <div className="flex flex-col gap-6 py-1">
+              {channelHistories.value?.target.map((channelHistory) => {
+                return (
+                  <Broadcast.Provider
+                    key={channelHistory.id}
+                    data={{
+                      channelId: channelHistory.channelId,
+                      gameId: channelHistory.categoryId,
+                      broadcastTitle: channelHistory.broadcastTitle,
+                      language: channelHistory.language,
+                      tags: [],
+                      classificationLabels: [],
+                      isBrandedContent: false,
+                      createdAt: channelHistory.createdAt,
+                    }}>
+                    <Broadcast.ApplyGameProvider Provider={Game.Provider}>
+                      <OldBroadcast />
+                    </Broadcast.ApplyGameProvider>
+                  </Broadcast.Provider>
+                );
+              })}
+            </div>
+          </Scroll>
+        </div>
+      </dialog>
     </div>
   );
 };
-// TODO: editのページ化
+
 export const Search = () => {
   const [input, onChange] = useInput("");
   const data = useSearchBroadcastTemplate(input);
@@ -246,21 +316,18 @@ export const Search = () => {
         placeholder="検索"
       />
 
-      <Scroll
-        className={clsx(
-          "dropdown-content z-10 bg-base-100 shadow-2xl w-full h-max max-h-96 border-x rounded-b-box",
-          { "border-b": !(data == null || data.length == 0) },
-        )}></Scroll>
       {data == null || data.length == 0 ? null : (
-        <ul className="flex flex-wrap gap-2 flex-col p-2">
-          {data.map((val) => (
-            <Broadcast.Provider data={val} key={val.id}>
-              <Game.Provider id={val.gameId}>
-                <SearchItem />
-              </Game.Provider>
-            </Broadcast.Provider>
-          ))}
-        </ul>
+        <Scroll className="dropdown-content z-10 bg-base-100 shadow-2xl w-full h-max max-h-96 border-x rounded-b-box border-b rounded-r-none">
+          <ul className="flex flex-wrap gap-2 flex-col p-2">
+            {data.map((val) => (
+              <Broadcast.Provider data={val} key={val.id}>
+                <Game.Provider id={val.gameId}>
+                  <SearchItem />
+                </Game.Provider>
+              </Broadcast.Provider>
+            ))}
+          </ul>
+        </Scroll>
       )}
     </div>
   );

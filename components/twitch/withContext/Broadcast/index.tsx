@@ -10,9 +10,10 @@ import { useRouter } from "next/navigation";
 import { TWITCH_CONSTANTS } from "@constants/twitch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DBBroadcast, DBBroadcastSchema } from "@schemas/twitch/Broadcast";
+import { DBGame } from "@schemas/twitch/Game";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 
-import { db, DbBroadcastTemplate, DbGame } from "@resource/db";
+import { db, DbBroadcastTemplate } from "@resource/db";
 import { deleteBroadcastTemplate, updateBroadcastTemplate } from "@resource/twitchWithDb";
 import { fetchChannelInfoPatch } from "@libs/twitch";
 
@@ -72,11 +73,12 @@ const TagBadge = (props: ContextElements["Ul"]) => {
   const template = useBroadcastTemplate();
   return (
     <ul {...props}>
-      {template?.tags.map((val) => (
+      {template?.tags.slice(0, 2).map((val) => (
         <DasyBadge size="badge-sm" outline key={val}>
           {val}
         </DasyBadge>
       ))}
+      {(template?.tags.length || 0) > 2 ? <li className="text-caption">...</li> : null}
     </ul>
   );
 };
@@ -298,7 +300,7 @@ const EditGame = () => {
  * with provider
  */
 const ApplyGameProvider = (props: {
-  Provider: (props: { id?: DbGame["id"]; children?: ReactNode }) => ReactNode;
+  Provider: (props: { id?: DBGame["id"]; children?: ReactNode }) => ReactNode;
   children: ReactNode;
 }) => {
   const template = useBroadcastTemplate();

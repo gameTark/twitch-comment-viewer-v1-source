@@ -38,6 +38,7 @@ const CurrentBroadcastEdit = () => {
   const broadcast = useAsyncMemo(async () => {
     const me = await db.getMe();
     if (me == null) return null;
+    return me;
   }, []);
   if (broadcast == null) return null;
   return <BroadcastEditor />;

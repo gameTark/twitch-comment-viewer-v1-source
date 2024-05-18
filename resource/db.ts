@@ -4,7 +4,7 @@ import { DBBroadcast, DBBroadcastIndex } from "@schemas/twitch/Broadcast";
 import { DBChannelHistory } from "@schemas/twitch/ChannelHistories";
 import { DBFollower, DBFollowerIndex } from "@schemas/twitch/Followers";
 import { DBGame, DBGameIndex } from "@schemas/twitch/Game";
-import { DBChatters, DBLive, DBMe, DBParameter, MeSchema } from "@schemas/twitch/Parameters";
+import { DBChatters, DBLive, DBMe, DBParameter } from "@schemas/twitch/Parameters";
 import { DBUser, DBUserIndex } from "@schemas/twitch/User";
 import Dexie, { Collection, IndexableType, Table } from "dexie";
 import { useLiveQuery } from "dexie-react-hooks";
