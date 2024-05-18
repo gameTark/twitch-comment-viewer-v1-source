@@ -4,8 +4,6 @@ import "perfect-scrollbar/css/perfect-scrollbar.css";
 import "../styles/globals.css";
 
 import { TwitchRouter } from "@contexts/twitch/eventSubContext";
-import { GameContextProvider } from "@contexts/twitch/gameContext";
-import { UserContextProvider } from "@contexts/twitch/userContext";
 
 import { Drawer } from "@components/dasyui/Drawer";
 import { ModalProvider } from "@components/dasyui/Modal";
@@ -25,20 +23,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <TwitchRouter>
-          <UserContextProvider>
-            <GameContextProvider>
-              <div className="max-h-screen h-screen w-full max-w-screen oveflow-hidden flex flex-col border-base-content/20">
-                <ModalProvider>
-                  <Drawer>
-                    <div className="h-96 grow test">{children}</div>
-                    <div className="h-fit">
-                      <Footer />
-                    </div>
-                  </Drawer>
-                </ModalProvider>
-              </div>
-            </GameContextProvider>
-          </UserContextProvider>
+          <div className="max-h-screen h-screen w-full max-w-screen oveflow-hidden flex flex-col border-base-content/20">
+            <ModalProvider>
+              <Drawer>
+                <div className="h-96 grow test">{children}</div>
+                <div className="h-fit">
+                  <Footer />
+                </div>
+              </Drawer>
+            </ModalProvider>
+          </div>
         </TwitchRouter>
       </body>
     </html>

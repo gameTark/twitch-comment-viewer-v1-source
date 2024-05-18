@@ -5,22 +5,20 @@ import { useLiveQuery } from "dexie-react-hooks";
 import Fuse from "fuse.js";
 
 import { db } from "@resource/db";
-import { useGameContext } from "@contexts/twitch/gameContext";
 import { useAsyncMemo } from "@libs/uses";
 
 import { Scroll } from "@components/commons/PerfectScrollbar";
 import { BroadcastInformation, Events, Search } from "@components/twitch/Broadcast";
+import { Game } from "@components/twitch/withContext/Game";
 
 export const useSearchBroadcastTemplate = (query: string) => {
-  const gameContext = useGameContext();
-
   const data = useLiveQuery(async () => await db.broadcastTemplates.toArray(), []);
   const fuse = useAsyncMemo(async () => {
     if (data == null) return;
     const fuseData = await Promise.all(
       data.map(async (val, index) => {
         if (val.gameId == null) return;
-        const game = await gameContext.fetchById(val.gameId);
+        const game = await Game.dataloader.load(val.gameId);
         if (game == null) return;
         return {
           ...val,
@@ -32,7 +30,7 @@ export const useSearchBroadcastTemplate = (query: string) => {
     );
     const result = new Fuse(fuseData, { keys: ["broadcastTitle", "tags", "gameTitle"] });
     return result;
-  }, [gameContext, data]);
+  }, [data]);
 
   return useMemo(() => {
     if (fuse == null || data == null) return;

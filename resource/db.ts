@@ -212,11 +212,4 @@ export interface Config {
   followerUpdateInterval: number;
 }
 
-export interface DbGame extends BaseSchema {
-  id: string;
-  name: string;
-  box_art_url: string;
-  igdb_id: string;
-}
-
 export const db = new MySubClassedDexie();

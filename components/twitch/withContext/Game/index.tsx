@@ -10,11 +10,11 @@ import {
   useRef,
   useState,
 } from "react";
+import { DBGame } from "@schemas/twitch/Game";
 import clsx from "clsx";
 import { useLiveQuery } from "dexie-react-hooks";
 
-import { DbGame } from "@resource/db";
-import { useGameContext } from "@contexts/twitch/gameContext";
+import { GameDataloader } from "@libs/game";
 import { parser } from "@libs/parser";
 import { fetchSearchCategories } from "@libs/twitch";
 import { useDebounce, useInput } from "@libs/uses";
@@ -23,13 +23,13 @@ import { Scroll } from "@components/commons/PerfectScrollbar";
 import { ICONS } from "@components/icons";
 import { ContextElements, createSpan, createTime } from "../interface";
 
-const gameContext = createContext<DbGame | undefined | null>(null);
+const gameDataloader = new GameDataloader();
+const gameContext = createContext<DBGame | undefined | null>(null);
 const useGame = () => useContext(gameContext);
-const Provider = (props: { id?: DbGame["id"]; children?: ReactNode }) => {
-  const gameCtx = useGameContext();
+const Provider = (props: { id?: DBGame["id"]; children?: ReactNode }) => {
   const data = useLiveQuery(async () => {
     if (props.id == null) return;
-    return await gameCtx.fetchById(props.id);
+    return await gameDataloader.load(props.id);
   }, [props.id]);
 
   return <gameContext.Provider value={data}>{props.children}</gameContext.Provider>;
@@ -54,7 +54,7 @@ const Image = (props: ContextElements["Image"]) => {
   return <img {...props} src={twitchImage} alt={game?.name} />;
 };
 
-const Search = (props: { onChange?: (id: DbGame["id"]) => void }) => {
+const Search = (props: { onChange?: (id: DBGame["id"]) => void }) => {
   const [search, changeSearchHandler] = useInput();
   const [result, setResult] = useState<Awaited<ReturnType<typeof fetchSearchCategories>> | null>(
     null,
@@ -121,7 +121,7 @@ const Search = (props: { onChange?: (id: DbGame["id"]) => void }) => {
 };
 
 const Input = (props: {
-  value?: DbGame["id"];
+  value?: DBGame["id"];
   name?: string;
   onChange?: ChangeEventHandler<HTMLInputElement>;
 }) => {
@@ -137,7 +137,7 @@ const Input = (props: {
   }, [refModal.current]);
 
   const onClickModal = useCallback(
-    (gameId: DbGame["id"]) => {
+    (gameId: DBGame["id"]) => {
       refModal.current?.close();
       console.log(refModal.current);
       if (props.onChange == null) return;
@@ -185,6 +185,7 @@ const Input = (props: {
 };
 
 export const Game = {
+  dataloader: gameDataloader,
   Provider,
   Name,
   Image,

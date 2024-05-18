@@ -5,13 +5,13 @@ import { DBUser, DBUserSchema } from "@schemas/twitch/User";
 import { ManipulateType } from "dayjs";
 import { IndexableType, Table } from "dexie";
 import { useLiveQuery } from "dexie-react-hooks";
-import Fuse from "fuse.js";
 
-import { BaseSchema, db, DbBroadcastTemplate, DbGame } from "@resource/db";
+import { BaseSchema, db, DbBroadcastTemplate } from "@resource/db";
 import { dayjs } from "@libs/dayjs";
 import { fetchGame, fetchUsers } from "@libs/twitch";
 import { filter } from "@libs/types";
 import { useAsyncMemo } from "@libs/uses";
+import { DBGame } from "@schemas/twitch/Game";
 
 const createPatchDatabase =
   <T extends BaseSchema, Id extends IndexableType>(props: {
@@ -209,7 +209,7 @@ export const getGames = createPatchDatabase({
   idKey: "id",
   fetcher: _createFetcher(async (ids) => {
     const res = await fetchGame({ id: ids.map((id) => id.toString()) });
-    const dbData = res.data.map((game): DbGame => {
+    const dbData = res.data.map((game): DBGame => {
       return {
         id: game.id,
         box_art_url: game.box_art_url,

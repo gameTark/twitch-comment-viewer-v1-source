@@ -354,6 +354,15 @@ export const getChatUsers = async (params: GetChatUsersParams) => {
 //curl -X GET 'https://api.twitch.tv/helix/chat/chatters?broadcaster_id=123456&moderator_id=654321' \
 // -H 'Authorization: Bearer kpvy3cjboyptmiacwr0c19hotn5s' \
 // -H 'Client-Id: hof5gwx0su6owfn0nyan9c87zr6t'
+
+
+/** 
+ * 複数来る場合あるからキューイングしていっきに処理したい感じある。
+*/
+interface GetUserDataParamsById {
+  login?: string; // ログインしている名前 game_tark
+  id?: string | string[]; // データから取得できるID
+}
 export interface GetUserResult {
   data: {
     id: string;
@@ -370,14 +379,6 @@ export interface GetUserResult {
   pagination?: {
     cursor?: string;
   }
-}
-
-/** 
- * 複数来る場合あるからキューイングしていっきに処理したい感じある。
-*/
-interface GetUserDataParamsById {
-  login?: string; // ログインしている名前 game_tark
-  id?: string | string[]; // データから取得できるID
 }
 export const fetchUsers = async (props: GetUserDataParamsById) => {
   const res = await twitchFetch<GetUserDataParamsById, GetUserResult>(API_LIST.USER, props);
