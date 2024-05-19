@@ -16,35 +16,34 @@ const Data = () => {
   }, []);
   const params = useSearchParams();
 
+  // TODO: React query で置き換える
   const data = useAsyncMemo(async () => {
-    const code = params.get("templateId");
-    if (code == null) return;
-    if (typeof code !== "string") return null;
-    const result = await db.broadcastTemplates.get(Number(code));
-    return result;
+    const templateId = params.get("templateId");
+    if (templateId != null) {
+      const result = await db.broadcastTemplates.get(Number(templateId));
+      return result || null;
+    }
+    const broadcastHistoryId = params.get("broadcastHistoryId");
+    if (broadcastHistoryId != null) {
+      const channelHistory = await db.channelHistories.get(Number(broadcastHistoryId));
+      if (channelHistory == null) return null;
+      const item: DBBroadcast = {
+        channelId: channelHistory.channelId,
+        gameId: channelHistory.categoryId,
+        broadcastTitle: channelHistory.broadcastTitle,
+        language: channelHistory.language,
+        tags: [],
+        classificationLabels: [],
+        isBrandedContent: false,
+        favorite: false,
+        createdAt: channelHistory.createdAt,
+        updateAt: new Date(),
+      };
+      return item || null;
+    }
   }, []);
 
-  const data2 = useAsyncMemo(async () => {
-    const code = params.get("broadcastHistoryId");
-    if (code == null) return;
-    if (typeof code !== "string") return null;
-    const channelHistory = await db.channelHistories.get(Number(code));
-    if (channelHistory == null) return;
-    const item: DBBroadcast = {
-      channelId: channelHistory.channelId,
-      gameId: channelHistory.categoryId,
-      broadcastTitle: channelHistory.broadcastTitle,
-      language: channelHistory.language,
-      tags: [],
-      classificationLabels: [],
-      isBrandedContent: false,
-      favorite: false,
-      createdAt: channelHistory.createdAt,
-      updateAt: new Date(),
-    };
-    return item;
-  }, []);
-  const result = data || data2;
+  const result = data;
 
   const createBroadcastTemplate = useCallback((e: DBBroadcast) => {
     const { id: _id, favorite: _favorite, ...props } = e;
