@@ -7,6 +7,7 @@ import { TwitchRouter } from "@contexts/twitch/eventSubContext";
 
 import { Drawer } from "@components/dasyui/Drawer";
 import { ModalProvider } from "@components/dasyui/Modal";
+import { TanstackQueryProvider } from "@components/middlewares/TanstackQueryProvider";
 import { Footer } from "@components/pages/footer";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -23,16 +24,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body>
         <TwitchRouter>
-          <div className="max-h-screen h-screen w-full max-w-screen oveflow-hidden flex flex-col border-base-content/20">
-            <ModalProvider>
-              <Drawer>
-                <div className="h-96 grow test">{children}</div>
-                <div className="h-fit">
-                  <Footer />
-                </div>
-              </Drawer>
-            </ModalProvider>
-          </div>
+          <TanstackQueryProvider>
+            <div className="max-h-screen h-screen w-full max-w-screen oveflow-hidden flex flex-col border-base-content/20">
+              <ModalProvider>
+                <Drawer>
+                  <div className="h-96 grow test">{children}</div>
+                  <div className="h-fit">
+                    <Footer />
+                  </div>
+                </Drawer>
+              </ModalProvider>
+            </div>
+          </TanstackQueryProvider>
         </TwitchRouter>
       </body>
     </html>

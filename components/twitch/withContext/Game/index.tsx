@@ -139,7 +139,6 @@ const Input = (props: {
   const onClickModal = useCallback(
     (gameId: DBGame["id"]) => {
       refModal.current?.close();
-      console.log(refModal.current);
       if (props.onChange == null) return;
       if (refInput.current == null) return;
       refInput.current.value = gameId;
@@ -164,9 +163,9 @@ const Input = (props: {
         onClick={modalOpen}>
         <input type="hidden" onInput={props.onChange} ref={refInput} name={props.name} />
         <Provider id={props.value}>
-          <div className="flex justify-center items-center gap-2 w-full">
-            <Image className="w-12 h-12 object-cover overflow-hidden rounded-btn border-2" />
-            <Name className="font-bold grow">ゲーム未選択</Name>
+          <div className="flex justify-center items-center gap-4 w-full">
+            <Image className="w-12 h-12 object-cover overflow-hidden rounded-btn border-2 flex-none" />
+            <Name className="font-bold grow line-clamp-2">ゲーム未選択</Name>
             <div className="text-info">{ICONS.SEARCH}</div>
           </div>
         </Provider>

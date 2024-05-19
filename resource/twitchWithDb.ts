@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
+import { DBGame } from "@schemas/twitch/Game";
 import { DBUser, DBUserSchema } from "@schemas/twitch/User";
 import { ManipulateType } from "dayjs";
 import { IndexableType, Table } from "dexie";
@@ -11,7 +12,6 @@ import { dayjs } from "@libs/dayjs";
 import { fetchGame, fetchUsers } from "@libs/twitch";
 import { filter } from "@libs/types";
 import { useAsyncMemo } from "@libs/uses";
-import { DBGame } from "@schemas/twitch/Game";
 
 const createPatchDatabase =
   <T extends BaseSchema, Id extends IndexableType>(props: {

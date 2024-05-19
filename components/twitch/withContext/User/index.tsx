@@ -15,22 +15,22 @@ import { IMAGES } from "@resource/constants";
 import { useTiwtchUpdateUserById } from "@resource/twitchWithDb";
 // import { useUserContext } from "@contexts/twitch/userContext";
 import { fetchChannelFollowers } from "@libs/twitch";
+import { UserDataLoader } from "@libs/user";
 import { useAsyncMemo } from "@libs/uses";
 
 import { ICONS } from "@components/icons";
 import { ContextElements, createImg, createSpan, createTime } from "../interface";
-import { UserDataLoader } from "@libs/user";
 
 const userContext = createContext<DBUser | undefined | null>(null);
 const useUser = () => useContext(userContext);
-    
+
 const user = new UserDataLoader();
 
 const Provider = (props: { id?: DBUser["id"] | null; children: ReactNode }) => {
   // const userCtx = useUserContext();
   const data = useLiveQuery(async () => {
     if (props.id == null) return;
-    return await user.load(props.id)
+    return await user.load(props.id);
     // return await userCtx.fetchById(props.id);
   }, [props.id]);
 

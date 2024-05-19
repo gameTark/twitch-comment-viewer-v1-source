@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import clsx from "clsx";
 
@@ -13,6 +13,8 @@ import { ChatList } from "@components/twitch/Chats";
 import { ChatUsers } from "@components/twitch/Chatters";
 import { FollowerStat, FollowerTable } from "@components/twitch/followers";
 import { LiveWatchUsers } from "@components/twitch/liveWatchUsers";
+import { useBroadcastInformationPatch, useBroadcastInformationQuery } from "@uses/queries";
+import { useInterval } from "@uses/useInterval";
 
 const Stat = () => {
   return (
@@ -35,14 +37,31 @@ const Chat = () => {
   );
 };
 const CurrentBroadcastEdit = () => {
-  const broadcast = useAsyncMemo(async () => {
-    const me = await db.getMe();
-    if (me == null) return null;
-    return me;
-  }, []);
-  if (broadcast == null) return null;
-  return <BroadcastEditor />;
+  const query = useBroadcastInformationQuery();
+  const patch = useBroadcastInformationPatch();
+  const handleCommit = useCallback(
+    (...args: Parameters<typeof patch>) => {
+      patch(...args).then(() => {
+        query.refetch();
+      });
+    },
+    [query, patch],
+  );
+
+  useInterval(
+    () => {
+      if (!query.isSuccess) return;
+      query.refetch();
+    },
+    {
+      deps: [],
+      interval: 1000,
+    },
+  );
+  if (!query.isSuccess) return <></>;
+  return <BroadcastEditor value={query.data} onCommit={handleCommit} />;
 };
+
 const Tabs = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   return (

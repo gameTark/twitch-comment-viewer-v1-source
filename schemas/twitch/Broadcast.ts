@@ -1,5 +1,7 @@
 import * as z from "zod";
 
+import { FetchChannelInfoResult } from "@libs/twitch";
+
 import { DBBaseSchema } from "./BaseSchema";
 
 export const DBBroadcastIndex = "++id,channelId,gameId,*tags,favorite";
@@ -19,4 +21,20 @@ export const DBBroadcastSchema = z
     favorite: z.boolean().optional().default(false),
   })
   .and(DBBaseSchema);
+
 export type DBBroadcast = z.infer<typeof DBBroadcastSchema>;
+
+export const DBBroadcastParseByAPI = (...parameters: FetchChannelInfoResult["data"]) => {
+  return parameters.map((val): DBBroadcast => {
+    return DBBroadcastSchema.parse({
+      channelId: val.broadcaster_id,
+      gameId: val.game_id,
+      broadcastTitle: val.title,
+      language: val.broadcaster_language,
+      tags: val.tags,
+      classificationLabels: val.content_classification_labels,
+      isBrandedContent: val.is_branded_content,
+      favorite: false,
+    });
+  });
+};

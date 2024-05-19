@@ -36,8 +36,11 @@ const Data = () => {
   }
 
   return (
-    <div className="fixed w-full h-full bg-base-100 z-10">
-      <BroadcastEditor value={data} onCancel={cancel} onCommit={createBroadcastTemplate} />
+    <div className="fixed w-full h-full bg-base-100 z-10 flex justify-center items-center">
+      <div className=" min-w-96 w-2/4 border rounded-box p-5 flex flex-col gap-10">
+        <h1>編集</h1>
+        <BroadcastEditor value={data} onCancel={cancel} onCommit={createBroadcastTemplate} />
+      </div>
     </div>
   );
 };

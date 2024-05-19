@@ -11,11 +11,12 @@ import { TWITCH_CONSTANTS } from "@constants/twitch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DBBroadcast, DBBroadcastSchema } from "@schemas/twitch/Broadcast";
 import { DBGame } from "@schemas/twitch/Game";
+import { useQuery } from "@tanstack/react-query";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 
 import { db, DbBroadcastTemplate } from "@resource/db";
 import { deleteBroadcastTemplate, updateBroadcastTemplate } from "@resource/twitchWithDb";
-import { fetchChannelInfoPatch } from "@libs/twitch";
+import { fetchChannelInfo, fetchChannelInfoPatch } from "@libs/twitch";
 
 import { useDialog } from "@components/commons/Dialog";
 import { DasyBadge } from "@components/dasyui/Badge";
@@ -35,6 +36,7 @@ const Provider = (props: { data?: DbBroadcastTemplate; children: ReactNode }) =>
     <boroadcastContext.Provider value={props.data}>{props.children}</boroadcastContext.Provider>
   );
 };
+
 const Title = createSpan(useBroadcastTemplate, ["broadcastTitle"]);
 const CreatedAt = createTime(useBroadcastTemplate, ["createdAt"]);
 const UpdatedAt = createTime(useBroadcastTemplate, ["updateAt"]);
@@ -175,9 +177,11 @@ const useEdit = () => {
   }, [template, router]);
 };
 
+// broadcastHistoryId
 const useCreate = (
   props: {
     isNew?: boolean;
+    isHistory?: boolean;
   } = {},
 ) => {
   const template = useBroadcastTemplate();
@@ -188,7 +192,11 @@ const useCreate = (
       return;
     }
     // qsで置き換え
-    router.push(`/games/create?templateId=${template?.id}`);
+    if (props.isHistory) {
+      router.push(`/games/create?broadcastHistoryId=${template?.id}`);
+    } else {
+      router.push(`/games/create?templateId=${template?.id}`);
+    }
   }, [template, router]);
 };
 /**
@@ -212,7 +220,7 @@ const BroadcastFormProvider = (
   });
   return (
     <FormProvider {...methods}>
-      <form {...props} onSubmit={methods.handleSubmit(onSubmit)}>
+      <form className="w-full h-full" {...props} onSubmit={methods.handleSubmit(onSubmit)}>
         {children}
       </form>
     </FormProvider>

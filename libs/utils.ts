@@ -7,7 +7,7 @@ import { dayjs } from "@libs/dayjs";
 export const getHtml = (): HTMLHtmlElement => {
   return document.getElementsByTagName("html")[0];
 };
-
+export const isExists = (value: unknown) => !!value;
 export const unique = <T>(args: T[]): T[] => {
   const items = new Set<T>();
   for (const arg of args) {

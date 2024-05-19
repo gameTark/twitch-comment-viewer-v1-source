@@ -1,5 +1,4 @@
-import DataLoader from 'dataloader';
-
+import DataLoader from "dataloader";
 
 /**
  * ref https://qiita.com/kyusyukeigo/items/b0c97c8e9ca6d84bf4f9

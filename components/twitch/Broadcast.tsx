@@ -36,6 +36,7 @@ const Card = () => {
           <div className={clsx("bg-info", baseClass)} />
           <div className={clsx("bg-error", baseClass)} />
         </div>
+
         <div className="z-20 absolute top-0 w-full h-full grid grid-cols-2 grid-rows-2 font-bold text-2xl">
           <Broadcast.Apply className={clsx("text-success", textBaseClass)} />
           <Broadcast.Copy className={clsx("text-accent", textBaseClass)} />
@@ -65,6 +66,7 @@ export function FaboriteBroadcastItemList() {
   const favoriteItems = useLiveQuery(async () => {
     return (await getBroadcastTemplates({ type: "favorite", value: true })).filter(filter.notNull);
   }, []);
+
   return (
     <div className="flex items-stretch flex-wrap -m-3 h-full">
       {favoriteItems?.map((val) => {
@@ -116,6 +118,7 @@ export type BroadcastProps = {
   onCommit?: (e: DBBroadcast) => void;
   onCancel?: () => void;
 };
+
 /**
 @media (600px <= width < 800px) {
   550
@@ -128,24 +131,24 @@ export default function BroadcastEditor(props: BroadcastProps) {
   };
   return (
     <Broadcast.Provider data={props.value}>
-      <Broadcast.editor.BroadcastFormProvider onSubmit={handleSubmit} className="w-full h-full">
+      <Broadcast.editor.BroadcastFormProvider onSubmit={handleSubmit}>
         <Scroll className="@container relative">
-          <div className="flex flex-col gap-4 px-4 h-full">
+          <div className="flex flex-col gap-4 h-full">
             <div className="inline-flex flex-col @[600px]:flex-row gap-4">
-              <p className="w-48 font-bold">配信タイトル</p>
+              <p className="w-48 font-bold pt-3 @[600px]:pt-0">配信タイトル</p>
               <Broadcast.editor.Title />
             </div>
             <div className="inline-flex flex-col @[600px]:flex-row gap-4">
-              <p className="w-48 font-bold">対象ゲーム</p>
+              <p className="w-48 font-bold pt-3 @[600px]:pt-0">対象ゲーム</p>
               <Broadcast.editor.Game />
             </div>
             <div className="inline-flex flex-col @[600px]:flex-row gap-4">
-              <p className="w-48 font-bold">タグ</p>
+              <p className="w-48 font-bold pt-3 @[600px]:pt-0">タグ</p>
               <Broadcast.editor.Tags />
             </div>
 
             <div className="inline-flex flex-col @[600px]:flex-row gap-4">
-              <p className="w-48 font-bold">配信言語</p>
+              <p className="w-48 font-bold pt-3 @[600px]:pt-0">配信言語</p>
               <Broadcast.editor.Language />
             </div>
             <div className="inline-flex gap-4 my-4 @[600px]:my-0">
@@ -218,15 +221,20 @@ const SearchItem = () => {
   );
 };
 const OldBroadcast = () => {
-  // const create = Broadcast.uses.useCreate();
+  const create = Broadcast.uses.useCreate({
+    isHistory: true,
+  });
   return (
-    <div className="grid grid-cols-[max-content_minmax(0,1fr)] grid-rows-3 gap-y-2 gap-x-5 cursor-pointer hover:bg-base-300 py-2 px-2 rounded-box select-none">
+    <div
+      className="grid grid-cols-[max-content_minmax(0,1fr)] grid-rows-[max-content_1fr_max-content] gap-y-2 gap-x-5 cursor-pointer hover:bg-base-300 py-2 px-2 rounded-box select-none"
+      onClick={create}>
       <p className="col-start-2">
         <Game.Name className="break-all line-clamp-1 w-full " />
       </p>
-      <div className=" row-span-3 col-start-1 row-start-1">
-        <Game.Image width={100} className="aspect-square rounded-box object-cover" />
-      </div>
+      <Game.Image
+        width={100}
+        className="row-span-3 col-start-1 row-start-1 aspect-square rounded-box object-cover"
+      />
       <p className="col-start-2">
         <Broadcast.Title />
       </p>
@@ -259,7 +267,7 @@ export const Events = () => {
       </button>
 
       <dialog className="modal" ref={refModal}>
-        <div className="modal-box relative h-full flex flex-col gap-5">
+        <div className="modal-box relative h-4/6 flex flex-col gap-5">
           <button
             className=" btn btn-circle btn-sm btn-ghost absolute right-0 top-0 m-3 select-none cursor-pointer"
             onClick={() => refModal.current?.close()}>
@@ -273,6 +281,7 @@ export const Events = () => {
                   <Broadcast.Provider
                     key={channelHistory.id}
                     data={{
+                      id: channelHistory.id,
                       channelId: channelHistory.channelId,
                       gameId: channelHistory.categoryId,
                       broadcastTitle: channelHistory.broadcastTitle,

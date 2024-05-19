@@ -1,7 +1,7 @@
 import Profile404 from "@assets/images/404Profile.png";
 import None from "@assets/images/None.png";
 
-const isProd = process.env.NODE_ENV == "production";
+export const isProd = process.env.NODE_ENV == "production";
 export const CONFIG = {
   API_KEY: "of40zatnkd1ftcaqnf92ahqznkg1vn",
   OAUTH: {
