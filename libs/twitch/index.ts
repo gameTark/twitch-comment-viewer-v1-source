@@ -318,15 +318,25 @@ export interface FetchChannelFollowersResult {
     followed_at: string;
   }[];
   pagination: {
-    cursor: string;
+    cursor?: string;
   };
 }
-
-export const fetchChannelFollowers = async (params: FetchChannelFollowersProps) => {
-  return await twitchFetch<FetchChannelFollowersProps, FetchChannelFollowersResult>(
+export const fetchChannelFollowers = async (params: FetchChannelFollowersProps): Promise<FetchChannelFollowersResult> => {
+  const result = await twitchFetch<FetchChannelFollowersProps, FetchChannelFollowersResult>(
     API_LIST.CHANNELS.FOLLOWERS,
     params,
   );
+  if (result.pagination.cursor != null) {
+    const result2 = await fetchChannelFollowers({
+      ...params,
+      after: result.pagination.cursor,
+    });
+    return {
+      ...result2,
+      data: [...result2.data, ...result.data],
+    };
+  }
+  return result;
 };
 
 // チャットに参加しているユーザーの取得
