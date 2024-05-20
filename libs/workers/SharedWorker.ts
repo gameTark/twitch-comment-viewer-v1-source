@@ -6,7 +6,7 @@ import { ChattersShema } from "@schemas/twitch/Parameters";
 import { db } from "@resource/db";
 import { isTargetDateAgo } from "@libs/utils";
 
-import { createEventsub, fetchChannelFollowers, TwitchAPI } from "../twitch";
+import { createEventsub, TwitchAPI } from "../twitch";
 import { createType } from "../twitch/eventSubConstants";
 import { EventsubMessageMap } from "../twitch/eventSubInterface";
 import { SocketEventNotificationMap } from "../twitch/notification";
@@ -152,9 +152,12 @@ const getChatters = async () => {
 const updateFollowers = async () => {
   const userData = await getUserData();
   const dbData = (await db.followers.toArray()).filter((val) => val.channelId === userData.id);
-  const apiData = await fetchChannelFollowers({
-    broadcaster_id: userData.id,
-    first: 100,
+  const api = TwitchAPI.fetchByAll(TwitchAPI.channels_followers_get);
+  const apiData = await api({
+    parameters: {
+      broadcaster_id: userData.id,
+      first: 100,
+    },
   }).then((result) =>
     result.data.map(
       (val) =>
@@ -251,15 +254,19 @@ const createSocket = () => {
         const userId = userData;
         const typeGenerator = createType(id);
         await Promise.all([
-          createEventsub(typeGenerator.channel.chat.message(userId.id, userId.id)),
-          createEventsub(typeGenerator.channel.update(userId.id)),
-          createEventsub(typeGenerator.stream.online(userId.id)),
-          createEventsub(typeGenerator.stream.ofline(userId.id)),
-          createEventsub(
+          TwitchAPI.createEventsub(typeGenerator.channel.chat.message(userId.id, userId.id)),
+          TwitchAPI.createEventsub(typeGenerator.channel.update(userId.id)),
+          TwitchAPI.createEventsub(typeGenerator.stream.online(userId.id)),
+          TwitchAPI.createEventsub(typeGenerator.stream.ofline(userId.id)),
+          TwitchAPI.createEventsub(
             typeGenerator.channel.channel_points_automatic_reward_redemption.add(userId.id),
           ),
-          createEventsub(typeGenerator.channel.channel_points_custom_reward.add(userId.id)),
-          createEventsub(typeGenerator.channel.points_custom_reward_redemption.add(userId.id)),
+          TwitchAPI.createEventsub(
+            typeGenerator.channel.channel_points_custom_reward.add(userId.id),
+          ),
+          TwitchAPI.createEventsub(
+            typeGenerator.channel.points_custom_reward_redemption.add(userId.id),
+          ),
         ]);
       };
       start();

@@ -10,89 +10,65 @@ import { db } from "@resource/db";
 import { valueOf } from "@libs/types";
 
 const { API_LIST, API_KEY } = TWITCH_CONSTANTS;
+
 /**
- * search categories
- */
-type FetchSearchCategories = PickupParameter<paths["/search/categories"]["get"]>;
-/**
- * @deprecated 自動生成の方を使用する
+ * TODO: Queryのkeyは直接日本語渡さないとうまく動かない
+ * @deprecated できれば自動生成の方を使用する
  * Fuseの移植を考える
  */
-export const fetchSearchCategories = async (params: FetchSearchCategories["parameters"]) => {
+export const fetchSearchCategories = async (
+  params: PickupParameter<paths["/search/categories"]["get"]>["parameters"],
+) => {
   const token = await getTwitchToken();
   const fetcher = baseFetch(token);
   const data = await fetcher(`${API_LIST.SEARCH.CATEGORIES.ENDPOINT}?query=${params.query}`);
-  const req = (await data.json()) as FetchSearchCategories["responses"];
+  const req = (await data.json()) as PickupParameter<
+    paths["/search/categories"]["get"]
+  >["responses"];
   // TODO: 検索精度が良くないが、煩雑になりそうなため一旦保留
-  const result = new Fuse(req.data, { keys: ["name"] })
-    .search(params.query)
-    .map((val) => val.item.id);
-  return req.data.sort((a, b) => (result.includes(a.id) ? 1 : -1));
-};
-
-type FetchChannelInfo = PickupParameter<paths["/channels"]["get"]>;
-export type FetchChannelInfoResult = FetchChannelInfo["responses"];
-/**
- * followers
- * cursorの移植を考える
- */
-type FetchChannelFollowers = PickupParameter<paths["/channels/followers"]["get"]>;
-/**
- * @deprecated 自動生成の方を使用する
- */
-export const fetchChannelFollowers = async (
-  params: FetchChannelFollowers["parameters"],
-): Promise<FetchChannelFollowers["responses"]> => {
-  const result = await twitchFetch<
-    FetchChannelFollowers["parameters"],
-    FetchChannelFollowers["responses"]
-  >(API_LIST.CHANNELS.FOLLOWERS, params);
-  if (result.pagination?.cursor != null) {
-    const result2 = await fetchChannelFollowers({
-      ...params,
-      after: result.pagination.cursor,
-    });
-    return {
-      ...result2,
-      data: [...result2.data, ...result.data],
-    };
-  }
-  return result;
-};
-
-/**
- * socket
- */
-// https://dev.twitch.tv/docs/api/reference/#get-eventsub-subscriptions
-export interface CreateEventsubResult {
-  data: SocketData[];
-  total: number;
-  total_cost: number;
-  max_total_cost: number;
-}
-export interface SocketData {
-  id: string;
-  status: string;
-  type: string;
-  version: string;
-  condition: {
-    user_id: string;
-  };
-  created_at: string;
-  transport: {
-    method: string;
-    callback: string;
-  };
-  cost: number;
-}
-export const createEventsub = async (params: any) => {
-  const res = await twitchFetch<any, CreateEventsubResult>(API_LIST.EVENTSUB.SUBSCRIPTIONS, params);
-  return res;
+  return new Fuse(req.data, { keys: ["name"] }).search(params.query).map((val) => val.item);
 };
 
 /**
  * other
  */
+const fetchByAll =
+  <
+    Parameter extends {
+      parameters: {
+        after?: string;
+      };
+    },
+    Result extends {
+      data: unknown[];
+      pagination?: {
+        cursor?: string;
+      };
+    },
+  >(
+    callback: (args: Parameter) => Promise<Result>,
+  ) =>
+  async (args: Parameter): Promise<Result> => {
+    const main = async (args: Parameter): Promise<Result> => {
+      const target = await callback(args);
+      if (target.pagination?.cursor != null) {
+        const result2 = await main({
+          ...args,
+          parameters: {
+            ...args.parameters,
+            after: target.pagination.cursor,
+          },
+        });
+        return {
+          ...result2,
+          data: [...target.data, ...result2.data],
+        };
+      }
+      return target;
+    };
+    return main(args);
+  };
+
 export const getEmoteImage = (id: string) =>
   `https://static-cdn.jtvnw.net/emoticons/v2/${id}/default/light/1.0`;
 
@@ -311,10 +287,17 @@ export const twitchFetcher: CreateRequest =
         body: requestBody == null ? undefined : JSON.stringify(requestBody),
       },
     );
-    return result;
+    return await result.json();
   };
 
 export const TwitchAPI = {
+  fetchByAll,
+  createEventsub: async (params: any) => {
+    const res = await TwitchAPI.eventsub_subscriptions_post({
+      requestBody: params,
+    });
+    return res;
+  },
   channels_commercial_post: twitchFetcher("/channels/commercial", "post"),
   channels_ads_get: twitchFetcher("/channels/ads", "get"),
   channels_ads_schedule_snooze_post: twitchFetcher("/channels/ads/schedule/snooze", "post"),

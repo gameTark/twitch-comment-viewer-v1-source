@@ -13,8 +13,7 @@ import { useLiveQuery } from "dexie-react-hooks";
 
 import { IMAGES } from "@resource/constants";
 import { useTiwtchUpdateUserById } from "@resource/twitchWithDb";
-// import { useUserContext } from "@contexts/twitch/userContext";
-import { fetchChannelFollowers } from "@libs/twitch";
+import { TwitchAPI } from "@libs/twitch";
 import { UserDataLoader } from "@libs/user";
 import { useAsyncMemo } from "@libs/uses";
 
@@ -120,8 +119,10 @@ const FollowerCount = () => {
   const user = useUser();
   const counts = useAsyncMemo(async () => {
     if (user?.id == null) return;
-    const result = await fetchChannelFollowers({
-      broadcaster_id: user.id,
+    const result = await TwitchAPI.channels_followers_get({
+      parameters: {
+        broadcaster_id: user.id,
+      },
     });
     return result.total || 0;
   }, [user?.id]);
