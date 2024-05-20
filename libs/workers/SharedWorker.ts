@@ -6,7 +6,7 @@ import { ChattersShema } from "@schemas/twitch/Parameters";
 import { db } from "@resource/db";
 import { isTargetDateAgo } from "@libs/utils";
 
-import { createEventsub, TwitchAPI } from "../twitch";
+import { TwitchAPI } from "../twitch";
 import { createType } from "../twitch/eventSubConstants";
 import { EventsubMessageMap } from "../twitch/eventSubInterface";
 import { SocketEventNotificationMap } from "../twitch/notification";
