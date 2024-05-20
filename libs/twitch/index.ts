@@ -158,54 +158,6 @@ const baseFetch = (token: string): typeof fetch => {
   };
 };
 
-/**
- * fettchers
- * @deprecated 自動生成の方を使用する
- */
-const twitchFetch = async <T extends object, Result extends unknown>(
-  c: {
-    METHOD: string;
-    ENDPOINT: string;
-  },
-  params: T,
-): Promise<Result> => {
-  const token = await getTwitchToken();
-  const fetcher = baseFetch(token);
-
-  const validation = async (response: Response) => {
-    if (!response.ok) {
-      const result = await response.json();
-      throw new Error(`fetch error
-    ${JSON.stringify({
-      status: response.status,
-      endpoint: c.ENDPOINT,
-      params,
-      response: result,
-    })}`);
-    }
-  };
-  const getResponse = async () => {
-    if (c.METHOD === "GET") {
-      const response = await fetcher(`${c.ENDPOINT}?${queryString.stringify(params)}`, {
-        method: c.METHOD,
-      });
-      return response;
-    }
-    const response = await fetcher(c.ENDPOINT, {
-      method: c.METHOD,
-      body: JSON.stringify(params),
-    });
-    return response;
-  };
-
-  const response = await getResponse();
-  validation(response);
-  const result = await response.json().catch(() => {
-    return;
-  });
-  return result;
-};
-
 type PickupParameter<Operations extends valueOf<operations>> = {
   parameters: Operations extends {
     parameters?: {
@@ -274,7 +226,7 @@ type CreateRequest = <
     : null
 >;
 
-export const twitchFetcher: CreateRequest =
+const twitchFetcher: CreateRequest =
   (pathKey, methodName) =>
   async ({ parameters, requestBody }: any): Promise<any> => {
     const token = await getTwitchToken();
