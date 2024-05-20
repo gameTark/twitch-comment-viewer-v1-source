@@ -37,7 +37,8 @@ export const useBroadcastInformationPatch = () => {
         },
         patch: {
           broadcaster_language: params.language,
-          content_classification_labels: params.classificationLabels,
+          // TODO: content_classification labelsの調整
+          // content_classification_labels: params.classificationLabels,
           tags: params.tags,
           title: params.broadcastTitle,
           game_id: params.gameId,
