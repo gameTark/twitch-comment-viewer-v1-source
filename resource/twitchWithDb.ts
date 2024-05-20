@@ -22,60 +22,60 @@ const createPatchDatabase =
       updateTiming?: { value: number; unit?: ManipulateType };
     };
   }) =>
-    async (ids: Id[]): Promise<T[]> => {
-      const results = (await props.table.bulkGet(ids)).filter(filter.notNull).filter((value) => {
-        if (props.options?.updateTiming != null) {
-          return dayjs(value.updateAt).isSameOrBefore(
-            dayjs(new Date()).add(props.options.updateTiming.value, props.options.updateTiming.unit),
-          );
-        }
-        return true;
-      });
-      const notExistsIdList = ids.filter((val) => {
-        return (
-          results.findIndex((result) => {
-            return result[props.idKey] === val;
-          }) === -1
+  async (ids: Id[]): Promise<T[]> => {
+    const results = (await props.table.bulkGet(ids)).filter(filter.notNull).filter((value) => {
+      if (props.options?.updateTiming != null) {
+        return dayjs(value.updateAt).isSameOrBefore(
+          dayjs(new Date()).add(props.options.updateTiming.value, props.options.updateTiming.unit),
         );
-      });
-      const notExistsUserList = await props.fetcher(notExistsIdList);
-      await props.table.bulkPut(notExistsUserList);
+      }
+      return true;
+    });
+    const notExistsIdList = ids.filter((val) => {
+      return (
+        results.findIndex((result) => {
+          return result[props.idKey] === val;
+        }) === -1
+      );
+    });
+    const notExistsUserList = await props.fetcher(notExistsIdList);
+    await props.table.bulkPut(notExistsUserList);
 
-      return (await props.table.bulkGet(ids)).filter(filter.notNull);
-    };
+    return (await props.table.bulkGet(ids)).filter(filter.notNull);
+  };
 
 const _createFetcher =
   <T extends object, Id extends IndexableType>(fetcher: (id: Id[]) => Promise<T[]>) =>
-    async (id: Id[]): Promise<T[]> => {
-      if (id.length === 0) return [];
-      const res = await Promise.all(
-        new Array(Math.ceil(id.length / 100)).fill(1).map(async (_, index) => {
-          const p = index * 100;
-          const n = index * 100 + 100;
-          return await fetcher(id.slice(p, n));
-        }),
-      );
-      return res.flat();
-    };
+  async (id: Id[]): Promise<T[]> => {
+    if (id.length === 0) return [];
+    const res = await Promise.all(
+      new Array(Math.ceil(id.length / 100)).fill(1).map(async (_, index) => {
+        const p = index * 100;
+        const n = index * 100 + 100;
+        return await fetcher(id.slice(p, n));
+      }),
+    );
+    return res.flat();
+  };
 
 export const getBroadcastTemplates = (
   props?:
     | {
-      type: "id";
-      value: Required<DbBroadcastTemplate>["id"][];
-    }
+        type: "id";
+        value: Required<DbBroadcastTemplate>["id"][];
+      }
     | {
-      type: "gameId";
-      value: Required<DbBroadcastTemplate>["gameId"][];
-    }
+        type: "gameId";
+        value: Required<DbBroadcastTemplate>["gameId"][];
+      }
     | {
-      type: "tags";
-      value: Required<DbBroadcastTemplate>["tags"];
-    }
+        type: "tags";
+        value: Required<DbBroadcastTemplate>["tags"];
+      }
     | {
-      type: "favorite";
-      value: Required<DbBroadcastTemplate>["favorite"];
-    },
+        type: "favorite";
+        value: Required<DbBroadcastTemplate>["favorite"];
+      },
 ) => {
   if (props === undefined) return db.broadcastTemplates.toArray();
   switch (props.type) {
@@ -180,7 +180,7 @@ export const getUsers = createPatchDatabase({
       parameters: {
         id: ids.map((val) => val.toString()),
       },
-    })
+    });
     const spam = await db.spam.bulkGet(result.data.map((val) => val.login));
     return result.data.map((val) => {
       return DBUserSchema.parse({
@@ -212,7 +212,7 @@ export const getGames = createPatchDatabase({
   fetcher: _createFetcher(async (ids) => {
     const res = await TwitchAPI.games_get({
       parameters: {
-        id: ids.map((id) => id.toString())
+        id: ids.map((id) => id.toString()),
       },
     });
     const dbData = res.data.map((game): DBGame => {

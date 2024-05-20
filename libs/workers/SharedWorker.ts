@@ -6,11 +6,7 @@ import { ChattersShema } from "@schemas/twitch/Parameters";
 import { db } from "@resource/db";
 import { isTargetDateAgo } from "@libs/utils";
 
-import {
-  TwitchAPI,
-  createEventsub,
-  fetchChannelFollowers,
-} from "../twitch";
+import { createEventsub, fetchChannelFollowers, TwitchAPI } from "../twitch";
 import { createType } from "../twitch/eventSubConstants";
 import { EventsubMessageMap } from "../twitch/eventSubInterface";
 import { SocketEventNotificationMap } from "../twitch/notification";
@@ -207,15 +203,15 @@ type NotificationSocketEvent = EventListenerMap<SocketEventNotificationMap, Sock
 
 const createAddListener =
   (socket: WebSocket): SocketEvent =>
-    (type, cb) => {
-      const item = (ev: MessageEvent<string>) => {
-        const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
-        if (type !== value.metadata.message_type) return;
-        cb(value as any, ev);
-      };
-      socket.addEventListener("message", item);
-      return item;
+  (type, cb) => {
+    const item = (ev: MessageEvent<string>) => {
+      const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
+      if (type !== value.metadata.message_type) return;
+      cb(value as any, ev);
     };
+    socket.addEventListener("message", item);
+    return item;
+  };
 
 const createRemoveListener = (socket: WebSocket) => (item: SocketCallback) => {
   socket.removeEventListener("message", item);
@@ -223,16 +219,16 @@ const createRemoveListener = (socket: WebSocket) => (item: SocketCallback) => {
 
 const createAddNotificationListener =
   (socket: WebSocket): NotificationSocketEvent =>
-    (t, cb) => {
-      const item = (ev: MessageEvent<string>) => {
-        const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
-        if (value.metadata.message_type !== "notification") return;
-        if (value.metadata.subscription_type !== t) return;
-        cb(value as any, ev);
-      };
-      socket.addEventListener("message", item);
-      return item;
+  (t, cb) => {
+    const item = (ev: MessageEvent<string>) => {
+      const value: valueOf<EventsubMessageMap> = JSON.parse(ev.data);
+      if (value.metadata.message_type !== "notification") return;
+      if (value.metadata.subscription_type !== t) return;
+      cb(value as any, ev);
     };
+    socket.addEventListener("message", item);
+    return item;
+  };
 
 const createSocket = () => {
   let socketInstance: WebSocket | null = null;

@@ -4,9 +4,6 @@ import { useCallback, useState } from "react";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import clsx from "clsx";
 
-import { db } from "@resource/db";
-import { useAsyncMemo } from "@libs/uses";
-
 import { Scroll } from "@components/commons/PerfectScrollbar";
 import BroadcastEditor, { FaboriteBroadcastItemList } from "@components/twitch/Broadcast";
 import { ChatList } from "@components/twitch/Chats";

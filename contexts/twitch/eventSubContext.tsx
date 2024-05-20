@@ -3,7 +3,7 @@
 import { useCallback, useEffect } from "react";
 
 import { db } from "@resource/db";
-import { TwitchAPI, hasLoginToken, initialTwitchToken, isLoginned } from "@libs/twitch";
+import { hasLoginToken, initialTwitchToken, isLoginned, TwitchAPI } from "@libs/twitch";
 import { useAsyncMemo, useLogin } from "@libs/uses";
 import { createSharedWorker } from "@libs/workers";
 
@@ -26,7 +26,7 @@ export const TwitchRouter = (props: EventSubContextProps) => {
     }
     const me = await TwitchAPI.users_get({
       parameters: {},
-    })
+    });
     if (me == null) {
       loginPage();
       return () => {};

@@ -113,7 +113,7 @@ const getTwitchToken = async () => {
 // ログインしている状態か判断する。
 export const isLoginned = async () => {
   if (isServer) return false;
-  const token = await getTwitchToken().catch(() => { });
+  const token = await getTwitchToken().catch(() => {});
   return token != null;
 };
 // URLにtokenが含まれている場合ローカルストレージにセットし元のURLに戻る
@@ -160,25 +160,27 @@ export const generateTwitchOAtuhURL = ({
   return `https://id.twitch.tv/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}&scope=${scope}`;
 };
 
-
 const baseFetch = (token: string): typeof fetch => {
   const headers = {
-    Authorization: `Bearer ${token}`,
+    "Authorization": `Bearer ${token}`,
     "Client-Id": API_KEY,
-    "Content-Type": 'application/json',
+    "Content-Type": "application/json",
   };
   return (...args: Parameters<typeof fetch>) => {
     const [input, init, ...other] = args;
-    return fetch(input, {
-      ...init,
-      headers: {
-        ...headers,
-        ...(init?.headers || {}),
-      }
-    }, ...other);
+    return fetch(
+      input,
+      {
+        ...init,
+        headers: {
+          ...headers,
+          ...(init?.headers || {}),
+        },
+      },
+      ...other,
+    );
   };
-}
-
+};
 
 /**
  * fettchers
@@ -199,11 +201,11 @@ const twitchFetch = async <T extends object, Result extends unknown>(
       const result = await response.json();
       throw new Error(`fetch error
     ${JSON.stringify({
-        status: response.status,
-        endpoint: c.ENDPOINT,
-        params,
-        response: result,
-      })}`);
+      status: response.status,
+      endpoint: c.ENDPOINT,
+      params,
+      response: result,
+    })}`);
     }
   };
   const getResponse = async () => {
@@ -232,63 +234,85 @@ type PickupParameter<Operations extends valueOf<operations>> = {
   parameters: Operations extends {
     parameters?: {
       query?: infer Parameter;
-    }
-  } ? Parameter : null;
+    };
+  }
+    ? Parameter
+    : null;
   requestBody: Operations extends {
     requestBody?: {
       content?: {
         "application/json"?: infer Body;
-      }
-    },
-  } ? Body : null;
+      };
+    };
+  }
+    ? Body
+    : null;
   responses: Operations extends {
     responses?: {
       200?: {
         content?: {
           "application/json"?: infer Res;
         };
-      }
-    }
-  } ? Res : null;
+      };
+    };
+  }
+    ? Res
+    : null;
 };
 
-type CreateRequest = <PathKey extends keyof paths, Method extends keyof paths[PathKey], Operation extends paths[PathKey][Method]>(path: PathKey, method: Method) => (parameter:
-  & (Operation extends {
+type CreateRequest = <
+  PathKey extends keyof paths,
+  Method extends keyof paths[PathKey],
+  Operation extends paths[PathKey][Method],
+>(
+  path: PathKey,
+  method: Method,
+) => (
+  parameter: (Operation extends {
     requestBody?: {
       content?: {
         "application/json"?: infer Body;
-      }
-    },
-  } ? { requestBody: Body } : {})
-  & (Operation extends {
-    parameters?: {
-      query?: infer Parameter;
-    }
-  } ? { parameters: Parameter } : {})
-) => Promise<Operation extends {
-  responses?: {
-    200?: {
-      content?: {
-        "application/json"?: infer Res;
+      };
+    };
+  }
+    ? { requestBody: Body }
+    : {}) &
+    (Operation extends {
+      parameters?: {
+        query?: infer Parameter;
       };
     }
+      ? { parameters: Parameter }
+      : {}),
+) => Promise<
+  Operation extends {
+    responses?: {
+      200?: {
+        content?: {
+          "application/json"?: infer Res;
+        };
+      };
+    };
   }
-} ? Res : null>;
+    ? Res
+    : null
+>;
 
-
-export const twitchFetcher: CreateRequest = (pathKey, methodName) => async ({
-  parameters,
-  requestBody
-}: any): Promise<any> => {
-  const token = await getTwitchToken();
-  const fetcher = baseFetch(token)
-  // TODO: 日本語のqueryStringがtwitcの仕様と合わないため別の方法を考える
-  const result = await fetcher(`https://api.twitch.tv/helix${pathKey}?${queryString.stringify(parameters || {})}`, {
-    method: methodName.toString().toUpperCase(),
-    body: requestBody == null ? undefined : JSON.stringify(requestBody),
-  })
-  return result;
-};
+export const twitchFetcher: CreateRequest =
+  (pathKey, methodName) =>
+  async ({ parameters, requestBody }: any): Promise<any> => {
+    const token = await getTwitchToken();
+    const fetcher = baseFetch(token);
+    // TODO: 日本語のqueryStringがtwitcの仕様と合わないため別の方法を考える
+    const result = await fetcher(
+      `https://api.twitch.tv/helix${pathKey}?${queryString.stringify(parameters || {})}`,
+      {
+        method: methodName.toString().toUpperCase(),
+        body: requestBody == null ? undefined : JSON.stringify(requestBody),
+      },
+    );
+    return result;
+  };
 
 export const TwitchAPI = {
   channels_commercial_post: twitchFetcher("/channels/commercial", "post"),
@@ -307,9 +331,15 @@ export const TwitchAPI = {
   channel_points_custom_rewards_post: twitchFetcher("/channel_points/custom_rewards", "post"),
   channel_points_custom_rewards_delete: twitchFetcher("/channel_points/custom_rewards", "delete"),
   channel_points_custom_rewards_get: twitchFetcher("/channel_points/custom_rewards", "get"),
-  channel_points_custom_rewards_redemptions_get: twitchFetcher("/channel_points/custom_rewards/redemptions", "get"),
+  channel_points_custom_rewards_redemptions_get: twitchFetcher(
+    "/channel_points/custom_rewards/redemptions",
+    "get",
+  ),
   channel_points_custom_rewards_patch: twitchFetcher("/channel_points/custom_rewards", "patch"),
-  channel_points_custom_rewards_redemptions_patch: twitchFetcher("/channel_points/custom_rewards/redemptions", "patch"),
+  channel_points_custom_rewards_redemptions_patch: twitchFetcher(
+    "/channel_points/custom_rewards/redemptions",
+    "patch",
+  ),
   charity_campaigns_get: twitchFetcher("/charity/campaigns", "get"),
   charity_donations_get: twitchFetcher("/charity/donations", "get"),
   chat_chatters_get: twitchFetcher("/chat/chatters", "get"),
@@ -426,5 +456,5 @@ export const TwitchAPI = {
   users_extensions_put: twitchFetcher("/users/extensions", "put"),
   videos_get: twitchFetcher("/videos", "get"),
   videos_delete: twitchFetcher("/videos", "delete"),
-  whispers_post: twitchFetcher("/whispers", "post")
-}
+  whispers_post: twitchFetcher("/whispers", "post"),
+};
