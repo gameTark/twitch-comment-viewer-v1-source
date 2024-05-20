@@ -85,7 +85,7 @@ const getSpamList = async () => {
 const getStreams = async () => {
   const userData = await getUserData();
   const result = await fetchStreams({
-    user_id: userData.id,
+    user_id: [userData.id],
   });
   const data = result.data[0];
   if (data == null) {
@@ -155,7 +155,7 @@ const updateFollowers = async () => {
   const dbData = (await db.followers.toArray()).filter((val) => val.channelId === userData.id);
   const apiData = await fetchChannelFollowers({
     broadcaster_id: userData.id,
-    first: "100",
+    first: 100,
   }).then((result) =>
     result.data.map(
       (val) =>

@@ -146,7 +146,8 @@ const useApply = () => {
             broadcaster_language: template.language,
             title: template.broadcastTitle,
             tags: template.tags,
-            content_classification_labels: template.classificationLabels,
+            // TODO: classification labels の訂正
+            // content_classification_labels: template.classificationLabels,
             is_branded_content: template.isBrandedContent,
           },
         });
