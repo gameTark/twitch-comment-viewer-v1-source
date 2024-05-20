@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "next dev",
+    "generate:api": "npx openapi-typescript https://twitch-api-swagger.surge.sh/openapi.json -o interfaces/twitch-api.generated.ts",
     "fix:js": "prettier --check --write .",
     "build": "next build",
     "start": "next start",

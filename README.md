@@ -4,6 +4,10 @@
 
 - https://day.js.org/
 
+# APIから型情報を生成
+
+https://github.com/DmitryScaletta/twitch-api-swagger
+
 ## migration guid
 
 履歴等を保存するMigrationガイドを作成し、パッチノートとしてまとめたい。

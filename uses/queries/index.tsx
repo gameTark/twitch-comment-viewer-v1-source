@@ -5,13 +5,12 @@ import { useQuery } from "@tanstack/react-query";
 import { db, DbBroadcastTemplate } from "@resource/db";
 import { fetchChannelInfo, fetchChannelInfoPatch } from "@libs/twitch";
 
-export const useMeQuery = () =>
-  useQuery({
-    queryKey: ["me_query"],
-    queryFn: async () => {
-      return await db.getMe();
-    },
-  });
+export const useMeQuery = () => useQuery({
+  queryKey: ["me_query"],
+  queryFn: async () => {
+    return await db.getMe();
+  },
+});
 
 export const useBroadcastInformationQuery = () => {
   const me = useMeQuery();
@@ -25,6 +24,7 @@ export const useBroadcastInformationQuery = () => {
     enabled: me.data?.id != null,
   });
 };
+
 export const useBroadcastInformationPatch = () => {
   const me = useMeQuery();
   return useCallback(
