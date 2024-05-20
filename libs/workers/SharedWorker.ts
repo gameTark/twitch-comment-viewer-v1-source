@@ -27,7 +27,6 @@ const getUserData = async () => {
   if (dataMe == null) {
     const me = await TwitchAPI.users_get({
       parameters: {},
-      requestBody: null,
     });
     const userData = me.data[0];
     const result = {
@@ -89,7 +88,6 @@ const getStreams = async () => {
     parameters: {
       user_id: [userData.id],
     },
-    requestBody: null,
   });
   const data = result.data[0];
   if (data == null) {
@@ -124,7 +122,6 @@ const getChatters = async () => {
         broadcaster_id: userData.id,
         moderator_id: userData.id,
       },
-      requestBody: null
     }),
     db.getChatters(),
   ] as const);

@@ -252,20 +252,20 @@ type PickupParameter<Operations extends valueOf<operations>> = {
   } ? Res : null;
 };
 
-type CreateRequest = <PathKey extends keyof paths, Method extends keyof paths[PathKey], Operation extends paths[PathKey][Method]>(path: PathKey, method: Method) => (parameter: {
-  parameters: Operation extends {
-    parameters?: {
-      query?: infer Parameter;
-    }
-  } ? Parameter : null;
-  requestBody: Operation extends {
+type CreateRequest = <PathKey extends keyof paths, Method extends keyof paths[PathKey], Operation extends paths[PathKey][Method]>(path: PathKey, method: Method) => (parameter:
+  & (Operation extends {
     requestBody?: {
       content?: {
         "application/json"?: infer Body;
       }
     },
-  } ? Body : null;
-}) => Promise<Operation extends {
+  } ? { requestBody: Body } : {})
+  & (Operation extends {
+    parameters?: {
+      query?: infer Parameter;
+    }
+  } ? { parameters: Parameter } : {})
+) => Promise<Operation extends {
   responses?: {
     200?: {
       content?: {
@@ -274,11 +274,12 @@ type CreateRequest = <PathKey extends keyof paths, Method extends keyof paths[Pa
     }
   }
 } ? Res : null>;
-"hoge".replaceAll
+
+
 export const twitchFetcher: CreateRequest = (pathKey, methodName) => async ({
-  requestBody = null,
-  parameters = null,
-}): Promise<any> => {
+  parameters,
+  requestBody
+}: any): Promise<any> => {
   const token = await getTwitchToken();
   const fetcher = baseFetch(token)
   // TODO: 日本語のqueryStringがtwitcの仕様と合わないため別の方法を考える

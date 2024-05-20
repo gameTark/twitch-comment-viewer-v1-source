@@ -180,7 +180,6 @@ export const getUsers = createPatchDatabase({
       parameters: {
         id: ids.map((val) => val.toString()),
       },
-      requestBody: null,
     })
     const spam = await db.spam.bulkGet(result.data.map((val) => val.login));
     return result.data.map((val) => {
@@ -215,7 +214,6 @@ export const getGames = createPatchDatabase({
       parameters: {
         id: ids.map((id) => id.toString())
       },
-      requestBody: null,
     });
     const dbData = res.data.map((game): DBGame => {
       return {

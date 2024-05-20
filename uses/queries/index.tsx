@@ -22,7 +22,6 @@ export const useBroadcastInformationQuery = () => {
 
       const data = await TwitchAPI.channels_get({
         parameters: { broadcaster_id: [me.data.id] },
-        requestBody: null,
       });
       return DBBroadcastParseByAPI(...data.data)[0];
     },

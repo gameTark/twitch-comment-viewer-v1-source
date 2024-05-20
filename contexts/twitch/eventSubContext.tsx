@@ -26,7 +26,6 @@ export const TwitchRouter = (props: EventSubContextProps) => {
     }
     const me = await TwitchAPI.users_get({
       parameters: {},
-      requestBody: null,
     })
     if (me == null) {
       loginPage();
