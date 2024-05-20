@@ -24,7 +24,7 @@ export const DBBroadcastSchema = z
 
 export type DBBroadcast = z.infer<typeof DBBroadcastSchema>;
 
-export const DBBroadcastParseByAPI = (...parameters: FetchChannelInfoResult['data']) => {
+export const DBBroadcastParseByAPI = (...parameters: FetchChannelInfoResult["data"]) => {
   return parameters.map((val): DBBroadcast => {
     return DBBroadcastSchema.parse({
       channelId: val.broadcaster_id,

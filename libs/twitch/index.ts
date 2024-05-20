@@ -2,33 +2,38 @@
 
 import { TWITCH_CONSTANTS } from "@constants/twitch";
 import Fuse from "fuse.js";
+import { operations, paths } from "interfaces/twitch-api.generated";
 import queryString from "query-string";
 
 import { isServer } from "@resource/constants";
 import { db } from "@resource/db";
-import { operations, paths } from "interfaces/twitch-api.generated";
 import { valueOf } from "@libs/types";
 
 const { API_LIST, API_KEY } = TWITCH_CONSTANTS;
 /**
  * classification labels
  */
-type FetchContentClassificationLabels = PickupParameter<paths['/content_classification_labels']['get']>
+type FetchContentClassificationLabels = PickupParameter<
+  paths["/content_classification_labels"]["get"]
+>;
 export const fetchContentClassificationLabels = async (
-  params: FetchContentClassificationLabels['parameters'],
+  params: FetchContentClassificationLabels["parameters"],
 ) => {
-  return await twitchFetch<FetchContentClassificationLabels['parameters'], FetchContentClassificationLabels['responses']>(API_LIST.CONTENT_CLASSIFICATION_LABELS, params);
+  return await twitchFetch<
+    FetchContentClassificationLabels["parameters"],
+    FetchContentClassificationLabels["responses"]
+  >(API_LIST.CONTENT_CLASSIFICATION_LABELS, params);
 };
 
 /**
  * search categories
  */
-type FetchSearchCategories = PickupParameter<paths['/search/categories']['get']>
-export const fetchSearchCategories = async (params: FetchSearchCategories['parameters']) => {
+type FetchSearchCategories = PickupParameter<paths["/search/categories"]["get"]>;
+export const fetchSearchCategories = async (params: FetchSearchCategories["parameters"]) => {
   const token = await getTwitchToken();
   const fetcher = baseFetch(token);
   const data = await fetcher(`${API_LIST.SEARCH.CATEGORIES.ENDPOINT}?query=${params.query}`);
-  const req = (await data.json()) as FetchSearchCategories['responses'];
+  const req = (await data.json()) as FetchSearchCategories["responses"];
   // TODO: 検索精度が良くないが、煩雑になりそうなため一旦保留
   const result = new Fuse(req.data, { keys: ["name"] })
     .search(params.query)
@@ -39,23 +44,26 @@ export const fetchSearchCategories = async (params: FetchSearchCategories['param
 /**
  * channel info
  */
-type FetchChannelInfo = PickupParameter<paths['/channels']['get']>
-export type FetchChannelInfoResult = FetchChannelInfo['responses'];
-export const fetchChannelInfo = async (params: FetchChannelInfo['parameters']) => {
-  return await twitchFetch<FetchChannelInfo['parameters'], FetchChannelInfo['responses']>(
+type FetchChannelInfo = PickupParameter<paths["/channels"]["get"]>;
+export type FetchChannelInfoResult = FetchChannelInfo["responses"];
+export const fetchChannelInfo = async (params: FetchChannelInfo["parameters"]) => {
+  return await twitchFetch<FetchChannelInfo["parameters"], FetchChannelInfo["responses"]>(
     API_LIST.CHANNELS,
     params,
   );
 };
 
 // https://dev.twitch.tv/docs/api/reference/#modify-channel-information
-type FetchChannelInfoPatch = PickupParameter<paths['/channels']['patch']>
+type FetchChannelInfoPatch = PickupParameter<paths["/channels"]["patch"]>;
 export const fetchChannelInfoPatch = async (params: {
-  id: FetchChannelInfoPatch['parameters'];
-  patch: FetchChannelInfoPatch['requestBody'];
+  id: FetchChannelInfoPatch["parameters"];
+  patch: FetchChannelInfoPatch["requestBody"];
 }) => {
   const { id, patch } = params;
-  return await twitchFetch<FetchChannelInfoPatch['requestBody'], FetchChannelInfoPatch['responses']>(
+  return await twitchFetch<
+    FetchChannelInfoPatch["requestBody"],
+    FetchChannelInfoPatch["responses"]
+  >(
     {
       ENDPOINT: `${API_LIST.CHANNELS.PATCH.ENDPOINT}?broadcaster_id=${id.broadcaster_id}`,
       METHOD: API_LIST.CHANNELS.PATCH.METHOD,
@@ -67,42 +75,44 @@ export const fetchChannelInfoPatch = async (params: {
 /**
  * streams
  */
-type FetchStream = PickupParameter<paths['/streams']['get']>
-export const fetchStreams = async (params: FetchStream['parameters']) => {
-  return await twitchFetch<FetchStream['parameters'], FetchStream['responses']>(API_LIST.STREAMS, params);
+type FetchStream = PickupParameter<paths["/streams"]["get"]>;
+export const fetchStreams = async (params: FetchStream["parameters"]) => {
+  return await twitchFetch<FetchStream["parameters"], FetchStream["responses"]>(
+    API_LIST.STREAMS,
+    params,
+  );
 };
 
 /**
  * games
  */
-type FetchGame = PickupParameter<paths['/games']['get']>
-export const fetchGame = async (params: FetchGame['parameters']) => {
-  return await twitchFetch<
-    FetchGame['parameters'],
-    FetchGame['responses']
-  >(API_LIST.GAMES, params);
+type FetchGame = PickupParameter<paths["/games"]["get"]>;
+export const fetchGame = async (params: FetchGame["parameters"]) => {
+  return await twitchFetch<FetchGame["parameters"], FetchGame["responses"]>(API_LIST.GAMES, params);
 };
 
 /**
  * game analiytics
  */
-type FetchGameAnalytics = PickupParameter<paths['/analytics/games']['get']>
-export const fetchGameAnalytics = async (params: FetchGameAnalytics['parameters']) => {
-  return await twitchFetch<
-    FetchGameAnalytics['parameters'],
-    FetchGameAnalytics['responses']
-  >(API_LIST.ANALYTICS.GAME, params);
+type FetchGameAnalytics = PickupParameter<paths["/analytics/games"]["get"]>;
+export const fetchGameAnalytics = async (params: FetchGameAnalytics["parameters"]) => {
+  return await twitchFetch<FetchGameAnalytics["parameters"], FetchGameAnalytics["responses"]>(
+    API_LIST.ANALYTICS.GAME,
+    params,
+  );
 };
 
 /**
  * followers
  */
-type FetchChannelFollowers = PickupParameter<paths['/channels/followers']['get']>
-export const fetchChannelFollowers = async (params: FetchChannelFollowers['parameters']): Promise<FetchChannelFollowers['responses']> => {
-  const result = await twitchFetch<FetchChannelFollowers['parameters'], FetchChannelFollowers['responses']>(
-    API_LIST.CHANNELS.FOLLOWERS,
-    params,
-  );
+type FetchChannelFollowers = PickupParameter<paths["/channels/followers"]["get"]>;
+export const fetchChannelFollowers = async (
+  params: FetchChannelFollowers["parameters"],
+): Promise<FetchChannelFollowers["responses"]> => {
+  const result = await twitchFetch<
+    FetchChannelFollowers["parameters"],
+    FetchChannelFollowers["responses"]
+  >(API_LIST.CHANNELS.FOLLOWERS, params);
   if (result.pagination?.cursor != null) {
     const result2 = await fetchChannelFollowers({
       ...params,
@@ -119,9 +129,14 @@ export const fetchChannelFollowers = async (params: FetchChannelFollowers['param
 /**
  * chatters
  */
-export const getChatUsers = async (params: Required<paths['/chat/chatters']['get']['parameters']>['query']) => {
+export const getChatUsers = async (
+  params: Required<paths["/chat/chatters"]["get"]["parameters"]>["query"],
+) => {
   // カウントしない人をはじきたい気持ちもある。
-  return await twitchFetch<Required<paths['/chat/chatters']['get']['parameters']>['query'], Required<paths['/chat/chatters']['get']>['responses']['200']['content']['application/json']>(API_LIST.CHAT.CHATTERS, params);
+  return await twitchFetch<
+    Required<paths["/chat/chatters"]["get"]["parameters"]>["query"],
+    Required<paths["/chat/chatters"]["get"]>["responses"]["200"]["content"]["application/json"]
+  >(API_LIST.CHAT.CHATTERS, params);
 };
 
 interface GetUserDataParamsById {
@@ -129,114 +144,133 @@ interface GetUserDataParamsById {
   id?: string | string[]; // データから取得できるID
 }
 // Required<paths['/polls']['post']>
-export type GetUserResult = Required<paths['/users']['get']>['responses']['200']['content']['application/json']
+export type GetUserResult = Required<
+  paths["/users"]["get"]
+>["responses"]["200"]["content"]["application/json"];
 export const fetchUsers = async (props: GetUserDataParamsById) => {
   const res = await twitchFetch<GetUserDataParamsById, GetUserResult>(API_LIST.USER, props);
   return res;
-}
+};
 
 export const fetchByMe = async () => {
   const res = await fetchUsers({});
   return res;
-}
-
+};
 
 export interface FetchScheduleByBloadcasterIdProps {
   broadcaster_id: string;
   id?: string; // The ID of the scheduled segment to return. To specify more than one segment, include the ID of each segment you want to get. For example, id=1234&id=5678. You may specify a maximum of 100 IDs.
   start_time?: string; // The UTC date and time that identifies when in the broadcaster’s schedule to start returning segments. If not specified, the request returns segments starting after the current UTC date and time. Specify the date and time in RFC3339 format (for example, 2022-09-01T00:00:00Z).
   first?: number; // The maximum number of items to return per page in the response. The minimum page size is 1 item per page and the maximum is 25 items per page. The default is 20.
-  after?: string; // The cursor used to get the next page of results. The Pagination object in the response contains the cursor’s value. 
+  after?: string; // The cursor used to get the next page of results. The Pagination object in the response contains the cursor’s value.
 }
 export const fetchScheduleByBloadcasterId = async (props: FetchScheduleByBloadcasterIdProps) => {
-  await twitchFetch(API_LIST.SCHEDULE, props)
-}
+  await twitchFetch(API_LIST.SCHEDULE, props);
+};
 
 /**
  * Pools
  * https://dev.twitch.tv/docs/api/reference/#get-polls
  */
-type GET_POOL = PickupParameter<paths['/polls']['get']>;
-type PATCH_POOL = PickupParameter<paths['/polls']['patch']>;
-type POST_POOL = PickupParameter<paths['/polls']['post']>;
+type GET_POOL = PickupParameter<paths["/polls"]["get"]>;
+type PATCH_POOL = PickupParameter<paths["/polls"]["patch"]>;
+type POST_POOL = PickupParameter<paths["/polls"]["post"]>;
 export const fetchPools = {
-  get: async (params: GET_POOL['parameters']) => {
-    return await twitchFetch<GET_POOL['parameters'], GET_POOL['responses']>({
-      METHOD: 'GET',
-      ENDPOINT: 'https://api.twitch.tv/helix/polls',
-    }, params);
+  get: async (params: GET_POOL["parameters"]) => {
+    return await twitchFetch<GET_POOL["parameters"], GET_POOL["responses"]>(
+      {
+        METHOD: "GET",
+        ENDPOINT: "https://api.twitch.tv/helix/polls",
+      },
+      params,
+    );
   },
-  patch: async (params: PATCH_POOL['requestBody']) => {
-    return await twitchFetch<PATCH_POOL['requestBody'], PATCH_POOL['responses']>({
-      METHOD: 'PATCH',
-      ENDPOINT: 'https://api.twitch.tv/helix/polls',
-    }, params);
+  patch: async (params: PATCH_POOL["requestBody"]) => {
+    return await twitchFetch<PATCH_POOL["requestBody"], PATCH_POOL["responses"]>(
+      {
+        METHOD: "PATCH",
+        ENDPOINT: "https://api.twitch.tv/helix/polls",
+      },
+      params,
+    );
   },
-  post: async (params: POST_POOL['requestBody']) => {
-    return await twitchFetch<POST_POOL['requestBody'], POST_POOL['responses']>({
-      METHOD: 'POST',
-      ENDPOINT: 'https://api.twitch.tv/helix/polls',
-    }, params);
+  post: async (params: POST_POOL["requestBody"]) => {
+    return await twitchFetch<POST_POOL["requestBody"], POST_POOL["responses"]>(
+      {
+        METHOD: "POST",
+        ENDPOINT: "https://api.twitch.tv/helix/polls",
+      },
+      params,
+    );
   },
-}
+};
 
 /**
  * Predictions
  * https://dev.twitch.tv/docs/api/reference/#get-predictions
  */
-type GET_PREDICTIONS = PickupParameter<paths['/polls']['get']>;
-type PATCH_PREDICTIONS = PickupParameter<paths['/polls']['patch']>;
-type POST_PREDICTIONS = PickupParameter<paths['/polls']['post']>;
+type GET_PREDICTIONS = PickupParameter<paths["/polls"]["get"]>;
+type PATCH_PREDICTIONS = PickupParameter<paths["/polls"]["patch"]>;
+type POST_PREDICTIONS = PickupParameter<paths["/polls"]["post"]>;
 export const fetchPredictions = {
-  get: async (params: GET_PREDICTIONS['parameters']) => {
-    return await twitchFetch<GET_PREDICTIONS['parameters'], GET_PREDICTIONS['responses']>({
-      METHOD: 'GET',
-      ENDPOINT: 'https://api.twitch.tv/helix/polls',
-    }, params);
+  get: async (params: GET_PREDICTIONS["parameters"]) => {
+    return await twitchFetch<GET_PREDICTIONS["parameters"], GET_PREDICTIONS["responses"]>(
+      {
+        METHOD: "GET",
+        ENDPOINT: "https://api.twitch.tv/helix/polls",
+      },
+      params,
+    );
   },
-  patch: async (params: PATCH_PREDICTIONS['requestBody']) => {
-    return await twitchFetch<PATCH_PREDICTIONS['requestBody'], PATCH_PREDICTIONS['responses']>({
-      METHOD: 'PATCH',
-      ENDPOINT: 'https://api.twitch.tv/helix/polls',
-    }, params);
+  patch: async (params: PATCH_PREDICTIONS["requestBody"]) => {
+    return await twitchFetch<PATCH_PREDICTIONS["requestBody"], PATCH_PREDICTIONS["responses"]>(
+      {
+        METHOD: "PATCH",
+        ENDPOINT: "https://api.twitch.tv/helix/polls",
+      },
+      params,
+    );
   },
-  post: async (params: POST_PREDICTIONS['requestBody']) => {
-    return await twitchFetch<POST_PREDICTIONS['requestBody'], POST_PREDICTIONS['responses']>({
-      METHOD: 'POST',
-      ENDPOINT: 'https://api.twitch.tv/helix/polls',
-    }, params);
+  post: async (params: POST_PREDICTIONS["requestBody"]) => {
+    return await twitchFetch<POST_PREDICTIONS["requestBody"], POST_PREDICTIONS["responses"]>(
+      {
+        METHOD: "POST",
+        ENDPOINT: "https://api.twitch.tv/helix/polls",
+      },
+      params,
+    );
   },
-}
+};
 
 /**
  * socket
  */
 // https://dev.twitch.tv/docs/api/reference/#get-eventsub-subscriptions
 export interface CreateEventsubResult {
-  data: SocketData[]
-  total: number
-  total_cost: number
-  max_total_cost: number
+  data: SocketData[];
+  total: number;
+  total_cost: number;
+  max_total_cost: number;
 }
 export interface SocketData {
-  id: string
-  status: string
-  type: string
-  version: string
+  id: string;
+  status: string;
+  type: string;
+  version: string;
   condition: {
-    user_id: string
-  }
-  created_at: string
+    user_id: string;
+  };
+  created_at: string;
   transport: {
-    method: string
-    callback: string
-  }
-  cost: number
+    method: string;
+    callback: string;
+  };
+  cost: number;
 }
 export const createEventsub = async (params: any) => {
   const res = await twitchFetch<any, CreateEventsubResult>(API_LIST.EVENTSUB.SUBSCRIPTIONS, params);
   return res;
-}
+};
 
 /**
  * other
@@ -420,78 +454,153 @@ type CreateRequest = <PathKey extends keyof paths, Method extends keyof paths[Pa
     }
   }
 } ? Res : null>;
-
+"hoge".replaceAll
 export const twitchFetcher: CreateRequest = (pathKey, methodName) => async (parameters): Promise<any> => {
   const token = await getTwitchToken();
   const fetcher = baseFetch(token)
+  // TODO: 日本語のqueryStringがtwitcの仕様と合わないため別の方法を考える
   const result = await fetcher(`https://api.twitch.tv/helix${pathKey}?${queryString.stringify(parameters.parameters || {})}`, {
     method: methodName.toString().toUpperCase(),
     body: parameters.requestBody == null ? undefined : JSON.stringify(parameters.requestBody),
   })
   return result;
 };
+
 export const TwitchAPI = {
-  analytics: {
-    extensions: {
-      get: twitchFetcher('/analytics/extensions', 'get'),
-    },
-    games: {
-      get: twitchFetcher('/analytics/games', 'get'),
-    },
-  },
-  bits: {
-    cheermotes: {
-      get: twitchFetcher('/bits/cheermotes', 'get'),
-    },
-    extensions: {
-      get: twitchFetcher('/bits/extensions', 'get'),
-      put: twitchFetcher('/bits/extensions', 'put'),
-    },
-    leaderboard: {
-      get: twitchFetcher('/bits/leaderboard', 'get')
-    }
-  },
-  channel_points: {
-    custom_rewards: {
-      get: twitchFetcher('/channel_points/custom_rewards', 'get'),
-      patch: twitchFetcher('/channel_points/custom_rewards', 'patch'),
-      post: twitchFetcher('/channel_points/custom_rewards', 'post'),
-      delete: twitchFetcher('/channel_points/custom_rewards', 'delete'),
-      redemptions: {
-        get: twitchFetcher('/channel_points/custom_rewards/redemptions', 'get'),
-        patch: twitchFetcher('/channel_points/custom_rewards/redemptions', 'patch'),
-      },
-    }
-  },
-  channels: {
-    get: twitchFetcher('/channels', 'get'),
-    patch: twitchFetcher('/channels', 'patch'),
-    abs: {
-      get: twitchFetcher('/channels/ads', 'get'),
-      schedule: {
-        snooze: {
-          post: twitchFetcher('/channels/ads/schedule/snooze', 'post'),
-        },
-      },
-    },
-    commercial: {
-      post: twitchFetcher('/channels/commercial', 'post'),
-    },
-    editors: {
-      get: twitchFetcher('/channels/editors', 'get'),
-    },
-    followed: {
-      get: twitchFetcher('/channels/followed', 'get'),
-    },
-    followers: {
-      get: twitchFetcher('/channels/followers', 'get')
-    },
-    vips: {
-      delete: twitchFetcher('/channels/vips', 'delete'),
-      get: twitchFetcher('/channels/vips', 'get'),
-      post: twitchFetcher('/channels/vips', 'post'),
-    }
-  },
-};
-// TODO: 明日完成させる
-// twitchFetcher('/charity/campaigns'
+  channels_commercial_post: twitchFetcher("/channels/commercial", "post"),
+  channels_ads_get: twitchFetcher("/channels/ads", "get"),
+  channels_ads_schedule_snooze_post: twitchFetcher("/channels/ads/schedule/snooze", "post"),
+  analytics_extensions_get: twitchFetcher("/analytics/extensions", "get"),
+  analytics_games_get: twitchFetcher("/analytics/games", "get"),
+  bits_leaderboard_get: twitchFetcher("/bits/leaderboard", "get"),
+  bits_cheermotes_get: twitchFetcher("/bits/cheermotes", "get"),
+  extensions_transactions_get: twitchFetcher("/extensions/transactions", "get"),
+  channels_get: twitchFetcher("/channels", "get"),
+  channels_patch: twitchFetcher("/channels", "patch"),
+  channels_editors_get: twitchFetcher("/channels/editors", "get"),
+  channels_followed_get: twitchFetcher("/channels/followed", "get"),
+  channels_followers_get: twitchFetcher("/channels/followers", "get"),
+  channel_points_custom_rewards_post: twitchFetcher("/channel_points/custom_rewards", "post"),
+  channel_points_custom_rewards_delete: twitchFetcher("/channel_points/custom_rewards", "delete"),
+  channel_points_custom_rewards_get: twitchFetcher("/channel_points/custom_rewards", "get"),
+  channel_points_custom_rewards_redemptions_get: twitchFetcher("/channel_points/custom_rewards/redemptions", "get"),
+  channel_points_custom_rewards_patch: twitchFetcher("/channel_points/custom_rewards", "patch"),
+  channel_points_custom_rewards_redemptions_patch: twitchFetcher("/channel_points/custom_rewards/redemptions", "patch"),
+  charity_campaigns_get: twitchFetcher("/charity/campaigns", "get"),
+  charity_donations_get: twitchFetcher("/charity/donations", "get"),
+  chat_chatters_get: twitchFetcher("/chat/chatters", "get"),
+  chat_emotes_get: twitchFetcher("/chat/emotes", "get"),
+  chat_emotes_global_get: twitchFetcher("/chat/emotes/global", "get"),
+  chat_emotes_set_get: twitchFetcher("/chat/emotes/set", "get"),
+  chat_badges_get: twitchFetcher("/chat/badges", "get"),
+  chat_badges_global_get: twitchFetcher("/chat/badges/global", "get"),
+  chat_settings_get: twitchFetcher("/chat/settings", "get"),
+  chat_emotes_user_get: twitchFetcher("/chat/emotes/user", "get"),
+  chat_settings_patch: twitchFetcher("/chat/settings", "patch"),
+  chat_announcements_post: twitchFetcher("/chat/announcements", "post"),
+  chat_shoutouts_post: twitchFetcher("/chat/shoutouts", "post"),
+  chat_messages_post: twitchFetcher("/chat/messages", "post"),
+  chat_color_get: twitchFetcher("/chat/color", "get"),
+  chat_color_put: twitchFetcher("/chat/color", "put"),
+  clips_post: twitchFetcher("/clips", "post"),
+  clips_get: twitchFetcher("/clips", "get"),
+  eventsub_conduits_get: twitchFetcher("/eventsub/conduits", "get"),
+  eventsub_conduits_post: twitchFetcher("/eventsub/conduits", "post"),
+  eventsub_conduits_patch: twitchFetcher("/eventsub/conduits", "patch"),
+  eventsub_conduits_delete: twitchFetcher("/eventsub/conduits", "delete"),
+  eventsub_conduits_shards_get: twitchFetcher("/eventsub/conduits/shards", "get"),
+  eventsub_conduits_shards_patch: twitchFetcher("/eventsub/conduits/shards", "patch"),
+  content_classification_labels_get: twitchFetcher("/content_classification_labels", "get"),
+  entitlements_drops_get: twitchFetcher("/entitlements/drops", "get"),
+  entitlements_drops_patch: twitchFetcher("/entitlements/drops", "patch"),
+  extensions_configurations_get: twitchFetcher("/extensions/configurations", "get"),
+  extensions_configurations_put: twitchFetcher("/extensions/configurations", "put"),
+  extensions_required_configuration_put: twitchFetcher("/extensions/required_configuration", "put"),
+  extensions_pubsub_post: twitchFetcher("/extensions/pubsub", "post"),
+  extensions_live_get: twitchFetcher("/extensions/live", "get"),
+  extensions_jwt_secrets_get: twitchFetcher("/extensions/jwt/secrets", "get"),
+  extensions_jwt_secrets_post: twitchFetcher("/extensions/jwt/secrets", "post"),
+  extensions_chat_post: twitchFetcher("/extensions/chat", "post"),
+  extensions_get: twitchFetcher("/extensions", "get"),
+  extensions_released_get: twitchFetcher("/extensions/released", "get"),
+  bits_extensions_get: twitchFetcher("/bits/extensions", "get"),
+  bits_extensions_put: twitchFetcher("/bits/extensions", "put"),
+  eventsub_subscriptions_post: twitchFetcher("/eventsub/subscriptions", "post"),
+  eventsub_subscriptions_delete: twitchFetcher("/eventsub/subscriptions", "delete"),
+  eventsub_subscriptions_get: twitchFetcher("/eventsub/subscriptions", "get"),
+  games_top_get: twitchFetcher("/games/top", "get"),
+  games_get: twitchFetcher("/games", "get"),
+  goals_get: twitchFetcher("/goals", "get"),
+  guest_star_channel_settings_get: twitchFetcher("/guest_star/channel_settings", "get"),
+  guest_star_channel_settings_put: twitchFetcher("/guest_star/channel_settings", "put"),
+  guest_star_session_get: twitchFetcher("/guest_star/session", "get"),
+  guest_star_session_post: twitchFetcher("/guest_star/session", "post"),
+  guest_star_session_delete: twitchFetcher("/guest_star/session", "delete"),
+  guest_star_invites_get: twitchFetcher("/guest_star/invites", "get"),
+  guest_star_invites_post: twitchFetcher("/guest_star/invites", "post"),
+  guest_star_invites_delete: twitchFetcher("/guest_star/invites", "delete"),
+  guest_star_slot_post: twitchFetcher("/guest_star/slot", "post"),
+  guest_star_slot_patch: twitchFetcher("/guest_star/slot", "patch"),
+  guest_star_slot_delete: twitchFetcher("/guest_star/slot", "delete"),
+  guest_star_slot_settings_patch: twitchFetcher("/guest_star/slot_settings", "patch"),
+  hypetrain_events_get: twitchFetcher("/hypetrain/events", "get"),
+  moderation_enforcements_status_post: twitchFetcher("/moderation/enforcements/status", "post"),
+  moderation_automod_message_post: twitchFetcher("/moderation/automod/message", "post"),
+  moderation_automod_settings_get: twitchFetcher("/moderation/automod/settings", "get"),
+  moderation_automod_settings_put: twitchFetcher("/moderation/automod/settings", "put"),
+  moderation_banned_get: twitchFetcher("/moderation/banned", "get"),
+  moderation_bans_post: twitchFetcher("/moderation/bans", "post"),
+  moderation_bans_delete: twitchFetcher("/moderation/bans", "delete"),
+  moderation_unban_requests_get: twitchFetcher("/moderation/unban_requests", "get"),
+  moderation_unban_requests_patch: twitchFetcher("/moderation/unban_requests", "patch"),
+  moderation_blocked_terms_get: twitchFetcher("/moderation/blocked_terms", "get"),
+  moderation_blocked_terms_post: twitchFetcher("/moderation/blocked_terms", "post"),
+  moderation_blocked_terms_delete: twitchFetcher("/moderation/blocked_terms", "delete"),
+  moderation_chat_delete: twitchFetcher("/moderation/chat", "delete"),
+  moderation_channels_get: twitchFetcher("/moderation/channels", "get"),
+  moderation_moderators_get: twitchFetcher("/moderation/moderators", "get"),
+  moderation_moderators_post: twitchFetcher("/moderation/moderators", "post"),
+  moderation_moderators_delete: twitchFetcher("/moderation/moderators", "delete"),
+  channels_vips_get: twitchFetcher("/channels/vips", "get"),
+  channels_vips_post: twitchFetcher("/channels/vips", "post"),
+  channels_vips_delete: twitchFetcher("/channels/vips", "delete"),
+  moderation_shield_mode_put: twitchFetcher("/moderation/shield_mode", "put"),
+  moderation_shield_mode_get: twitchFetcher("/moderation/shield_mode", "get"),
+  polls_get: twitchFetcher("/polls", "get"),
+  polls_post: twitchFetcher("/polls", "post"),
+  polls_patch: twitchFetcher("/polls", "patch"),
+  predictions_get: twitchFetcher("/predictions", "get"),
+  predictions_post: twitchFetcher("/predictions", "post"),
+  predictions_patch: twitchFetcher("/predictions", "patch"),
+  raids_post: twitchFetcher("/raids", "post"),
+  raids_delete: twitchFetcher("/raids", "delete"),
+  schedule_get: twitchFetcher("/schedule", "get"),
+  schedule_icalendar_get: twitchFetcher("/schedule/icalendar", "get"),
+  schedule_settings_patch: twitchFetcher("/schedule/settings", "patch"),
+  schedule_segment_post: twitchFetcher("/schedule/segment", "post"),
+  schedule_segment_patch: twitchFetcher("/schedule/segment", "patch"),
+  schedule_segment_delete: twitchFetcher("/schedule/segment", "delete"),
+  search_categories_get: twitchFetcher("/search/categories", "get"),
+  search_channels_get: twitchFetcher("/search/channels", "get"),
+  streams_get: twitchFetcher("/streams", "get"),
+  streams_followed_get: twitchFetcher("/streams/followed", "get"),
+  streams_markers_post: twitchFetcher("/streams/markers", "post"),
+  streams_markers_get: twitchFetcher("/streams/markers", "get"),
+  subscriptions_get: twitchFetcher("/subscriptions", "get"),
+  subscriptions_user_get: twitchFetcher("/subscriptions/user", "get"),
+  tags_streams_get: twitchFetcher("/tags/streams", "get"),
+  streams_tags_get: twitchFetcher("/streams/tags", "get"),
+  teams_channel_get: twitchFetcher("/teams/channel", "get"),
+  teams_get: twitchFetcher("/teams", "get"),
+  users_get: twitchFetcher("/users", "get"),
+  users_put: twitchFetcher("/users", "put"),
+  users_blocks_get: twitchFetcher("/users/blocks", "get"),
+  users_blocks_put: twitchFetcher("/users/blocks", "put"),
+  users_blocks_delete: twitchFetcher("/users/blocks", "delete"),
+  users_extensions_list_get: twitchFetcher("/users/extensions/list", "get"),
+  users_extensions_get: twitchFetcher("/users/extensions", "get"),
+  users_extensions_put: twitchFetcher("/users/extensions", "put"),
+  videos_get: twitchFetcher("/videos", "get"),
+  videos_delete: twitchFetcher("/videos", "delete"),
+  whispers_post: twitchFetcher("/whispers", "post")
+}

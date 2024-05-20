@@ -33,7 +33,7 @@ export const useBroadcastInformationPatch = () => {
       if (me.data?.id == null) return;
       return await fetchChannelInfoPatch({
         id: {
-          broadcaster_id:   me.data.id,
+          broadcaster_id: me.data.id,
         },
         patch: {
           broadcaster_language: params.language,
