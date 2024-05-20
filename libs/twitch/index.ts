@@ -397,3 +397,101 @@ type PickupParameter<Operations extends valueOf<operations>> = {
     }
   } ? Res : null;
 };
+
+type CreateRequest = <PathKey extends keyof paths, Method extends keyof paths[PathKey], Operation extends paths[PathKey][Method]>(path: PathKey, method: Method) => (parameter: {
+  parameters: Operation extends {
+    parameters?: {
+      query?: infer Parameter;
+    }
+  } ? Parameter : undefined;
+  requestBody: Operation extends {
+    requestBody?: {
+      content?: {
+        "application/json"?: infer Body;
+      }
+    },
+  } ? Body : undefined;
+}) => Promise<Operation extends {
+  responses?: {
+    200?: {
+      content?: {
+        "application/json"?: infer Res;
+      };
+    }
+  }
+} ? Res : null>;
+
+export const twitchFetcher: CreateRequest = (pathKey, methodName) => async (parameters): Promise<any> => {
+  const token = await getTwitchToken();
+  const fetcher = baseFetch(token)
+  const result = await fetcher(`https://api.twitch.tv/helix${pathKey}?${queryString.stringify(parameters.parameters || {})}`, {
+    method: methodName.toString().toUpperCase(),
+    body: parameters.requestBody == null ? undefined : JSON.stringify(parameters.requestBody),
+  })
+  return result;
+};
+export const TwitchAPI = {
+  analytics: {
+    extensions: {
+      get: twitchFetcher('/analytics/extensions', 'get'),
+    },
+    games: {
+      get: twitchFetcher('/analytics/games', 'get'),
+    },
+  },
+  bits: {
+    cheermotes: {
+      get: twitchFetcher('/bits/cheermotes', 'get'),
+    },
+    extensions: {
+      get: twitchFetcher('/bits/extensions', 'get'),
+      put: twitchFetcher('/bits/extensions', 'put'),
+    },
+    leaderboard: {
+      get: twitchFetcher('/bits/leaderboard', 'get')
+    }
+  },
+  channel_points: {
+    custom_rewards: {
+      get: twitchFetcher('/channel_points/custom_rewards', 'get'),
+      patch: twitchFetcher('/channel_points/custom_rewards', 'patch'),
+      post: twitchFetcher('/channel_points/custom_rewards', 'post'),
+      delete: twitchFetcher('/channel_points/custom_rewards', 'delete'),
+      redemptions: {
+        get: twitchFetcher('/channel_points/custom_rewards/redemptions', 'get'),
+        patch: twitchFetcher('/channel_points/custom_rewards/redemptions', 'patch'),
+      },
+    }
+  },
+  channels: {
+    get: twitchFetcher('/channels', 'get'),
+    patch: twitchFetcher('/channels', 'patch'),
+    abs: {
+      get: twitchFetcher('/channels/ads', 'get'),
+      schedule: {
+        snooze: {
+          post: twitchFetcher('/channels/ads/schedule/snooze', 'post'),
+        },
+      },
+    },
+    commercial: {
+      post: twitchFetcher('/channels/commercial', 'post'),
+    },
+    editors: {
+      get: twitchFetcher('/channels/editors', 'get'),
+    },
+    followed: {
+      get: twitchFetcher('/channels/followed', 'get'),
+    },
+    followers: {
+      get: twitchFetcher('/channels/followers', 'get')
+    },
+    vips: {
+      delete: twitchFetcher('/channels/vips', 'delete'),
+      get: twitchFetcher('/channels/vips', 'get'),
+      post: twitchFetcher('/channels/vips', 'post'),
+    }
+  },
+};
+// TODO: 明日完成させる
+// twitchFetcher('/charity/campaigns'

@@ -1,5 +1,8 @@
 const API_KEY = "of40zatnkd1ftcaqnf92ahqznkg1vn";
 
+/**
+ * @deprecated APIから取得可能
+ */
 const CLASSIFICATION_LABELS = [
   {
     name: "薬物・酩酊・過度の喫煙",
@@ -64,6 +67,10 @@ const BROADCAST_LANGUAGE = [
   { id: "asl", name: "American Sign Language" },
   { id: "other", name: "その他" },
 ] as const;
+
+/**
+ * @deprecated swaggerの自動生成に移行
+ */
 const API_LIST = {
   CONTENT_CLASSIFICATION_LABELS: {
     METHOD: "GET",
