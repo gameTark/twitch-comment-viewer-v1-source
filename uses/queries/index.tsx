@@ -3,7 +3,7 @@ import { DBBroadcastParseByAPI } from "@schemas/twitch/Broadcast";
 import { useQuery } from "@tanstack/react-query";
 
 import { db, DbBroadcastTemplate } from "@resource/db";
-import { fetchChannelInfo, fetchChannelInfoPatch } from "@libs/twitch";
+import { TwitchAPI } from "@libs/twitch";
 
 export const useMeQuery = () =>
   useQuery({
@@ -19,7 +19,11 @@ export const useBroadcastInformationQuery = () => {
     queryKey: ["information", me.data?.id],
     queryFn: async () => {
       if (me.data?.id == null) return;
-      const data = await fetchChannelInfo({ broadcaster_id: [me.data.id] });
+
+      const data = await TwitchAPI.channels_get({
+        parameters: { broadcaster_id: [me.data.id] },
+        requestBody: null,
+      });
       return DBBroadcastParseByAPI(...data.data)[0];
     },
     enabled: me.data?.id != null,
@@ -31,11 +35,11 @@ export const useBroadcastInformationPatch = () => {
   return useCallback(
     async (params: DbBroadcastTemplate) => {
       if (me.data?.id == null) return;
-      return await fetchChannelInfoPatch({
-        id: {
+      return await TwitchAPI.channels_patch({
+        parameters: {
           broadcaster_id: me.data.id,
         },
-        patch: {
+        requestBody: {
           broadcaster_language: params.language,
           // TODO: content_classification labelsの調整
           // content_classification_labels: params.classificationLabels,

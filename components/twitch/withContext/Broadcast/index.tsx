@@ -11,12 +11,11 @@ import { TWITCH_CONSTANTS } from "@constants/twitch";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DBBroadcast, DBBroadcastSchema } from "@schemas/twitch/Broadcast";
 import { DBGame } from "@schemas/twitch/Game";
-import { useQuery } from "@tanstack/react-query";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 
 import { db, DbBroadcastTemplate } from "@resource/db";
 import { deleteBroadcastTemplate, updateBroadcastTemplate } from "@resource/twitchWithDb";
-import { fetchChannelInfo, fetchChannelInfoPatch } from "@libs/twitch";
+import { TwitchAPI } from "@libs/twitch";
 
 import { useDialog } from "@components/commons/Dialog";
 import { DasyBadge } from "@components/dasyui/Badge";
@@ -137,11 +136,11 @@ const useApply = () => {
       onSuccess: async () => {
         const me = await db.getMe();
         if (template == null || me?.id == null) return;
-        await fetchChannelInfoPatch({
-          id: {
+        await TwitchAPI.channels_patch({
+          parameters: {
             broadcaster_id: me.id,
           },
-          patch: {
+          requestBody: {
             game_id: template.gameId,
             broadcaster_language: template.language,
             title: template.broadcastTitle,
