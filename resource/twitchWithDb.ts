@@ -1,17 +1,14 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
 import { DBGame } from "@schemas/twitch/Game";
-import { DBUser, DBUserSchema } from "@schemas/twitch/User";
+import { DBUserSchema } from "@schemas/twitch/User";
 import { ManipulateType } from "dayjs";
 import { IndexableType, Table } from "dexie";
-import { useLiveQuery } from "dexie-react-hooks";
 
 import { BaseSchema, db, DbBroadcastTemplate } from "@resource/db";
 import { dayjs } from "@libs/dayjs";
 import { TwitchAPI } from "@libs/twitch";
 import { filter } from "@libs/types";
-import { useAsyncMemo } from "@libs/uses";
 
 const createPatchDatabase =
   <T extends BaseSchema, Id extends IndexableType>(props: {
@@ -90,57 +87,6 @@ export const getBroadcastTemplates = (
         return res.filter((val) => Boolean(val.favorite) == props.value);
       });
   }
-};
-
-export const getFollowers = async (userId: string) => {
-  const exists = await db.followers.where("channelId").equals(userId).sortBy("followedAt");
-  return exists
-    .reverse()
-    .filter(filter.notDeleted)
-    .filter((val) => val.deletedAt == null);
-};
-
-// 情報が無い場合取ってこれてない
-export const useGetUserMapById = () => {
-  const data = useLiveQuery(async () => {
-    const result = await db.users.toArray();
-    const userMap = new Map<DBUser["id"], DBUser>();
-    result.forEach((val) => userMap.set(val.id, val));
-    return userMap;
-  }, []);
-  return data;
-};
-
-export const useTwitchFollowersGetById = (channelId?: string) => {
-  return useLiveQuery(async () => {
-    if (channelId == null) return [];
-    const exists = await db.followers.where("channelId").equals(channelId).sortBy("followedAt");
-    return exists
-      .reverse()
-      .filter(filter.notDeleted)
-      .filter((val) => val.deletedAt == null);
-  }, [channelId]);
-};
-
-export const useTiwtchUpdateUserById = (id?: string) => {
-  const updateUser = useCallback(
-    async (user: Partial<DBUser>) => {
-      if (id == null) return;
-      const result = await db.users.update(id, user);
-      return result;
-    },
-    [id],
-  );
-  return updateUser;
-};
-
-export const useSpamCheck = (login?: string) => {
-  const isSpam = useAsyncMemo(async () => {
-    if (login == null) return;
-    const spam = await db.spam.get(login);
-    return spam != null;
-  }, [login]);
-  return isSpam;
 };
 
 /*

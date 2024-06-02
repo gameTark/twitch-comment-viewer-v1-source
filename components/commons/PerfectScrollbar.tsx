@@ -9,7 +9,12 @@ import { usePerfectScrollbar } from "@uses/usePerfectScrollbar";
 type PProps = ConstructorParameters<typeof PerfectScrollbar>[1];
 
 export function Scroll(
-  props: { children?: ReactNode; className?: string; noPadding?: boolean } & PProps,
+  props: {
+    children?: ReactNode;
+    className?: string;
+    noPadding?: boolean;
+    borderd?: boolean;
+  } & PProps,
 ) {
   const { children, className, ...pprops } = props;
 
@@ -17,7 +22,9 @@ export function Scroll(
   return (
     <div
       ref={scroll.ref}
-      className={clsx(className, 'flex after:content-["_"] after:w-2 perfect-scrollbar-nopadding')}>
+      className={clsx(className, 'flex after:content-["_"] after:w-2 perfect-scrollbar-nopadding', {
+        "border rounded-box rounded-r-none": props.borderd,
+      })}>
       <div className="h-full w-full">{children}</div>
     </div>
   );

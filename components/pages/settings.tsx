@@ -1,13 +1,12 @@
 "use client";
 
-import { Theme } from "@components/dasyui/Theme";
+import { ChangeTheme, ThemeEditor } from "@components/commons/Theme";
 
 export const SettingsPage = () => {
   return (
-    <div className="px-4 py-2">
-      <div className="flex gap-4 items-center">
-        <p className="w-48 text-base">theme</p>
-        <Theme />
+    <div className="px-4 py-2 h-full flex flex-col">
+      <div className="flex gap-4 items-center h-0 grow">
+        <ThemeEditor />
       </div>
     </div>
   );

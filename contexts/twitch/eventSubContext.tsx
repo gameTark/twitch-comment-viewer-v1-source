@@ -3,19 +3,16 @@
 import { useCallback, useEffect } from "react";
 
 import { db } from "@resource/db";
+import { is } from "@libs/is";
 import { hasLoginToken, initialTwitchToken, isLoginned, TwitchAPI } from "@libs/twitch";
 import { useAsyncMemo, useLogin } from "@libs/uses";
 import { createSharedWorker } from "@libs/workers";
 
-import { useTheme } from "@components/dasyui/Theme";
-
 export interface EventSubContextProps {
   children: JSX.Element | JSX.Element[];
 }
-const isProd = process.env.NODE_ENV == "production";
 
 export const TwitchRouter = (props: EventSubContextProps) => {
-  useTheme();
   const loginPage = useLogin();
 
   const main = useCallback(async () => {
@@ -52,7 +49,7 @@ export const TwitchRouter = (props: EventSubContextProps) => {
     if (hasLoginToken()) {
       initialTwitchToken({
         onSuccess: () => {
-          location.href = isProd ? "/twitch-comment-viewer-v1-frontend" : "/";
+          location.href = is.build.production ? "/twitch-comment-viewer-v1-frontend" : "/";
         },
       });
     } else {

@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-import { FetchChannelInfoResult } from "@libs/twitch";
+import { TwitchAPI } from "@libs/twitch";
 
 import { DBBaseSchema } from "./BaseSchema";
 
@@ -24,7 +24,9 @@ export const DBBroadcastSchema = z
 
 export type DBBroadcast = z.infer<typeof DBBroadcastSchema>;
 
-export const DBBroadcastParseByAPI = (...parameters: FetchChannelInfoResult["data"]) => {
+export const DBBroadcastParseByAPI = (
+  ...parameters: Awaited<ReturnType<typeof TwitchAPI.channels_get>>["data"]
+) => {
   return parameters.map((val): DBBroadcast => {
     return DBBroadcastSchema.parse({
       channelId: val.broadcaster_id,

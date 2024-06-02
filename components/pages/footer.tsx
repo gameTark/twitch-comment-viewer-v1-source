@@ -32,9 +32,14 @@ const FOOTER_CONTENT: {
 export const Footer = () => {
   const isLogin = useLiveQuery(() => isLoginned(), []);
   const live = useLiveQuery(() => db.getLive(), []);
-  if (!isLogin) return;
   return (
-    <footer className="footer items-center bg-primary flex text-primary-content sticky bottom-0 h-fit mt-auto py-3 px-4 select-none">
+    <footer
+      className={clsx(
+        "footer items-center bg-primary flex text-primary-content sticky bottom-0 h-fit mt-auto py-3 px-4 select-none",
+        {
+          ["opacity-0"]: !isLogin,
+        },
+      )}>
       <div className="flex gap-4 items-center grow">
         <Me />
         <FooterContentList />
@@ -75,7 +80,8 @@ const FooterContent = (props: {
         "flex flex-col items-center cursor-pointer h-full justify-between w-16 whitespace-nowrap",
         activate,
       )}
-      href={props.path}>
+      href={props.path}
+      as={props.path}>
       <span>{props.icon}</span>
       <p className="text-xs font-black ">{props.text}</p>
     </Link>

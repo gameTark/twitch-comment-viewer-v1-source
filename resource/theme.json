@@ -7,7 +7,6 @@
   "corporate",
   "synthwave",
   "retro",
-  "cyberpunk",
   "valentine",
   "halloween",
   "garden",
@@ -30,27 +29,5 @@
   "winter",
   "dim",
   "nord",
-  "sunset",
-  {
-    "mytheme": {
-      "primary": "#9147ff",
-      "secondary": "#ae1392",
-      "accent": "#ff3f00",
-      "neutral": "#131f25",
-      "base-100": "#ffffff",
-      "info": "#00b5f1",
-      "success": "#00e848",
-      "warning": "#c35400",
-      "error": "#e2000a",
-      "--rounded-box": "0rem",
-      "--rounded-btn": "0rem",
-      "--rounded-badge": "0rem",
-      "--animation-btn": "0.1s",
-      "--animation-input": "0.1s",
-      "--btn-focus-scale": "0.95",
-      "--border-btn": "1px",
-      "--tab-border": "1px",
-      "--tab-radius": "0rem"
-    }
-  }
+  "sunset"
 ]

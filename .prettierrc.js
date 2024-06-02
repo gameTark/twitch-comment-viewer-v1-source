@@ -12,7 +12,7 @@ module.exports = {
   arrowParens: "always",
   // 0行目から9000行目までフォーマット
   rangeStart: 0,
-  rangeEnd: 9000,
+  rangeEnd: 90000,
   endOfLine: "lf", // 改行の文字コードを指定
   embeddedLanguageFormatting: "auto", // Prettierがファイルに埋め込まれた引用コードをフォーマットするかどうかを制御
 

@@ -5,8 +5,8 @@ import Fuse from "fuse.js";
 import { operations, paths } from "interfaces/twitch-api.generated";
 import queryString from "query-string";
 
-import { isServer } from "@resource/constants";
 import { db } from "@resource/db";
+import { is } from "@libs/is";
 import { valueOf } from "@libs/types";
 
 const { API_LIST, API_KEY } = TWITCH_CONSTANTS;
@@ -88,13 +88,13 @@ const getTwitchToken = async () => {
 
 // ログインしている状態か判断する。
 export const isLoginned = async () => {
-  if (isServer) return false;
+  if (is.runner.server) return false;
   const token = await getTwitchToken().catch(() => {});
   return token != null;
 };
 // URLにtokenが含まれている場合ローカルストレージにセットし元のURLに戻る
 export const initialTwitchToken = (props: { onSuccess: () => void }) => {
-  if (isServer) return null;
+  if (is.runner.server) return null;
   const token = getToken();
   if (token == null) return;
   db.settings
@@ -108,7 +108,7 @@ export const initialTwitchToken = (props: { onSuccess: () => void }) => {
 };
 
 const getToken = () => {
-  if (isServer) return null;
+  if (is.runner.server) return null;
   const tokens = window.location.hash.match(/access_token=(.*)&scope/); // 雑にトークンを切り出す
   if (tokens == null) return null;
   const token = tokens[1];

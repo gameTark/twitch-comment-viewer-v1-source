@@ -12,7 +12,7 @@ import { DBUser } from "@schemas/twitch/User";
 import { useLiveQuery } from "dexie-react-hooks";
 
 import { IMAGES } from "@resource/constants";
-import { useTiwtchUpdateUserById } from "@resource/twitchWithDb";
+import { db } from "@resource/db";
 import { TwitchAPI } from "@libs/twitch";
 import { UserDataLoader } from "@libs/user";
 import { useAsyncMemo } from "@libs/uses";
@@ -77,7 +77,17 @@ const OfflineImage = createImg(
     className: "inline-block aspect-square select-none",
   },
 );
-
+const useTiwtchUpdateUserById = (id?: string) => {
+  const updateUser = useCallback(
+    async (user: Partial<DBUser>) => {
+      if (id == null) return;
+      const result = await db.users.update(id, user);
+      return result;
+    },
+    [id],
+  );
+  return updateUser;
+};
 const useUpdateUser = () => {
   const user = useUser();
   const update = useTiwtchUpdateUserById(user?.id);

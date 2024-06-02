@@ -1,11 +1,11 @@
-import { isServer } from "@resource/constants";
+import { is } from "@libs/is";
 import { logger } from "@libs/logger";
 
 export const createSharedWorker = () =>
   new SharedWorker(new URL("./SharedWorker", import.meta.url));
 
 const createWorker = async () => {
-  if (isServer) return;
+  if (is.runner.server) return;
   const log = logger("debug");
   try {
     const registration = await navigator.serviceWorker.register("/sw.js", {

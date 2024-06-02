@@ -2,15 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&family=Noto+Serif+JP&display=swap");
-
 html:has(.drawer-toggle:checked) {
   scrollbar-gutter: auto !important;
 }
 
+input[type="color"] {
+  margin-bottom: -3px;
+  @apply w-7 h-7 bg-transparent cursor-pointer;
+}
+
+/* 
+input[type=color]::be {
+  content: " ";
+  @apply w-7 h-7 inline-block bg-transparent bg-base-300;
+} */
+
 html {
   @apply font-noto-sans;
-  letter-spacing: 0.1em;
 }
 .drawer-toggle:checked ~ .drawer-side > .drawer-overlay {
   background-color: transparent;
@@ -20,10 +28,28 @@ html {
   *,
   ::before,
   ::after {
-    @apply border-base-content/20;
+    @apply border-base-content/20 tracking-wider;
   }
 }
 @layer components {
+  .non-slider {
+    @apply appearance-none;
+  }
+  .non-slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    border: 2px solid;
+    @apply bg-base-100 border-base-content rounded-full;
+  }
+  .non-slider::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 2px solid;
+    @apply bg-base-100 border-base-content rounded-full;
+  }
+
   .perfect-scrollbar {
     overflow: hidden;
     position: relative;
@@ -45,51 +71,47 @@ html {
   .dropdown-content {
     transform: none !important;
   }
-  h1,
-  h2,
-  h3,
-  h4,
-  h5 {
-    margin-bottom: 0.3em;
-    @apply font-noto-sans tracking-widest leading-loose;
-  }
   p {
     @apply tracking-wide leading-relaxed;
   }
 
   h1 {
-    @apply text-5xl;
+    @apply text-3xl mt-8 mb-6;
   }
 
   h1.center {
     @apply text-center;
   }
+
   h2 {
-    @apply text-3xl font-bold;
+    border-color: var(--fallback-bc, oklch(var(--bc) / 0.8));
+    @apply text-2xl font-bold mt-7 mb-5;
   }
+
   h2.center {
     @apply text-center;
   }
+
   h3 {
-    @apply text-3xl;
+    @apply text-xl mt-6 mb-4;
   }
   h3.center {
     @apply text-center;
   }
   h4 {
-    @apply text-2xl font-bold;
+    @apply text-lg font-bold mt-5 mb-3;
   }
   h4.center {
     @apply text-center;
   }
   h5 {
-    @apply text-2xl;
+    @apply text-lg mt-3 mb-1;
   }
   h5.center {
     @apply text-center;
   }
   p {
-    @apply text-base;
+    @apply text-base mt-2 mb-2;
   }
   p.center {
     @apply text-center;
@@ -99,9 +121,6 @@ html {
     @apply text-2xl;
   }
 
-  .text-base {
-    @apply text-sm;
-  }
   .text-caption {
     @apply text-xs;
   }
@@ -138,7 +157,7 @@ html {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  border-radius: var(--rounded-btn);
+  border-radius: calc(var(--rounded-box) / 5);
   /* z-index: 999; */
   @apply bg-primary;
 }
@@ -161,9 +180,9 @@ html {
 .ps__thumb-y {
   width: 7px;
 }
-.ps__rail-y {
+/* .ps__rail-y {
   margin: 2px 0;
-}
+} */
 .ps__thumb-y,
 .ps__rail-y {
   right: 0;
@@ -233,3 +252,53 @@ html {
 .favorite {
   @apply text-2xl text-warning before:content-['☆'] checked:before:content-['★'] cursor-pointer appearance-none;
 }
+
+/* [data-theme=custom] {
+  --p: 0.594359 0.077246 254.027774;
+  --pc: 0.118872 0.015449 254.027774;
+
+  --s: 0.696516 0.059108 248.687186;
+  --sc: 0.139303 0.011822 248.687186;
+
+  --a: 0.774643 0.062249 217.469017;
+  --ac: 0.154929 0.01245 217.469017;
+
+  --n: 0.45229 0.035214 264.1312;
+  --nc: 0.899258 0.016374 262.749256;
+
+  --in: 0.692072 0.062496 332.664922;
+  --inc: 0.138414 0.012499 332.664922;
+
+  --su: 0.76827 0.074899 131.063061;
+  --suc: 0.153654 0.01498 131.063061;
+
+  --wa: 0.854862 0.089234 84.093335;
+  --wac: 0.170972 0.017847 84.093335;
+
+  --er: 0.6061 0.120594 15.341883;
+  --erc: 0.12122 0.024119 15.341883;
+
+  --b1: 0.951276 0.007445 260.731539;
+  --b2: 0.932996 0.010389 261.788485;
+  --b3: 0.899258 0.016374 262.749256;
+  --bc: 0.324374 0.022945 264.182036;
+
+  --animation-btn: 0.25s;
+  --animation-input: .2s;
+  --btn-focus-scale: 0.95;
+  --border-btn: 1px;
+  --tab-border: 1px;
+  --rounded-box: 0.4rem;
+  --rounded-btn: 0.2rem;
+  --rounded-badge: 0.4rem;
+  --tab-radius: 0.2rem;
+  --rounded-box: 1rem;
+  --rounded-btn: 0.5rem;
+  --rounded-badge: 1.9rem;
+  --animation-btn: 0.25s;
+  --animation-input: 0.2s;
+  --btn-focus-scale: 0.95;
+  --border-btn: 1px;
+  --tab-border: 1px;
+  --tab-radius: 0.5rem;
+} */
