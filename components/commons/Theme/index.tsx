@@ -4,7 +4,7 @@ import { MouseEventHandler, useCallback, useLayoutEffect, useMemo, useState } fr
 import clsx from "clsx";
 import { useForm } from "react-hook-form";
 
-import { CustomTheme, DEFAULT_CUSTOM, DEFAULT_THEME, FONTS } from "@resource/constants";
+import { DEFAULT_THEME } from "@resource/constants";
 import THEME from "@resource/theme.json";
 import { is } from "@libs/is";
 import { useAsyncMemo } from "@libs/uses";
@@ -15,6 +15,7 @@ import { ICONS } from "@components/icons";
 import { ColorInput } from "../color";
 import { Scroll } from "../PerfectScrollbar";
 import { Preview } from "./PreviewComponent";
+import { DBTheme, DEFAULT_CUSTOM, FONTS } from "@schemas/twitch/Theme";
 
 const THEME_STORAGE_KEY = "theme-storage";
 const CURRENT_THEME_KEY = "theme-application-001";
@@ -31,13 +32,6 @@ interface Theme {
   name: string;
   style: Style[];
 }
-const parseTheme = (style: Style[]) => `
-[data-theme=custom] {${style
-  .map((val) => val.values)
-  .flat()
-  .map((val) => `  ${val.cssVariable}: ${val.defaultValue};`)
-  .join("\n")}
-}`;
 
 const themeAsset = {
   save: (theme: Theme[]) => {
@@ -82,7 +76,7 @@ export const ApplyTheme = () => {
   return <></>;
 };
 
-const ThemeStyle = (props: { style: CustomTheme; themeName: string }) => {
+const ThemeStyle = (props: { style: DBTheme; themeName: string }) => {
   return (
     <style>
       {`
@@ -102,13 +96,13 @@ ${Object.entries(props.style.rounded)
 };
 
 const Editor = () => {
-  const [state, setState] = useState<typeof DEFAULT_CUSTOM>(DEFAULT_CUSTOM);
+  const [state, setState] = useState<DBTheme>(DEFAULT_CUSTOM);
   const form = useForm({
     mode: "onBlur",
     defaultValues: DEFAULT_CUSTOM,
   });
 
-  const theme: CustomTheme = useMemo(() => {
+  const theme: DBTheme = useMemo(() => {
     return {
       ...state,
       colors: {
@@ -483,7 +477,4 @@ export const ChangeTheme = () => {
       </div>
     </div>
   );
-};
-export default {
-  parseTheme,
 };
