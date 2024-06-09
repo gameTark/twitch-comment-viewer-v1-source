@@ -5,7 +5,7 @@ import "../styles/globals.css";
 
 import { TwitchRouter } from "@contexts/twitch/eventSubContext";
 
-import { ApplyTheme, applyTheme, FontLoader } from "@components/commons/Theme";
+import { ApplyTheme, FontLoader } from "@components/commons/Theme";
 import { Drawer } from "@components/dasyui/Drawer";
 import { ModalProvider } from "@components/dasyui/Modal";
 import { TanstackQueryProvider } from "@components/middlewares/TanstackQueryProvider";
@@ -15,14 +15,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ja" data-theme="nord">
       <head>
-        <title>hello</title>
-        {/* TODO: 直接JSを書き込んでいるが、Reactの準備より前に呼ぶ方法がわからないため暫定処理 */}
-        {/* <script
-          dangerouslySetInnerHTML={{
-            __html: `
-            document.getElementsByTagName("html")[0].dataset.theme = localStorage.getItem("theme-application-001") || "lemonade";
-          `,
-          }}></script> */}
+        <title>Twitch Commen viewer</title>
+        <link rel="icon" href="./icon.svg" />
       </head>
       <body>
         <ApplyTheme />

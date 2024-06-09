@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeTheme, ThemeEditor } from "@components/commons/Theme";
+import { ThemeEditor } from "@components/commons/Theme";
 
 export const SettingsPage = () => {
   return (

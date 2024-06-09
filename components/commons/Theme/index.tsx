@@ -108,36 +108,36 @@ const Editor = () => {
       colors: {
         ...state.colors,
         ["--pc"]: ColorInput.methods.hexDistance(
-          ColorInput.methods.toString(state.colors["--p"]),
-          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.toString),
+          ColorInput.methods.str(state.colors["--p"]),
+          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.str),
         ),
         ["--sc"]: ColorInput.methods.hexDistance(
-          ColorInput.methods.toString(state.colors["--s"]),
-          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.toString),
+          ColorInput.methods.str(state.colors["--s"]),
+          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.str),
         ),
         ["--ac"]: ColorInput.methods.hexDistance(
-          ColorInput.methods.toString(state.colors["--a"]),
-          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.toString),
+          ColorInput.methods.str(state.colors["--a"]),
+          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.str),
         ),
         ["--nc"]: ColorInput.methods.hexDistance(
-          ColorInput.methods.toString(state.colors["--n"]),
-          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.toString),
+          ColorInput.methods.str(state.colors["--n"]),
+          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.str),
         ),
         ["--inc"]: ColorInput.methods.hexDistance(
-          ColorInput.methods.toString(state.colors["--in"]),
-          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.toString),
+          ColorInput.methods.str(state.colors["--in"]),
+          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.str),
         ),
         ["--suc"]: ColorInput.methods.hexDistance(
-          ColorInput.methods.toString(state.colors["--su"]),
-          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.toString),
+          ColorInput.methods.str(state.colors["--su"]),
+          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.str),
         ),
         ["--wac"]: ColorInput.methods.hexDistance(
-          ColorInput.methods.toString(state.colors["--wa"]),
-          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.toString),
+          ColorInput.methods.str(state.colors["--wa"]),
+          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.str),
         ),
         ["--erc"]: ColorInput.methods.hexDistance(
-          ColorInput.methods.toString(state.colors["--er"]),
-          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.toString),
+          ColorInput.methods.str(state.colors["--er"]),
+          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.str),
         ),
       },
     };

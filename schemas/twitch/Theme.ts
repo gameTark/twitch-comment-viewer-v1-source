@@ -1,11 +1,10 @@
 import * as z from "zod";
 
-export const DBThemeIndex = "++id,name";
-
 const Font = z.object({
     'font-size': z.string().default("16"),
     'font-family': z.string().default("Noto+Sans+JP:wght@100..900"),
 });
+
 const Colors = z.object({
     "--b1": z.string().optional().default("0.951276 0.007445 260.731582"),
     "--b2": z.string().optional().default("0.932996 0.010389 261.788512"),
@@ -28,12 +27,15 @@ const Colors = z.object({
     "--er": z.string().optional().default("0.606099 0.120594 15.341872"),
     "--erc": z.string().optional().default("0.324374 0.022944 264.182039"),
 });
+
 const Rounded = z.object({
     "--rounded-badge": z.string().optional().default( "1"),
     "--rounded-box": z.string().optional().default("1.9"),
     "--rounded-btn": z.string().optional().default("1.9"),
     "--tab-radius": z.string().optional().default("0.7"),
-})
+});
+
+export const DBThemeIndex = "++id,title";
 export const DBThemeSchema = z
     .object({
         id: z.number().optional(),
@@ -43,7 +45,6 @@ export const DBThemeSchema = z
         rounded: Rounded.optional().default(Rounded.parse({})),
     })
 export type DBTheme = z.infer<typeof DBThemeSchema>;
-
 export const FONTS: { [key in string]: string } = {
     "Noto+Sans+JP:wght@100..900": "Noto Sans JP",
     "Noto+Serif+JP": "Noto Serif JP",
@@ -57,4 +58,39 @@ export const FONTS: { [key in string]: string } = {
     "Shippori+Antique+B1": "Shippori Antique B1",
   };
   
-export const DEFAULT_CUSTOM: DBTheme = DBThemeSchema.parse({});
+export const DEFAULT_CUSTOM: DBTheme = DBThemeSchema.parse({
+    title: "新規作成テーマ",
+    font: {
+      "font-size": "16",
+      "font-family": "Noto+Sans+JP:wght@100..900",
+    },
+    colors: {
+      "--b1": "0.951276 0.007445 260.731582",
+      "--b2": "0.932996 0.010389 261.788512",
+      "--b3": "0.899257 0.016374 262.74927",
+      "--bc": "0.324374 0.022944 264.182039",
+      "--p": "0.594359 0.077246 254.027778",
+      "--pc": "0.324374 0.022944 264.182039",
+      "--s": "0.696515 0.059108 248.687195",
+      "--sc": "0.324374 0.022944 264.182039",
+      "--a": "0.774643 0.062248 217.469037",
+      "--ac": "0.324374 0.022944 264.182039",
+      "--n": "0.45229 0.035213 264.131203",
+      "--nc": "0.324374 0.022944 264.182039",
+      "--in": "0.692071 0.062496 332.664901",
+      "--inc": "0.324374 0.022944 264.182039",
+      "--su": "0.768269 0.074899 131.063076",
+      "--suc": "0.324374 0.022944 264.182039",
+      "--wa": "0.854862 0.089234 84.093332",
+      "--wac": "0.324374 0.022944 264.182039",
+      "--er": "0.606099 0.120594 15.341872",
+      "--erc": "0.324374 0.022944 264.182039",
+    },
+    rounded: {
+      // 基本rem
+      "--rounded-box": "1",
+      "--rounded-badge": "1.9",
+      "--rounded-btn": "1.9",
+      "--tab-radius": "0.7",
+    },
+  });
