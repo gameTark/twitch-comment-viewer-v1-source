@@ -37,6 +37,7 @@ const createPatchDatabase =
     });
     const notExistsUserList = await props.fetcher(notExistsIdList);
     await props.table.bulkPut(notExistsUserList);
+    // existsの場合updateにしたい。
 
     return (await props.table.bulkGet(ids)).filter(filter.notNull);
   };
@@ -128,7 +129,9 @@ export const getUsers = createPatchDatabase({
       },
     });
     const spam = await db.spam.bulkGet(result.data.map((val) => val.login));
+    const prevUsers = await db.users.bulkGet(result.data.map(val => val.id));
     return result.data.map((val) => {
+      const prevUser = prevUsers.find(user => user?.id === val.id);
       return DBUserSchema.parse({
         id: val.id,
         login: val.login,
@@ -138,9 +141,9 @@ export const getUsers = createPatchDatabase({
         description: val.description,
         profileImageUrl: val.profile_image_url,
         offlineImageUrl: val.offline_image_url,
-        createdAt: new Date(),
+        createdAt: prevUser?.createdAt || new Date(),
         updateAt: new Date(),
-        isSpam: spam.findIndex((v) => v?.login === val.login) !== -1,
+        isSpam: prevUser?.isSpam || spam.findIndex((v) => v?.login === val.login) !== -1,
         rowData: JSON.stringify(val),
       });
     });
