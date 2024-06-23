@@ -127,7 +127,7 @@ export const useDbPagination = <Type>(
     setPage(0);
   }, deps);
   const value = useLiveQuery(async () => {
-    const p = await dbPagination(target);
+    const p = await dbPagination(target.reverse());
     return p({
       pageNo: page,
       pageSize: pagintaiton.pageSize,
