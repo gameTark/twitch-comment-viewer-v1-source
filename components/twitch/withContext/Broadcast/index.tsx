@@ -150,6 +150,11 @@ const useApply = () => {
             is_branded_content: template.isBrandedContent,
           },
         });
+        dialog.open({
+          title: '適用完了',
+          successText: 'OK',
+          nofail: true,
+        })
       },
     });
   }, [template]);

@@ -248,7 +248,7 @@ export const Events = () => {
   const createNewTemplate = Broadcast.uses.useCreate({ isNew: true });
   const refModal = useRef<HTMLDialogElement>(null);
   const channelHistories = useDbPagination(
-    db.channelHistories,
+    db.channelHistories.reverse(),
     {
       pageNo: 0,
       pageSize: 10,

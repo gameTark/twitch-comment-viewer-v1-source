@@ -12,6 +12,7 @@ import { FollowerStat, FollowerTable } from "@components/twitch/followers";
 import { LiveWatchUsers } from "@components/twitch/liveWatchUsers";
 import { useBroadcastInformationPatch, useBroadcastInformationQuery } from "@uses/queries";
 import { useInterval } from "@uses/useInterval";
+import { useDialog } from "@components/commons/Dialog";
 
 const Stat = () => {
   return (
@@ -36,11 +37,22 @@ const Chat = () => {
 const CurrentBroadcastEdit = () => {
   const query = useBroadcastInformationQuery();
   const patch = useBroadcastInformationPatch();
+  const dialog = useDialog();
+  // TODO: Contextに置き換える
   const handleCommit = useCallback(
     (...args: Parameters<typeof patch>) => {
-      patch(...args).then(() => {
-        query.refetch();
-      });
+      dialog.open({
+        title: "配信に適用しますか？",
+        onSuccess: async () => {
+          await patch(...args)
+          query.refetch();
+          dialog.open({
+            title: '適用完了',
+            successText: 'OK',
+            nofail: true,
+          })
+        }
+      })
     },
     [query, patch],
   );

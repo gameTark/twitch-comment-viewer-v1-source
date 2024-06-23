@@ -8,6 +8,7 @@ export interface UseDialogProps {
   failText?: string;
   onSuccess?: () => Promise<void> | void;
   onFail?: () => Promise<void> | void;
+  nofail?: boolean; // TODO: Dialogではなく、Modalのタイプを定義する
 }
 
 const DialogContent = (props: UseDialogProps) => {
@@ -18,9 +19,11 @@ const DialogContent = (props: UseDialogProps) => {
         <button className="btn btn-success" onClick={props.onSuccess}>
           {props.successText || "はい"}
         </button>
-        <button className="btn btn-ghost" onClick={props.onFail}>
-          {props.failText || "いいえ"}
-        </button>
+        {props.nofail ? null : (
+          <button className="btn btn-ghost" onClick={props.onFail}>
+            {props.failText || "いいえ"}
+          </button>
+        )}
       </div>
     </div>
   );

@@ -239,6 +239,7 @@ const twitchFetcher: CreateRequest =
         body: requestBody == null ? undefined : JSON.stringify(requestBody),
       },
     );
+    if (methodName === 'patch') return {};
     return await result.json();
   };
 
