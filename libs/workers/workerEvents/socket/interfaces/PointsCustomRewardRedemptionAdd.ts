@@ -1,13 +1,20 @@
-export interface StreamOnlineResult {
+import { createIsSocketType } from "./base";
+
+export interface PointsCustomRewardRedemptionAdd {
   metadata: Metadata;
   payload: Payload;
 }
+
+export const isPointsCustomRewadedRedemptionAdd = createIsSocketType(
+  "notification",
+  "channel.channel_points_custom_reward_redemption.add",
+);
 
 interface Metadata {
   message_id: string;
   message_type: "notification";
   message_timestamp: string;
-  subscription_type: "stream.offline";
+  subscription_type: "channel.channel_points_custom_reward_redemption.add";
   subscription_version: string;
 }
 
@@ -19,7 +26,7 @@ interface Payload {
 interface Subscription {
   id: string;
   status: string;
-  type: string;
+  type: "channel.channel_points_custom_reward_redemption.add";
   version: string;
   condition: Condition;
   transport: Transport;
@@ -29,6 +36,7 @@ interface Subscription {
 
 interface Condition {
   broadcaster_user_id: string;
+  reward_id: string;
 }
 
 interface Transport {
@@ -40,4 +48,19 @@ interface Event {
   broadcaster_user_id: string;
   broadcaster_user_login: string;
   broadcaster_user_name: string;
+  id: string;
+  user_id: string;
+  user_login: string;
+  user_name: string;
+  user_input: string;
+  status: string;
+  redeemed_at: string;
+  reward: Reward;
+}
+
+interface Reward {
+  id: string;
+  title: string;
+  prompt: string;
+  cost: number;
 }

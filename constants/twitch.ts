@@ -68,85 +68,8 @@ const BROADCAST_LANGUAGE = [
   { id: "other", name: "その他" },
 ] as const;
 
-/**
- * @deprecated swaggerの自動生成に移行
- */
-const API_LIST = {
-  CONTENT_CLASSIFICATION_LABELS: {
-    METHOD: "GET",
-    ENDPOINT: "https://api.twitch.tv/helix/content_classification_labels",
-  },
-  GAMES: {
-    METHOD: "GET",
-    ENDPOINT: "https://api.twitch.tv/helix/games",
-  },
-  SCHEDULE: {
-    METHOD: "GET",
-    ENDPOINT: "https://api.twitch.tv/helix/schedule",
-  },
-  POOL: {
-    METHOD: "POST",
-    ENDPOINT: "https://api.twitch.tv/helix/polls",
-  },
-  PREDICTIONS: {
-    METHOD: "POST",
-    ENDPOINT: "https://api.twitch.tv/helix/predictions",
-  },
-  USER: {
-    METHOD: "GET",
-    ENDPOINT: "https://api.twitch.tv/helix/users",
-  },
-  CHAT: {
-    CHATTERS: {
-      METHOD: "GET",
-      ENDPOINT: "https://api.twitch.tv/helix/chat/chatters",
-    },
-  },
-  CHANNELS: {
-    METHOD: "GET",
-    ENDPOINT: "https://api.twitch.tv/helix/channels",
-    PATCH: {
-      METHOD: "PATCH",
-      ENDPOINT: "https://api.twitch.tv/helix/channels",
-    },
-    FOLLOWERS: {
-      METHOD: "GET",
-      ENDPOINT: "https://api.twitch.tv/helix/channels/followers",
-    },
-  },
-  STREAMS: {
-    METHOD: "GET",
-    ENDPOINT: "https://api.twitch.tv/helix/streams",
-  },
-  SEARCH: {
-    CHANNELS: {
-      METHOD: "GET",
-      ENDPOINT: "https://api.twitch.tv/helix/search/channels",
-    },
-    CATEGORIES: {
-      METHOD: "GET",
-      ENDPOINT: "https://api.twitch.tv/helix/search/categories",
-    },
-  },
-  // schedule
-  ANALYTICS: {
-    // https://dev.twitch.tv/docs/api/reference/#get-game-analytics
-    GAME: {
-      METHOD: "GET",
-      ENDPOINT: "https://api.twitch.tv/helix/analytics/games",
-    },
-  },
-  EVENTSUB: {
-    SUBSCRIPTIONS: {
-      METHOD: "POST",
-      ENDPOINT: "https://api.twitch.tv/helix/eventsub/subscriptions",
-    },
-  },
-};
-
 export const TWITCH_CONSTANTS = {
   CLASSIFICATION_LABELS,
   BROADCAST_LANGUAGE,
-  API_LIST,
   API_KEY,
 };

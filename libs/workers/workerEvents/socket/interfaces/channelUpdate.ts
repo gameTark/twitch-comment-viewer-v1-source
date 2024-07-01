@@ -1,7 +1,13 @@
-export interface ChannelUpdateResult {
+import { createIsSocketType } from "./base";
+
+export interface ChannelUpdate {
   metadata: Metadata;
   payload: Payload;
 }
+export const isChannelUpdate = createIsSocketType<ChannelUpdate>(
+  "notification",
+  "channel.chat.update",
+);
 
 interface Metadata {
   message_id: string;

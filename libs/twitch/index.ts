@@ -1,33 +1,13 @@
 "use client";
 
 import { TWITCH_CONSTANTS } from "@constants/twitch";
-import Fuse from "fuse.js";
-import { operations, paths } from "interfaces/twitch-api.generated";
-import queryString from "query-string";
+import { paths } from "interfaces/twitch-api.generated";
 
 import { db } from "@resource/db";
 import { is } from "@libs/is";
-import { valueOf } from "@libs/types";
+import { BaseEventSubRegistParam } from "@libs/workers/workerEvents/socket/constants/types";
 
-const { API_LIST, API_KEY } = TWITCH_CONSTANTS;
-
-/**
- * TODO: Queryのkeyは直接日本語渡さないとうまく動かない
- * @deprecated できれば自動生成の方を使用する
- * Fuseの移植を考える
- */
-export const fetchSearchCategories = async (
-  params: PickupParameter<paths["/search/categories"]["get"]>["parameters"],
-) => {
-  const token = await getTwitchToken();
-  const fetcher = baseFetch(token);
-  const data = await fetcher(`${API_LIST.SEARCH.CATEGORIES.ENDPOINT}?query=${params.query}`);
-  const req = (await data.json()) as PickupParameter<
-    paths["/search/categories"]["get"]
-  >["responses"];
-  // TODO: 検索精度が良くないが、煩雑になりそうなため一旦保留
-  return new Fuse(req.data, { keys: ["name"] }).search(params.query).map((val) => val.item);
-};
+const { API_KEY } = TWITCH_CONSTANTS;
 
 /**
  * other
@@ -158,36 +138,6 @@ const baseFetch = (token: string): typeof fetch => {
   };
 };
 
-type PickupParameter<Operations extends valueOf<operations>> = {
-  parameters: Operations extends {
-    parameters?: {
-      query?: infer Parameter;
-    };
-  }
-    ? Parameter
-    : null;
-  requestBody: Operations extends {
-    requestBody?: {
-      content?: {
-        "application/json"?: infer Body;
-      };
-    };
-  }
-    ? Body
-    : null;
-  responses: Operations extends {
-    responses?: {
-      200?: {
-        content?: {
-          "application/json"?: infer Res;
-        };
-      };
-    };
-  }
-    ? Res
-    : null;
-};
-
 type CreateRequest = <
   PathKey extends keyof paths,
   Method extends keyof paths[PathKey],
@@ -231,23 +181,31 @@ const twitchFetcher: CreateRequest =
   async ({ parameters, requestBody }: any): Promise<any> => {
     const token = await getTwitchToken();
     const fetcher = baseFetch(token);
-    // TODO: 日本語のqueryStringがtwitcの仕様と合わないため別の方法を考える
-    const result = await fetcher(
-      `https://api.twitch.tv/helix${pathKey}?${queryString.stringify(parameters || {})}`,
-      {
-        method: methodName.toString().toUpperCase(),
-        body: requestBody == null ? undefined : JSON.stringify(requestBody),
-      },
-    );
-    if (methodName === 'patch') return {};
+    const values = Object.entries(parameters || {})
+      .map(([key, val]) => {
+        if (Array.isArray(val)) {
+          return val.map((r) => `${key}=${decodeURIComponent(r)}`).join("&");
+        }
+        if (typeof val === "string") {
+          return `${key}=${decodeURIComponent(val)}`;
+        }
+        return `${key}=${val}`;
+      })
+      .join("&");
+    const result = await fetcher(`https://api.twitch.tv/helix${pathKey}?${values}`, {
+      method: methodName.toString().toUpperCase(),
+      body: requestBody == null ? undefined : JSON.stringify(requestBody),
+    });
+    if (methodName === "patch") return {};
     return await result.json();
   };
 
 export const TwitchAPI = {
   fetchByAll,
-  createEventsub: async (params: any) => {
+  createEventsub: async <T extends BaseEventSubRegistParam>(params: T) => {
+    console.log(params);
     const res = await TwitchAPI.eventsub_subscriptions_post({
-      requestBody: params,
+      requestBody: params as any,
     });
     return res;
   },

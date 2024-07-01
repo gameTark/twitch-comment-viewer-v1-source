@@ -13,10 +13,11 @@ import {
 import { DBGame } from "@schemas/twitch/Game";
 import clsx from "clsx";
 import { useLiveQuery } from "dexie-react-hooks";
+import Fuse from "fuse.js";
 
 import { GameDataloader } from "@libs/game";
 import { parser } from "@libs/parser";
-import { fetchSearchCategories } from "@libs/twitch";
+import { TwitchAPI } from "@libs/twitch";
 import { useDebounce, useInput } from "@libs/uses";
 
 import { Scroll } from "@components/commons/PerfectScrollbar";
@@ -56,9 +57,9 @@ const Image = (props: ContextElements["Image"]) => {
 
 const Search = (props: { onChange?: (id: DBGame["id"]) => void }) => {
   const [search, changeSearchHandler] = useInput();
-  const [result, setResult] = useState<Awaited<ReturnType<typeof fetchSearchCategories>> | null>(
-    null,
-  );
+  const [result, setResult] = useState<
+    Awaited<ReturnType<typeof TwitchAPI.search_categories_get>>["data"] | null
+  >(null);
   const onClick: MouseEventHandler<HTMLLIElement> = useCallback(
     (e) => {
       if (props.onChange == null) return;
@@ -69,13 +70,16 @@ const Search = (props: { onChange?: (id: DBGame["id"]) => void }) => {
   );
 
   const event = useDebounce(
-    500,
+    300,
     async (text: string) => {
       if (text === "" || text == null) return null;
-      const item = await fetchSearchCategories({
-        query: text,
-      });
-      setResult(item);
+      const api = await TwitchAPI.search_categories_get({ parameters: { query: text } });
+      const result = new Fuse(api.data, { keys: ["name"], fieldNormWeight: 0 }).search(text);
+      //
+      // api.data.sort((a, b) => result.findIndex(i => i.id === a.id));
+      //
+      console.log(result);
+      setResult(result.map((val) => val.item) || []);
     },
     [],
   );

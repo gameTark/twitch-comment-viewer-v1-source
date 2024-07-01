@@ -129,9 +129,9 @@ export const getUsers = createPatchDatabase({
       },
     });
     const spam = await db.spam.bulkGet(result.data.map((val) => val.login));
-    const prevUsers = await db.users.bulkGet(result.data.map(val => val.id));
+    const prevUsers = await db.users.bulkGet(result.data.map((val) => val.id));
     return result.data.map((val) => {
-      const prevUser = prevUsers.find(user => user?.id === val.id);
+      const prevUser = prevUsers.find((user) => user?.id === val.id);
       return DBUserSchema.parse({
         id: val.id,
         login: val.login,

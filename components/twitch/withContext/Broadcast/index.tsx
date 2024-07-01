@@ -151,10 +151,10 @@ const useApply = () => {
           },
         });
         dialog.open({
-          title: '適用完了',
-          successText: 'OK',
+          title: "適用完了",
+          successText: "OK",
           nofail: true,
-        })
+        });
       },
     });
   }, [template]);

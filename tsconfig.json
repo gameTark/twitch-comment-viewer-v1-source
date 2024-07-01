@@ -12,7 +12,7 @@
       "@schemas/*": ["./schemas/*"],
       "@constants/*": ["./constants/*"]
     },
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": ["dom", "dom.iterable", "esnext", "WebWorker"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,

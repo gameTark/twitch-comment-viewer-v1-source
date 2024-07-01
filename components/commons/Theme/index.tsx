@@ -1,6 +1,7 @@
 "use client";
 
 import { MouseEventHandler, useCallback, useLayoutEffect, useMemo, useState } from "react";
+import { DBTheme, DEFAULT_CUSTOM, FONTS } from "@schemas/twitch/Theme";
 import clsx from "clsx";
 import { useForm } from "react-hook-form";
 
@@ -15,7 +16,6 @@ import { ICONS } from "@components/icons";
 import { ColorInput } from "../color";
 import { Scroll } from "../PerfectScrollbar";
 import { Preview } from "./PreviewComponent";
-import { DBTheme, DEFAULT_CUSTOM, FONTS } from "@schemas/twitch/Theme";
 
 const THEME_STORAGE_KEY = "theme-storage";
 const CURRENT_THEME_KEY = "theme-application-001";

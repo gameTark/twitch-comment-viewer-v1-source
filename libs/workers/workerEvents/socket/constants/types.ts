@@ -1,3 +1,13 @@
+export interface BaseEventSubRegistParam {
+  type: string;
+  version: string;
+  condition: Record<string, any>;
+  transport: {
+    method: string;
+    session_id: string;
+  };
+}
+
 export const createType = (sessionId: string) => {
   const transport = {
     method: "websocket",
@@ -13,7 +23,7 @@ export const createType = (sessionId: string) => {
         },
         transport,
       }),
-      ofline: (broadcasterUserId: string) => ({
+      offline: (broadcasterUserId: string) => ({
         type: "stream.offline",
         version: "1",
         condition: {

@@ -1,7 +1,14 @@
-export interface PointsAutomaticRewardRedemptionAddResult {
+import { createIsSocketType } from "./base";
+
+export interface PointsAutomaticRewardRedemptionAdd {
   metadata: Metadata;
   payload: Payload;
 }
+export const isPointsAutomaticRewardRedemptionAdd =
+  createIsSocketType<PointsAutomaticRewardRedemptionAdd>(
+    "notification",
+    "channel.channel_points_automatic_reward_redemption.add",
+  );
 
 interface Metadata {
   message_id: string;

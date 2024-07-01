@@ -3747,7 +3747,7 @@ export interface components {
       /** @description The version number that identifies the definition of the subscription type that you want the response to use. */
       version: string;
       /** @description A JSON object that contains the parameter values that are specific to the specified subscription type. For the object’s required and optional fields, see the subscription type’s documentation. */
-      condition: Record<string, never>;
+      condition: Record<string, any>;
       /** @description The transport details that you want Twitch to use when sending you notifications. */
       transport: {
         /**

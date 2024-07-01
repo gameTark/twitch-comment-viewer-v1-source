@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import clsx from "clsx";
 
+import { useDialog } from "@components/commons/Dialog";
 import { Scroll } from "@components/commons/PerfectScrollbar";
 import BroadcastEditor, { FaboriteBroadcastItemList } from "@components/twitch/Broadcast";
 import { ChatList } from "@components/twitch/Chats";
@@ -12,7 +13,6 @@ import { FollowerStat, FollowerTable } from "@components/twitch/followers";
 import { LiveWatchUsers } from "@components/twitch/liveWatchUsers";
 import { useBroadcastInformationPatch, useBroadcastInformationQuery } from "@uses/queries";
 import { useInterval } from "@uses/useInterval";
-import { useDialog } from "@components/commons/Dialog";
 
 const Stat = () => {
   return (
@@ -44,15 +44,15 @@ const CurrentBroadcastEdit = () => {
       dialog.open({
         title: "配信に適用しますか？",
         onSuccess: async () => {
-          await patch(...args)
+          await patch(...args);
           query.refetch();
           dialog.open({
-            title: '適用完了',
-            successText: 'OK',
+            title: "適用完了",
+            successText: "OK",
             nofail: true,
-          })
-        }
-      })
+          });
+        },
+      });
     },
     [query, patch],
   );
@@ -135,6 +135,12 @@ export const BroadcastContent = () => {
       <div className="col-span-5 row-span-1">
         <Stat />
       </div>
+      {/*
+        <div>
+          hoge
+          <iframe src="https://dashboard.twitch.tv/popout/u/game_tark/stream-manager/edit-stream-info" referrerPolicy="no-referrer" />
+        </div> 
+      */}
 
       <div className="row-start-2 col-span-1">
         <Chat />
