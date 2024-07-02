@@ -1,6 +1,6 @@
 import { TypedEventTarget } from "typescript-event-target";
 
-import { calcrateEventType, registerEventType, TwitchSocketEventmap } from "./socket/interfaces";
+import { calcrateEventType, registerEventType, TwitchSocketEventmap } from "./interfaces";
 
 const ENDPOINT = "wss://eventsub.wss.twitch.tv/ws";
 const createWsEndpoint = (keepaliveTimeoutSeconds: number) => {
@@ -30,7 +30,6 @@ export class TwitchWebSocket extends TypedEventTarget<TwitchSocketEventmap> {
     this.socket.addEventListener("message", (ev) => {
       const data = JSON.parse(ev.data);
       const event = calcrateEventType(data);
-      console.log(data);
       this.dispatchTypedEvent(
         event,
         new CustomEvent(event, {

@@ -3,12 +3,12 @@ import { DBChannelHistory, DBChannelHistorySchema } from "@schemas/twitch/Channe
 
 import { db } from "@resource/db";
 
-import { TwitchWebSocket } from "./workerEvents/baseSocket";
-import { updateUserData } from "./workerEvents/getUserData";
-import { updateChatters } from "./workerEvents/updateChatters";
-import { updateFollowers } from "./workerEvents/updateFollowers";
-import { updateSpamList } from "./workerEvents/updateSpamList";
-import { updateStreams } from "./workerEvents/updateStreams";
+import { TwitchWebSocket } from "@libs/twitch/socket/baseSocket";
+import { updateUserData } from "@libs/twitch/socket/events/getUserData";
+import { updateChatters } from "@libs/twitch/socket/events/updateChatters";
+import { updateFollowers } from "@libs/twitch/socket/events/updateFollowers";
+import { updateSpamList } from "@libs/twitch/socket/events/updateSpamList";
+import { updateStreams } from "@libs/twitch/socket/events/updateStreams";
 
 const worker = self as any as SharedWorkerGlobalScope;
 worker.addEventListener("connect", () => {

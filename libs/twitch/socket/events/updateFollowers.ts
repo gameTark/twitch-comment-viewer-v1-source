@@ -2,8 +2,9 @@ import { DBFollower } from "@schemas/twitch/Followers";
 
 import { db } from "@resource/db";
 
-import { TwitchAPI } from "../../twitch";
-import { filter } from "../../types";
+import { filter } from "@libs/types";
+import { TwitchAPI } from "@libs/twitch";
+
 import { updateUserData } from "./getUserData";
 
 export default null; //TypeScript警告避け

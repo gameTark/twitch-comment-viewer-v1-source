@@ -5,7 +5,6 @@ import { paths } from "interfaces/twitch-api.generated";
 
 import { db } from "@resource/db";
 import { is } from "@libs/is";
-import { BaseEventSubRegistParam } from "@libs/workers/workerEvents/socket/constants/types";
 
 const { API_KEY } = TWITCH_CONSTANTS;
 
@@ -202,7 +201,7 @@ const twitchFetcher: CreateRequest =
 
 export const TwitchAPI = {
   fetchByAll,
-  createEventsub: async <T extends BaseEventSubRegistParam>(params: T) => {
+  createEventsub: async (params: any) => {
     console.log(params);
     const res = await TwitchAPI.eventsub_subscriptions_post({
       requestBody: params as any,
