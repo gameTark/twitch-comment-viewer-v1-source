@@ -12,48 +12,72 @@ const createWsEndpoint = (keepaliveTimeoutSeconds: number) => {
 };
 
 export class TwitchWebSocket extends TypedEventTarget<TwitchSocketEventmap> {
-  public socket: WebSocket;
-  public ready: Promise<any>;
+  public socket: WebSocket | null = null;
+  public ready?: Promise<any>;
 
   private userId: string;
   private socketId: string | null = null;
 
+  /**
+   * soketが予期せぬ方法で死んだ場合に復活させたいからそのためのフラグs
+   */
+  private destroied: boolean = false;
+  private reisteredSubsctiptions: Array<keyof TwitchSocketEventmap> = [];
+
   constructor(props: { userId: string }) {
     super();
-    this.socket = new WebSocket(createWsEndpoint(30));
-    this.connect = this.connect.bind(this);
-    this.start = this.start.bind(this);
-
-    this.ready = this.start();
     this.userId = props.userId;
 
-    this.socket.addEventListener("message", (ev) => {
-      const data = JSON.parse(ev.data);
-      const event = calcrateEventType(data);
-      this.dispatchTypedEvent(
-        event,
-        new CustomEvent(event, {
-          detail: data,
-        }),
-      );
-    });
+    this.start = this.start.bind(this);
+    this.closedEventHandler = this.closedEventHandler.bind(this);
+    this.messageEventHandler = this.messageEventHandler.bind(this);
+    this.scoketStart = this.scoketStart.bind(this);
+
+    this.scoketStart();
+  }
+
+  private messageEventHandler(ev: MessageEvent) {
+    const data = JSON.parse(ev.data);
+    const event = calcrateEventType(data);
+    this.dispatchTypedEvent(
+      event,
+      new CustomEvent(event, {
+        detail: data,
+      }),
+    );
+  }
+
+  private closedEventHandler() {
+    if (this.destroied) return;
+    this.scoketStart();
+  }
+
+  scoketStart() {
+    this.socket = new WebSocket(createWsEndpoint(10));
+    this.socket.addEventListener("message", this.messageEventHandler);
+    this.socket.addEventListener("close", this.closedEventHandler);
+    this.updateSubscriptions();
+    this.ready = this.start();
   }
 
   async eventSubscription(...keys: Array<keyof TwitchSocketEventmap>) {
-    const events = keys.map((key) => {
+    this.reisteredSubsctiptions = [...this.reisteredSubsctiptions, ...keys];
+    await this.updateSubscriptions();
+  }
+
+  private async updateSubscriptions() {
+    const events = this.reisteredSubsctiptions.map((key) => {
       if (this.socketId == null) throw new Error("socket id is not found");
       return registerEventType(key, this.socketId, this.userId);
     });
     await Promise.all(events);
   }
 
-  async connect() {
-    await this.ready;
-    if (this.socketId == null) return;
-  }
-
   close() {
+    if (this.socket == null) return;
+    this.destroied = true;
     this.socket.close();
+    this.socket = null;
   }
 
   private async start() {

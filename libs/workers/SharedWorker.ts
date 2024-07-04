@@ -2,7 +2,7 @@ import { DBAction } from "@schemas/twitch/Actions";
 import { DBChannelHistory, DBChannelHistorySchema } from "@schemas/twitch/ChannelHistories";
 
 import { db } from "@resource/db";
-
+import { dayjs } from "@libs/dayjs";
 import { TwitchWebSocket } from "@libs/twitch/socket/baseSocket";
 import { updateUserData } from "@libs/twitch/socket/events/getUserData";
 import { updateChatters } from "@libs/twitch/socket/events/updateChatters";
@@ -10,16 +10,11 @@ import { updateFollowers } from "@libs/twitch/socket/events/updateFollowers";
 import { updateSpamList } from "@libs/twitch/socket/events/updateSpamList";
 import { updateStreams } from "@libs/twitch/socket/events/updateStreams";
 
-const worker = self as any as SharedWorkerGlobalScope;
-worker.addEventListener("connect", () => {
-  console.log("connected");
-});
-
 const main = async () => {
   const userData = await updateUserData();
-  const sock = new TwitchWebSocket({ userId: userData.id });
-  await sock.ready;
-  await sock.eventSubscription(
+  const twitchSocket = new TwitchWebSocket({ userId: userData.id });
+  await twitchSocket.ready;
+  await twitchSocket.eventSubscription(
     "channel.channel_points_automatic_reward_redemption.add",
     "channel.channel_points_custom_reward_redemption.add",
     "channel.chat.message",
@@ -27,8 +22,7 @@ const main = async () => {
     "stream.offline",
     "stream.online",
   );
-
-  sock.addEventListener("channel.chat.message", (ev) => {
+  twitchSocket.addEventListener("channel.chat.message", (ev) => {
     const action: DBAction = {
       id: ev.detail.payload.event.message_id,
       userId: ev.detail.payload.event.chatter_user_id,
@@ -44,77 +38,82 @@ const main = async () => {
     db.actions.add(action);
   });
 
-  sock.addEventListener("channel.channel_points_automatic_reward_redemption.add", (data) => {
-    const event = data.detail;
+  twitchSocket.addEventListener(
+    "channel.channel_points_automatic_reward_redemption.add",
+    (data) => {
+      const action: DBAction = {
+        id: data.detail.payload.event.id,
+        userId: data.detail.payload.event.user_id,
+        channel: userData.login,
+        userTitle: data.detail.payload.event.reward.type,
+        userInput: data.detail.payload.event.user_input,
+        rewardId: data.detail.payload.event.reward.type,
+        messageType: "atutomatic-reward",
+        timestamp: Date.now(),
+        rowdata: JSON.stringify(data.detail),
+        updateAt: new Date(),
+        createdAt: new Date(),
+      };
+      db.actions.add(action);
+    },
+  );
+
+  twitchSocket.addEventListener("channel.channel_points_custom_reward_redemption.add", (data) => {
     const action: DBAction = {
-      id: event.payload.event.id,
-      userId: event.payload.event.user_id,
+      id: data.detail.payload.event.id,
+      userId: data.detail.payload.event.user_id,
       channel: userData.login,
-      userTitle: event.payload.event.reward.type,
-      userInput: event.payload.event.user_input,
-      rewardId: event.payload.event.reward.type,
-      messageType: "atutomatic-reward",
+      userTitle: data.detail.payload.event.reward.title,
+      userInput: data.detail.payload.event.user_input,
+      rewardId: data.detail.payload.event.reward.id,
+      messageType: "reward",
       timestamp: Date.now(),
-      rowdata: JSON.stringify(event),
+      rowdata: JSON.stringify(data.detail),
       updateAt: new Date(),
       createdAt: new Date(),
     };
     db.actions.add(action);
   });
 
-  sock.addEventListener("channel.channel_points_custom_reward_redemption.add", (data) => {
-    const event = data.detail;
-    const action: DBAction = {
-      id: event.payload.event.id,
-      userId: event.payload.event.user_id,
-      channel: userData.login,
-      userTitle: event.payload.event.reward.title,
-      userInput: event.payload.event.user_input,
-      rewardId: event.payload.event.reward.id,
-      messageType: "reward",
-      timestamp: Date.now(),
-      rowdata: JSON.stringify(event),
-      updateAt: new Date(),
-      createdAt: new Date(),
-    };
-    db.actions.add(action);
-  });
-  sock.addEventListener("channel.update", (data) => {
-    const event = data.detail;
+  twitchSocket.addEventListener("channel.update", (data) => {
     const channelHistory: DBChannelHistory = {
       channelId: userData.login,
       tpye: "update",
-      broadcastTitle: event.payload.event.title,
-      categoryId: event.payload.event.category_id,
-      categoryName: event.payload.event.category_name,
-      language: event.payload.event.language,
+      broadcastTitle: data.detail.payload.event.title,
+      categoryId: data.detail.payload.event.category_id,
+      categoryName: data.detail.payload.event.category_name,
+      language: data.detail.payload.event.language,
       timestamp: new Date(),
-      rowdata: JSON.stringify(event),
+      rowdata: JSON.stringify(data.detail),
       updateAt: new Date(),
       createdAt: new Date(),
     };
     db.channelHistories.put(DBChannelHistorySchema.parse(channelHistory));
   });
 
-  sock.addEventListener("stream.online", updateStreams);
-  sock.addEventListener("stream.offline", updateStreams);
+  twitchSocket.addEventListener("stream.online", updateStreams);
+  twitchSocket.addEventListener("stream.offline", updateStreams);
   return () => {
-    sock.close();
+    twitchSocket.close();
   };
 };
 
-main();
-updateSpamList();
-updateChatters();
-updateStreams();
-updateFollowers();
+let destract: null | Promise<() => void> = null;
+const worker = self as any as SharedWorkerGlobalScope;
 
-const INTERVAL_TIME = 10000;
-setInterval(() => {
-  updateChatters();
+worker.addEventListener("connect", async () => {
+  if (destract != null) destract.then((res) => res());
+  destract = main();
+});
+
+const intervalTime = dayjs.duration({ seconds: 10 }).asMilliseconds();
+const cron = () => {
   updateSpamList();
-  updateFollowers();
+  updateChatters();
   updateStreams();
-}, INTERVAL_TIME);
+  updateFollowers();
+};
+
+setInterval(cron, intervalTime);
 
 export default null; //TypeScript警告避け

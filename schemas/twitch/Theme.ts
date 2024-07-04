@@ -1,3 +1,4 @@
+import { v4 as uuid } from "uuid";
 import * as z from "zod";
 
 const Font = z.object({
@@ -37,7 +38,10 @@ const Rounded = z.object({
 
 export const DBThemeIndex = "++id,title";
 export const DBThemeSchema = z.object({
-  id: z.number().optional(),
+  id: z
+    .string()
+    .optional()
+    .default(() => "style" + uuid().replaceAll("-", "")),
   title: z.string().optional().default("新規作成テーマ"),
   font: Font.optional().default(Font.parse({})),
   colors: Colors.optional().default(Colors.parse({})),

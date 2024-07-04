@@ -202,7 +202,6 @@ const twitchFetcher: CreateRequest =
 export const TwitchAPI = {
   fetchByAll,
   createEventsub: async (params: any) => {
-    console.log(params);
     const res = await TwitchAPI.eventsub_subscriptions_post({
       requestBody: params as any,
     });

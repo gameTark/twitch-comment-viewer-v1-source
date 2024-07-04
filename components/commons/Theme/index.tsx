@@ -1,24 +1,21 @@
 "use client";
 
-import { MouseEventHandler, useCallback, useLayoutEffect, useMemo, useState } from "react";
+import { MouseEventHandler, useCallback, useMemo, useState } from "react";
 import { DBTheme, DEFAULT_CUSTOM, FONTS } from "@schemas/twitch/Theme";
-import clsx from "clsx";
 import { useForm } from "react-hook-form";
 
 import { DEFAULT_THEME } from "@resource/constants";
 import THEME from "@resource/theme.json";
-import { is } from "@libs/is";
-import { useAsyncMemo } from "@libs/uses";
-import { getHtml } from "@libs/utils";
 
 import { Diff } from "@components/dasyui/Diff";
 import { ICONS } from "@components/icons";
 import { ColorInput } from "../color";
+import { useDialog } from "../Dialog";
 import { Scroll } from "../PerfectScrollbar";
-import { Preview } from "./PreviewComponent";
+import { Theme } from "./context";
+import { ColorContentDistance, StyleLoader } from "./style/decoder";
+import { Preview } from "./style/preview";
 
-const THEME_STORAGE_KEY = "theme-storage";
-const CURRENT_THEME_KEY = "theme-application-001";
 interface Style {
   title: string;
   values: {
@@ -33,124 +30,40 @@ interface Theme {
   style: Style[];
 }
 
-const themeAsset = {
-  save: (theme: Theme[]) => {
-    localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(theme));
-    window.dispatchEvent(new Event("storage"));
-  },
-  load: () => (localStorage.getItem(THEME_STORAGE_KEY) || []) as Theme[],
-};
-const currentThemeStorage = {
-  save: (theme: string) => {
-    localStorage.setItem(CURRENT_THEME_KEY, theme);
-    window.dispatchEvent(new Event("storage"));
-  },
-  load: () => localStorage.getItem(CURRENT_THEME_KEY) || DEFAULT_THEME,
-};
-
-export const FontLoader = (props: { targetFamily: string[] }) => {
-  const font = useMemo(() => {
-    return `https://fonts.googleapis.com/css2?${props.targetFamily.map((val) => `family=${val}`).join("&")}&display=swap`;
-  }, [props.targetFamily]);
-  if (props.targetFamily.length === 0) return <></>;
-  return <link href={font} rel="stylesheet" />;
-};
-export const applyTheme = () => {
-  if (is.runner.server) return;
-  const htmlElement = getHtml();
-  htmlElement.dataset.theme = currentThemeStorage.load();
-};
-
-export const ApplyTheme = () => {
-  useLayoutEffect(() => {
-    applyTheme();
-    const storageEvent = (storageEvent: StorageEvent) => {
-      applyTheme();
-      return storageEvent;
-    };
-    window.addEventListener("storage", storageEvent);
-    return () => {
-      window.removeEventListener("storage", storageEvent);
-    };
-  }, []);
-  return <></>;
-};
-
-const ThemeStyle = (props: { style: DBTheme; themeName: string }) => {
-  return (
-    <style>
-      {`
-[data-theme=${props.themeName}] {
-font-size: ${props.style.font["font-size"]}px;
-font-family: ${FONTS[props.style.font["font-family"]]};
-  ${Object.entries(props.style.colors)
-    .map(([key, value]) => `${key}: ${value};`)
-    .join("\n")};
-${Object.entries(props.style.rounded)
-  .map(([key, value]) => `${key}: ${value}rem;`)
-  .join("\n")};
-}
-`}
-    </style>
-  );
-};
-
 const Editor = () => {
-  const [state, setState] = useState<DBTheme>(DEFAULT_CUSTOM);
+  const setTheme = Theme.uses.useSetThemeContext();
+  const prevTheme = Theme.uses.useThemeContext();
+  const [state, setState] = useState<DBTheme>(prevTheme || DEFAULT_CUSTOM);
   const form = useForm({
     mode: "onBlur",
-    defaultValues: DEFAULT_CUSTOM,
+    defaultValues: state,
   });
+  const dialog = useDialog();
 
-  const theme: DBTheme = useMemo(() => {
-    return {
-      ...state,
-      colors: {
-        ...state.colors,
-        ["--pc"]: ColorInput.methods.hexDistance(
-          ColorInput.methods.str(state.colors["--p"]),
-          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.str),
-        ),
-        ["--sc"]: ColorInput.methods.hexDistance(
-          ColorInput.methods.str(state.colors["--s"]),
-          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.str),
-        ),
-        ["--ac"]: ColorInput.methods.hexDistance(
-          ColorInput.methods.str(state.colors["--a"]),
-          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.str),
-        ),
-        ["--nc"]: ColorInput.methods.hexDistance(
-          ColorInput.methods.str(state.colors["--n"]),
-          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.str),
-        ),
-        ["--inc"]: ColorInput.methods.hexDistance(
-          ColorInput.methods.str(state.colors["--in"]),
-          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.str),
-        ),
-        ["--suc"]: ColorInput.methods.hexDistance(
-          ColorInput.methods.str(state.colors["--su"]),
-          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.str),
-        ),
-        ["--wac"]: ColorInput.methods.hexDistance(
-          ColorInput.methods.str(state.colors["--wa"]),
-          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.str),
-        ),
-        ["--erc"]: ColorInput.methods.hexDistance(
-          ColorInput.methods.str(state.colors["--er"]),
-          [state.colors["--b1"], state.colors["--bc"]].map(ColorInput.methods.str),
-        ),
+  const theme = useMemo(() => ColorContentDistance(state), [state]);
+  const submit = useCallback((theme: DBTheme) => {
+    setTheme.editTheme(theme.id, ColorContentDistance(theme));
+  }, []);
+
+  const deleteTheme = useCallback(() => {
+    if (prevTheme == null) return;
+    dialog.open({
+      title: "削除しますか？",
+      onSuccess: () => {
+        setTheme.deleteTheme(prevTheme.id);
       },
-    };
-  }, [state]);
-
+    });
+  }, [prevTheme]);
   return (
-    <form className="flex flex-col border min-w-96" onBlur={form.handleSubmit(setState)}>
-      <FontLoader targetFamily={[state.font["font-family"]]} />
-      <ThemeStyle style={theme} themeName="example" />
+    <form
+      className="flex flex-col border min-w-96"
+      onBlur={form.handleSubmit(setState)}
+      onSubmit={form.handleSubmit(submit)}>
+      <Theme.FontLoader targetFamily={[state.font["font-family"]]} />
+      <StyleLoader style={theme} />
       <Scroll className="w-full h-full">
         <h2 className=" px-4">テーマ編集</h2>
         <h3 className=" px-4">テーマ名</h3>
-        {/* TODO: セクション管理が雑いからh区切りにリファクタしたい */}
         <div className="grid grid-cols-[1fr_repeat(4,max-content)] items-center w-full px-4 gap-x-4">
           <div className="col-start-1 col-span-full">
             <input
@@ -200,6 +113,7 @@ const Editor = () => {
 
           <p>背景2</p>
           <ColorInput.DefaultPicker control={form.control} name="colors.--b2" />
+
           <p>背景3</p>
           <ColorInput.DefaultPicker control={form.control} name="colors.--b3" />
 
@@ -247,6 +161,7 @@ const Editor = () => {
               {...form.register("rounded.--rounded-box")}
             />
           </div>
+
           <p className="font-bold">バッヂ</p>
           <div className="col-start-2 col-span-full">
             <input
@@ -258,6 +173,7 @@ const Editor = () => {
               {...form.register("rounded.--rounded-badge")}
             />
           </div>
+
           <p className="font-bold">ボタン</p>
           <div className="col-start-2 col-span-full">
             <input
@@ -272,53 +188,74 @@ const Editor = () => {
         </div>
       </Scroll>
 
-      <div className="col-span-5 flex justify-end sticky bottom-0 py-3 border-t-2 px-5 bg-base-300">
-        <button className="btn btn-sm">保存</button>
+      <div className="col-span-5 flex justify-end sticky bottom-0 py-3 border-t-2 px-5 bg-base-300 gap-5">
+        <button type="button" className="btn btn-sm btn-error" onClick={deleteTheme}>
+          削除
+        </button>
+        <button className="btn btn-sm btn-info">保存</button>
       </div>
     </form>
   );
 };
+
 const PreviewComponent = () => {
+  const currentTheme = Theme.uses.useCurrentThemeId();
+  const themeList = Theme.uses.useThemeList();
+  const [comparison, setComparison] = useState(DEFAULT_THEME);
+
   return (
     <Scroll borderd>
       <div className="px-10 pb-10">
         <h2>テーマプレビュー</h2>
+        <div className="flex justify-start items-center gap-5">
+          <h3 className="flex-none">比較対象</h3>
+          <select
+            className=" select select-bordered w-full select-lg"
+            onChange={(e) => setComparison(e.currentTarget.value)}
+            value={comparison}>
+            {themeList.map((value) => (
+              <option key={value.id} value={value.id}>
+                {value.id}
+              </option>
+            ))}
+          </select>
+        </div>
         <h3>ボタン</h3>
-        <Diff.Theme theme="example" className="aspect-[4/2]">
+        <Diff.Theme theme2={comparison} theme1={currentTheme} className="aspect-[4/2]">
           {Preview.Button}
         </Diff.Theme>
         <h3>バッヂ</h3>
-        <Diff.Theme theme="example" className="aspect-[5/2]">
+        <Diff.Theme theme2={comparison} theme1={currentTheme} className="aspect-[5/2]">
           {Preview.Badge}
         </Diff.Theme>
         <h3>リンク</h3>
-        <Diff.Theme theme="example" className="aspect-[5/2]">
+        <Diff.Theme theme2={comparison} theme1={currentTheme} className="aspect-[5/2]">
           {Preview.Link}
         </Diff.Theme>
         <h3>プログレスバー</h3>
-        <Diff.Theme theme="example" className="aspect-[5/2]">
+        <Diff.Theme theme2={comparison} theme1={currentTheme} className="aspect-[5/2]">
           {Preview.Progress}
         </Diff.Theme>
         <h3>インフォ</h3>
-        <Diff.Theme theme="example" className="aspect-[4/3]">
+        <Diff.Theme theme2={comparison} theme1={currentTheme} className="aspect-[4/3]">
           {Preview.Info}
         </Diff.Theme>
         <h3>全量</h3>
-        <Diff.Theme theme="example" className="aspect-[4/5]">
+        <Diff.Theme theme2={comparison} theme1={currentTheme} className="aspect-[4/5]">
           <Preview.Full />
         </Diff.Theme>
       </div>
     </Scroll>
   );
 };
+
 export const Select = () => {
-  const currentTheme = useChangeTheme();
+  const currentTheme = Theme.uses.useCurrentThemeId();
+  const setTheme = Theme.uses.useSetThemeContext();
+  const createTheme = Theme.uses.useCreateTheme();
   const baseTheme = useMemo(() => {
     return [...THEME];
   }, [THEME]);
-  const customTheme = useMemo(() => {
-    return ["example"];
-  }, []);
   return (
     <div>
       <Scroll className="border px-6 w-80">
@@ -326,17 +263,13 @@ export const Select = () => {
           <h2>テーマ選択</h2>
           <h3>カスタムテーマ</h3>
           <ul className="flex flex-col gap-3">
-            {customTheme.map((theme) => (
-              <li key={theme}>
-                <ThemePreviewItem
-                  theme={theme}
-                  disabled={currentTheme.currentTheme === theme}
-                  onClick={() => currentTheme.changeTheme(theme)}
-                />
+            <Theme.ThemeListProvider>
+              <li>
+                <Theme.List.ThemeListItem />
               </li>
-            ))}
+            </Theme.ThemeListProvider>
             <li>
-              <button className="btn btn-outline btn-info w-full">
+              <button className="btn btn-outline btn-info w-full" onClick={createTheme}>
                 テーマを新規追加 {ICONS.PLUS}
               </button>
             </li>
@@ -347,8 +280,8 @@ export const Select = () => {
               <li key={theme}>
                 <ThemePreviewItem
                   theme={theme}
-                  disabled={currentTheme.currentTheme === theme}
-                  onClick={() => currentTheme.changeTheme(theme)}
+                  disabled={currentTheme === theme}
+                  onClick={() => setTheme.setTheme(theme)}
                 />
               </li>
             ))}
@@ -360,13 +293,18 @@ export const Select = () => {
 };
 
 export const ThemeEditor = () => {
+  const currentTheme = Theme.uses.useCurrentThemeId();
   return (
     <div className="h-full flex flex-col w-full">
       <h1>設定</h1>
       <div className="flex gap-5 grow h-0 w-full">
         <Select />
         <div className="flex w-min">
-          <Editor />
+          {currentTheme == null ? null : (
+            <Theme.Provider themeId={currentTheme} key={currentTheme}>
+              <Editor key={currentTheme} />
+            </Theme.Provider>
+          )}
         </div>
         <div className="min-w-[700px]">
           <PreviewComponent />
@@ -405,76 +343,5 @@ const ThemePreviewItem = (props: {
         </div>
       </div>
     </button>
-  );
-};
-
-const useChangeTheme = () => {
-  const [theme, setTheme] = useState<string>();
-  useLayoutEffect(() => {
-    setTheme(currentThemeStorage.load());
-  }, []);
-  const saveTheme = useCallback((theme: string) => {
-    setTheme(theme);
-    currentThemeStorage.save(theme);
-  }, []);
-
-  return {
-    currentTheme: theme,
-    changeTheme: saveTheme,
-  };
-};
-
-export const ChangeTheme = () => {
-  const theme = useChangeTheme();
-  const themes = useAsyncMemo(async () => {
-    return [...THEME, "example", ...themeAsset.load().map((val) => val.name)];
-  }, [THEME]);
-  const changeTheme: MouseEventHandler<HTMLButtonElement> = useCallback((ev) => {
-    theme.changeTheme(ev.currentTarget.value);
-  }, []);
-
-  return (
-    <div className="dropdown dropdown-bottom">
-      <button tabIndex={0} className="btn btn-secondary w-48 btn-sm">
-        {theme.currentTheme}
-      </button>
-      <div
-        tabIndex={0}
-        className="
-          dropdown-content
-          border
-          z-[1]
-          menu
-          shadow
-          bg-base-100
-          rounded-box
-          w-64
-          h-96
-        ">
-        <Scroll className={clsx("w-full")}>
-          <ul
-            className="
-            flex
-            flex-col
-            gap-2
-          ">
-            {themes?.map((val) => {
-              return (
-                <li key={val}>
-                  <button
-                    className="btn w-full border"
-                    onClick={changeTheme}
-                    data-theme={val}
-                    value={val}
-                    disabled={theme.currentTheme === val}>
-                    <ThemePreviewItem theme={val} />
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </Scroll>
-      </div>
-    </div>
   );
 };

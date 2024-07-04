@@ -40,7 +40,6 @@ export const MultiTag = <TFieldValues extends FieldValues>(
         case KEYBOARD.ENTER:
           e.preventDefault();
           e.stopPropagation();
-          console.log("add enter");
           addTag();
           return;
       }

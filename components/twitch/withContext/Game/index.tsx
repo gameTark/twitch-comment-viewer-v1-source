@@ -78,7 +78,6 @@ const Search = (props: { onChange?: (id: DBGame["id"]) => void }) => {
       //
       // api.data.sort((a, b) => result.findIndex(i => i.id === a.id));
       //
-      console.log(result);
       setResult(result.map((val) => val.item) || []);
     },
     [],

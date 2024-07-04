@@ -1,9 +1,8 @@
 import { DBFollower } from "@schemas/twitch/Followers";
 
 import { db } from "@resource/db";
-
-import { filter } from "@libs/types";
 import { TwitchAPI } from "@libs/twitch";
+import { filter } from "@libs/types";
 
 import { updateUserData } from "./getUserData";
 

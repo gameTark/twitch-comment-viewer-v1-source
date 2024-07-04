@@ -5,7 +5,7 @@ import "../styles/globals.css";
 
 import { TwitchRouter } from "@contexts/twitch/eventSubContext";
 
-import { ApplyTheme, FontLoader } from "@components/commons/Theme";
+import { ThemeGrobalProvider } from "@components/commons/Theme/context";
 import { Drawer } from "@components/dasyui/Drawer";
 import { ModalProvider } from "@components/dasyui/Modal";
 import { TanstackQueryProvider } from "@components/middlewares/TanstackQueryProvider";
@@ -19,22 +19,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="icon" href="./icon.svg" />
       </head>
       <body>
-        <ApplyTheme />
-        <TwitchRouter>
-          <TanstackQueryProvider>
-            <div className="max-h-screen h-screen w-full max-w-screen oveflow-hidden flex flex-col border-base-content/20">
-              <ModalProvider>
-                <FontLoader targetFamily={["Noto+Sans+JP:wght@100..900"]} />
-                <Drawer>
-                  <div className="h-96 grow">{children}</div>
-                  <div className="h-fit">
-                    <Footer />
-                  </div>
-                </Drawer>
-              </ModalProvider>
-            </div>
-          </TanstackQueryProvider>
-        </TwitchRouter>
+        <ThemeGrobalProvider>
+          <TwitchRouter>
+            <TanstackQueryProvider>
+              <div className="max-h-screen h-screen w-full max-w-screen oveflow-hidden flex flex-col border-base-content/20">
+                <ModalProvider>
+                  <Drawer>
+                    <div className="h-96 grow">{children}</div>
+                    <div className="h-fit">
+                      <Footer />
+                    </div>
+                  </Drawer>
+                </ModalProvider>
+              </div>
+            </TanstackQueryProvider>
+          </TwitchRouter>
+        </ThemeGrobalProvider>
       </body>
     </html>
   );
