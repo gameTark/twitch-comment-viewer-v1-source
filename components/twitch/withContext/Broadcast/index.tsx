@@ -26,7 +26,7 @@ import { ContextElements, createSpan, createTime } from "../interface";
 /**
  * viewer
  */
-const { BROADCAST_LANGUAGE, CLASSIFICATION_LABELS } = TWITCH_CONSTANTS;
+const { BROADCAST_LANGUAGE } = TWITCH_CONSTANTS;
 
 const boroadcastContext = createContext<DbBroadcastTemplate | undefined | null>(null);
 const useBroadcastTemplate = () => useContext(boroadcastContext);
@@ -275,25 +275,25 @@ const EditTags = () => {
     </div>
   );
 };
-const EditClassificationLabels = () => {
-  const { register } = useBroadcastFormContext();
-  // TODO: 要デバッグ
-  return (
-    <>
-      {CLASSIFICATION_LABELS.map((val) => (
-        <div key={val.id} className=" inline-flex gap-2 justify-center">
-          <input
-            key={val.id}
-            type="checkbox"
-            value={val.id}
-            {...register("classificationLabels")}
-          />
-          <span>{val.description}</span>
-        </div>
-      ))}
-    </>
-  );
-};
+// const EditClassificationLabels = () => {
+//   const { register } = useBroadcastFormContext();
+//   // TODO: 要デバッグ
+//   return (
+//     <>
+//       {CLASSIFICATION_LABELS.map((val) => (
+//         <div key={val.id} className=" inline-flex gap-2 justify-center">
+//           <input
+//             key={val.id}
+//             type="checkbox"
+//             value={val.id}
+//             {...register("classificationLabels")}
+//           />
+//           <span>{val.description}</span>
+//         </div>
+//       ))}
+//     </>
+//   );
+// };
 
 const EditGame = () => {
   const { setValue, getValues } = useBroadcastFormContext();
@@ -344,7 +344,6 @@ export const Broadcast = {
     Title: EditTitle,
     Language: EditLanguage,
     BrandedContents: EditBrandedContents,
-    ClassificationLables: EditClassificationLabels,
     Tags: EditTags,
     Game: EditGame,
   },
