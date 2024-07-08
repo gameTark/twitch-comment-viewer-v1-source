@@ -16,9 +16,9 @@ export function Scroll(
     borderd?: boolean;
   } & PProps,
 ) {
-  const { children, className, ...pprops } = props;
+  const { children, className, ...otherProps } = props;
 
-  const scroll = usePerfectScrollbar([children, className], pprops);
+  const scroll = usePerfectScrollbar([children, className], otherProps);
   return (
     <div
       ref={scroll.ref}

@@ -54,16 +54,17 @@ export const Me = () => {
         <ul
           className="p-2 shadow menu dropdown-content z-[1] bg-base-100 text-base-content dasy-rounded w-64 border"
           tabIndex={0}>
-          {navigation.map((val) => (
-            <li key={val.value}>
-              <a
-                className="link flex justify-between items-center"
-                target={val.external ? "_blank" : undefined}
-                href={val.href}>
-                {val.value} {val.external ? ICONS.EXTERNAL : null}
-              </a>
-            </li>
-          ))}
+          {
+            navigation.map((val) => (
+              <li key={val.value}>
+                <a
+                  className="link flex justify-between items-center"
+                  target={val.external ? "_blank" : undefined}
+                  href={val.href}>
+                  {val.value} {val.external ? ICONS.EXTERNAL : null}
+                </a>
+              </li>
+            ))}
           <li onClick={logout}>
             <a>ログアウト</a>
           </li>

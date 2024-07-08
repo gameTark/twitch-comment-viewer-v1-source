@@ -75,9 +75,6 @@ const Search = (props: { onChange?: (id: DBGame["id"]) => void }) => {
       if (text === "" || text == null) return null;
       const api = await TwitchAPI.search_categories_get({ parameters: { query: text } });
       const result = new Fuse(api.data, { keys: ["name"], fieldNormWeight: 0 }).search(text);
-      //
-      // api.data.sort((a, b) => result.findIndex(i => i.id === a.id));
-      //
       setResult(result.map((val) => val.item) || []);
     },
     [],
