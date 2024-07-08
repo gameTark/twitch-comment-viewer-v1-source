@@ -1,4 +1,4 @@
-import { ChangeEventHandler, useCallback, useMemo } from "react";
+import { ChangeEventHandler, useMemo } from "react";
 import clsx from "clsx";
 
 export interface CheckboxProps {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { dayjs } from "../../libs/dayjs";
 import { useInterval } from "../../uses/useInterval";

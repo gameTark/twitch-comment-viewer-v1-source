@@ -1,4 +1,4 @@
-import { ReactNode, useCallback } from "react";
+import { ReactNode } from "react";
 import clsx from "clsx";
 
 import { Image } from "@libs/types";

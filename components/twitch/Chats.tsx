@@ -115,13 +115,6 @@ export const ChatList = (props: { type: string; query: Parameters<typeof getActi
   );
 };
 
-// export const ChatStat = () => {
-//   const data = useLiveQuery(async () => {
-//     return await getActions(props.query).reverse().sortBy("timestamp");
-//   }, [props.query]);
-//   return ();
-// }
-
 export const ChatTable = (props: { userId: DBUser["id"] }) => {
   const data = useDbPagination(
     getActions({
